@@ -21,6 +21,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FollowResolver = void 0;
 const constants_1 = require("../constants");
 const type_graphql_1 = require("type-graphql");
 const Follow_1 = require("../entities/Follow");

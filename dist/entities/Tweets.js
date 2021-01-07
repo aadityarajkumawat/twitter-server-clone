@@ -9,6 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Comment = exports.Like = exports.Tweet = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const User_1 = require("./User");
@@ -53,6 +54,16 @@ __decorate([
     typeorm_1.ManyToOne(() => User_1.User, (user) => user.tweets),
     __metadata("design:type", User_1.User)
 ], Tweet.prototype, "user", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    typeorm_1.Column(),
+    __metadata("design:type", Number)
+], Tweet.prototype, "likes", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    typeorm_1.Column(),
+    __metadata("design:type", Number)
+], Tweet.prototype, "comments", void 0);
 __decorate([
     typeorm_1.OneToMany(() => Like, (like) => like.tweet, {
         cascade: ["insert", "remove", "update"],

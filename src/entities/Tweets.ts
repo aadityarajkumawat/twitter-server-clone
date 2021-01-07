@@ -44,6 +44,14 @@ export class Tweet extends BaseEntity {
   @ManyToOne(() => User, (user) => user.tweets)
   user: User;
 
+  @Field()
+  @Column()
+  likes: Number;
+
+  @Field()
+  @Column()
+  comments: Number;
+
   @OneToMany(() => Like, (like) => like.tweet, {
     cascade: ["insert", "remove", "update"],
   })

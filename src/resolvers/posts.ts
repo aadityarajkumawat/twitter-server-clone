@@ -117,7 +117,7 @@ export class PostsResolver {
         followingIds.push(follow[i].following);
       }
 
-      const tweets = await getConnection()
+      const tweets: Array<Tweet> = await getConnection()
         .createQueryBuilder()
         .select("*")
         .from(Tweet, "tweet")
