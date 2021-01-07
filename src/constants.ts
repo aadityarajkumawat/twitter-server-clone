@@ -101,6 +101,10 @@ export class GetTweet {
   username?: string;
   @Field()
   name?: string;
+  @Field()
+  likes?: number;
+  @Field()
+  comments?: number;
 }
 
 @InputType()

@@ -22,42 +22,33 @@ export class PostsResolver {
     @Arg("options") options: PostTweetInput,
     @Ctx() { req }: MyContext
   ): Promise<PostCreatedResponse> {
-    const { tweet_content, rel_acc } = options;
+    let { tweet_content, rel_acc } = options;
     if (!req.session.userId) {
       return { error: "User is unauthorized" };
     }
     let post;
     try {
       const user = await User.findOne({ where: { id: req.session.userId } });
+      let tweetType = "tweet";
       if (rel_acc) {
-        const result = await getConnection()
-          .createQueryBuilder()
-          .insert()
-          .into(Tweet)
-          .values({
-            user: await User.findOne({ where: { id: req.session.userId } }),
-            tweet_content,
-            _type: "retweet",
-            rel_acc,
-            username: user?.username,
-            name: user?.name,
-          })
-          .returning("*")
-          .execute();
-
-        post = result.raw[0];
+        tweetType = "retweet";
       } else {
+        rel_acc = req.session.userId;
+      }
+      if (user) {
         const result = await getConnection()
           .createQueryBuilder()
           .insert()
           .into(Tweet)
           .values({
-            user: await User.findOne({ where: { id: req.session.userId } }),
+            user,
             tweet_content,
-            _type: "tweet",
-            rel_acc: req.session.userId,
-            username: user?.username,
-            name: user?.name,
+            _type: tweetType,
+            rel_acc,
+            username: user.username,
+            name: user.name,
+            likes: 0,
+            comments: 0,
           })
           .returning("*")
           .execute();
@@ -83,18 +74,14 @@ export class PostsResolver {
 
     try {
       let tweet = await Tweet.findOne({ where: { tweet_id } });
-      return {
-        error: "",
-        tweet: {
-          _type: tweet?._type,
-          created_At: tweet?.created_At,
-          rel_acc: tweet?.rel_acc,
-          tweet_content: tweet?.tweet_content,
-          tweet_id: tweet?.tweet_id,
-          name: tweet?.name,
-          username: tweet?.username,
-        },
-      };
+      if (tweet) {
+        return {
+          error: "",
+          tweet,
+        };
+      } else {
+        return { error: "", tweet: null };
+      }
     } catch (error) {
       return { error: error.message, tweet: null };
     }
@@ -145,17 +132,20 @@ export class PostsResolver {
     }
 
     let tweet = await Tweet.findOne({ where: { tweet_id } });
-
-    let like = await Like.findOne({ user_id: req.session.userId, tweet });
+    let like = await Like.findOne({
+      where: { user_id: req.session.userId, tweet },
+    });
 
     if (like) {
       await like.remove();
+      if (tweet) {
+        tweet.likes = tweet.likes - 1;
+        await tweet.save();
+      }
       return { liked: "unliked", error: "" };
     }
 
     try {
-      let tweet = await Tweet.findOne({ where: { tweet_id } });
-
       const result = await getConnection()
         .createQueryBuilder()
         .insert()
@@ -164,6 +154,10 @@ export class PostsResolver {
         .returning("*")
         .execute();
 
+      if (tweet) {
+        tweet.likes = tweet.likes + 1;
+        await tweet.save();
+      }
       like = result.raw[0];
     } catch (err) {
       console.log(err);

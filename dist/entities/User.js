@@ -36,7 +36,6 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "updatedAt", void 0);
 __decorate([
-    type_graphql_1.Field(() => String),
     typeorm_1.Column(),
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);

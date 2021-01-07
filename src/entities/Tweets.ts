@@ -46,11 +46,11 @@ export class Tweet extends BaseEntity {
 
   @Field()
   @Column()
-  likes: Number;
+  likes: number;
 
   @Field()
   @Column()
-  comments: Number;
+  comments: number;
 
   @OneToMany(() => Like, (like) => like.tweet, {
     cascade: ["insert", "remove", "update"],
