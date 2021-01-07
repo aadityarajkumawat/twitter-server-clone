@@ -206,6 +206,10 @@ __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", Number)
 ], GetTweet.prototype, "comments", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Boolean)
+], GetTweet.prototype, "liked", void 0);
 GetTweet = __decorate([
     type_graphql_1.ObjectType()
 ], GetTweet);

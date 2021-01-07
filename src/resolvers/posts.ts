@@ -1,5 +1,4 @@
 import {
-  GetLikes,
   GetTweetById,
   GetTweetResponse,
   GetUserTweets,
@@ -114,7 +113,22 @@ export class PostsResolver {
         .orderBy("tweet.created_At", "ASC")
         .execute();
 
-      return { error: "", tweets };
+      const finalTweets = [];
+
+      let like = await Like.find({ where: { user_id: req.session.userId } });
+
+      for (let i = 0; i < tweets.length; i++) {
+        let currID = tweets[i].tweet_id;
+        let oo = { ...tweets[i], liked: false };
+        for (let j = 0; j < like.length; j++) {
+          if (like[j].tweet_id === currID) {
+            oo.liked = true;
+          }
+        }
+        finalTweets.push(oo);
+      }
+
+      return { error: "", tweets: finalTweets };
     } catch (error) {
       console.log("err");
       return { error: error.message, tweets: [] };
@@ -158,6 +172,7 @@ export class PostsResolver {
         tweet.likes = tweet.likes + 1;
         await tweet.save();
       }
+
       like = result.raw[0];
     } catch (err) {
       console.log(err);

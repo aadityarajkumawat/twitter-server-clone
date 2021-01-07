@@ -105,6 +105,8 @@ export class GetTweet {
   likes?: number;
   @Field()
   comments?: number;
+  @Field()
+  liked: boolean;
 }
 
 @InputType()

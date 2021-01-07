@@ -116,7 +116,19 @@ let PostsResolver = class PostsResolver {
                 })
                     .orderBy("tweet.created_At", "ASC")
                     .execute();
-                return { error: "", tweets };
+                const finalTweets = [];
+                let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
+                for (let i = 0; i < tweets.length; i++) {
+                    let currID = tweets[i].tweet_id;
+                    let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
+                    for (let j = 0; j < like.length; j++) {
+                        if (like[j].tweet_id === currID) {
+                            oo.liked = true;
+                        }
+                    }
+                    finalTweets.push(oo);
+                }
+                return { error: "", tweets: finalTweets };
             }
             catch (error) {
                 console.log("err");
