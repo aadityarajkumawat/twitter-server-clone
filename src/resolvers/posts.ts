@@ -164,19 +164,4 @@ export class PostsResolver {
     }
     return { liked: `liked${like?.like_id}`, error: "" };
   }
-
-  @Query(() => GetLikes)
-  async getLikes(@Ctx() { req }: MyContext): Promise<GetLikes> {
-    if (!req.session.userId) {
-      return { likes: [], error: "User is not authenticated" };
-    }
-
-    try {
-      const likes = await Like.find({ where: { user_id: req.session.userId } });
-      console.log(likes);
-      return { likes, error: "" };
-    } catch (error) {
-      return { error: error.message, likes: [] };
-    }
-  }
 }

@@ -162,21 +162,6 @@ let PostsResolver = class PostsResolver {
             return { liked: `liked${like === null || like === void 0 ? void 0 : like.like_id}`, error: "" };
         });
     }
-    getLikes({ req }) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!req.session.userId) {
-                return { likes: [], error: "User is not authenticated" };
-            }
-            try {
-                const likes = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
-                console.log(likes);
-                return { likes, error: "" };
-            }
-            catch (error) {
-                return { error: error.message, likes: [] };
-            }
-        });
-    }
 };
 __decorate([
     type_graphql_1.Mutation(() => constants_1.PostCreatedResponse),
@@ -209,13 +194,6 @@ __decorate([
     __metadata("design:paramtypes", [constants_1.TweetInfo, Object]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "likeTweet", null);
-__decorate([
-    type_graphql_1.Query(() => constants_1.GetLikes),
-    __param(0, type_graphql_1.Ctx()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], PostsResolver.prototype, "getLikes", null);
 PostsResolver = __decorate([
     type_graphql_1.Resolver()
 ], PostsResolver);
