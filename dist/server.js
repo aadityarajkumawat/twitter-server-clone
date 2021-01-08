@@ -30,6 +30,7 @@ const user_1 = require("./resolvers/user");
 const posts_1 = require("./resolvers/posts");
 const Follow_1 = require("./entities/Follow");
 const follow_1 = require("./resolvers/follow");
+const http_1 = __importDefault(require("http"));
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
@@ -43,8 +44,13 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         entities: [User_1.User, Tweets_1.Tweet, Tweets_1.Like, Tweets_1.Comment, Follow_1.Follow],
     });
     const app = express_1.default();
+    const pubsub = new apollo_server_express_1.PubSub();
     const RedisStore = connect_redis_1.default(express_session_1.default);
     const redisClient = redis_1.default.createClient();
+    app.use((req, _, next) => {
+        req.pubsub = pubsub;
+        next();
+    });
     app.use(cors_1.default({
         origin: "http://localhost:3000",
         credentials: true,
@@ -66,11 +72,20 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         schema: yield type_graphql_1.buildSchema({
             resolvers: [hello_1.HelloResolver, user_1.UserResolver, posts_1.PostsResolver, follow_1.FollowResolver],
             validate: false,
+            pubSub: pubsub,
         }),
         context: ({ req, res }) => ({ req, res }),
+        subscriptions: {
+            onConnect() { },
+            onDisconnect() { },
+        },
     });
     server.applyMiddleware({ app, cors: false });
-    app.listen(4000, () => console.log("server is running on port 4000"));
+    const httpServer = http_1.default.createServer(app);
+    server.installSubscriptionHandlers(httpServer);
+    httpServer.listen(4000, () => {
+        console.log("Server started");
+    });
 });
 main().catch((err) => {
     console.log(err.message);

@@ -8,7 +8,17 @@ import {
   TweetInfo,
 } from "../constants";
 import { MyContext } from "src/types";
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  PubSub,
+  PubSubEngine,
+  Query,
+  Resolver,
+  Root,
+  Subscription,
+} from "type-graphql";
 import { Tweet, Like } from "../entities/Tweets";
 import { getConnection } from "typeorm";
 import { User } from "../entities/User";
@@ -87,7 +97,10 @@ export class PostsResolver {
   }
 
   @Query(() => GetUserTweets)
-  async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetUserTweets> {
+  async getTweetsByUser(
+    @Ctx() { req }: MyContext,
+    @PubSub() pubSub: PubSubEngine
+  ): Promise<GetUserTweets> {
     if (!req.session.userId) {
       return { error: "User is unauthorized", tweets: [] };
     }
@@ -127,7 +140,8 @@ export class PostsResolver {
         }
         finalTweets.push(oo);
       }
-
+      const payload: GetUserTweets = { error: "", tweets: finalTweets };
+      await pubSub.publish("TWEETS", payload);
       return { error: "", tweets: finalTweets };
     } catch (error) {
       console.log("err");
@@ -178,5 +192,18 @@ export class PostsResolver {
       console.log(err);
     }
     return { liked: `liked${like?.like_id}`, error: "" };
+  }
+
+  // @Query(() => String)
+  // async hell(@Ctx() ctx: any) {
+  //   await ctx.req.pubsub.publish("MESSAGE");
+  //   return "Hello World";
+  // }
+
+  @Subscription(() => GetUserTweets, {
+    topics: "TWEETS",
+  })
+  async subscription(@Root() gg: GetUserTweets): Promise<any> {
+    return gg;
   }
 }

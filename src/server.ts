@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import express from "express";
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer, PubSub } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import session from "express-session";
@@ -16,6 +16,7 @@ import { UserResolver } from "./resolvers/user";
 import { PostsResolver } from "./resolvers/posts";
 import { Follow } from "./entities/Follow";
 import { FollowResolver } from "./resolvers/follow";
+import http from "http";
 
 const main = async () => {
   const conn = await createConnection({
@@ -34,15 +35,23 @@ const main = async () => {
   // await conn.runMigrations();
 
   const app = express();
+  const pubsub = new PubSub();
 
   const RedisStore = connectRedis(session);
   const redisClient = redis.createClient();
+
+  app.use((req: any, _: any, next: any) => {
+    req.pubsub = pubsub;
+    next();
+  });
+
   app.use(
     cors({
       origin: "http://localhost:3000",
       credentials: true,
     })
   );
+
   app.use(
     session({
       name: "qid",
@@ -63,13 +72,21 @@ const main = async () => {
     schema: await buildSchema({
       resolvers: [HelloResolver, UserResolver, PostsResolver, FollowResolver],
       validate: false,
+      pubSub: pubsub,
     }),
     context: ({ req, res }) => ({ req, res }),
+    subscriptions: {
+      onConnect() {},
+      onDisconnect() {},
+    },
   });
 
   server.applyMiddleware({ app, cors: false });
-
-  app.listen(4000, () => console.log("server is running on port 4000"));
+  const httpServer = http.createServer(app);
+  server.installSubscriptionHandlers(httpServer);
+  httpServer.listen(4000, () => {
+    console.log("Server started");
+  });
 };
 
 main().catch((err) => {
