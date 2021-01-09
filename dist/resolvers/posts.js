@@ -29,7 +29,7 @@ const typeorm_1 = require("typeorm");
 const User_1 = require("../entities/User");
 const Follow_1 = require("../entities/Follow");
 let PostsResolver = class PostsResolver {
-    createPost(options, { req }) {
+    createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             let { tweet_content, rel_acc } = options;
             if (!req.session.userId) {
@@ -63,6 +63,8 @@ let PostsResolver = class PostsResolver {
                         .returning("*")
                         .execute();
                     post = result.raw[0];
+                    const payload = { error: "", tweet: post };
+                    yield pubsub.publish("TWEETS", payload);
                 }
             }
             catch (err) {
@@ -94,7 +96,7 @@ let PostsResolver = class PostsResolver {
             }
         });
     }
-    getTweetsByUser({ req }, pubSub) {
+    getTweetsByUser({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
                 return { error: "User is unauthorized", tweets: [] };
@@ -128,8 +130,6 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                const payload = { error: "", tweets: finalTweets };
-                yield pubSub.publish("TWEETS", payload);
                 return { error: "", tweets: finalTweets };
             }
             catch (error) {
@@ -186,8 +186,9 @@ __decorate([
     type_graphql_1.Mutation(() => constants_1.PostCreatedResponse),
     __param(0, type_graphql_1.Arg("options")),
     __param(1, type_graphql_1.Ctx()),
+    __param(2, type_graphql_1.PubSub()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [constants_1.PostTweetInput, Object]),
+    __metadata("design:paramtypes", [constants_1.PostTweetInput, Object, type_graphql_1.PubSubEngine]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "createPost", null);
 __decorate([
@@ -201,9 +202,8 @@ __decorate([
 __decorate([
     type_graphql_1.Query(() => constants_1.GetUserTweets),
     __param(0, type_graphql_1.Ctx()),
-    __param(1, type_graphql_1.PubSub()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, type_graphql_1.PubSubEngine]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getTweetsByUser", null);
 __decorate([
@@ -215,12 +215,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "likeTweet", null);
 __decorate([
-    type_graphql_1.Subscription(() => constants_1.GetUserTweets, {
+    type_graphql_1.Subscription(() => constants_1.GetTweetResponse, {
         topics: "TWEETS",
     }),
     __param(0, type_graphql_1.Root()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [constants_1.GetUserTweets]),
+    __metadata("design:paramtypes", [constants_1.GetTweetResponse]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "subscription", null);
 PostsResolver = __decorate([

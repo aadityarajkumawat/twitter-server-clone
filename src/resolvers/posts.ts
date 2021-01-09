@@ -29,7 +29,8 @@ export class PostsResolver {
   @Mutation(() => PostCreatedResponse)
   async createPost(
     @Arg("options") options: PostTweetInput,
-    @Ctx() { req }: MyContext
+    @Ctx() { req }: MyContext,
+    @PubSub() pubsub: PubSubEngine
   ): Promise<PostCreatedResponse> {
     let { tweet_content, rel_acc } = options;
     if (!req.session.userId) {
@@ -63,6 +64,8 @@ export class PostsResolver {
           .execute();
 
         post = result.raw[0];
+        const payload: GetTweetResponse = { error: "", tweet: post };
+        await pubsub.publish("TWEETS", payload);
       }
     } catch (err) {
       console.log(err);
@@ -98,9 +101,9 @@ export class PostsResolver {
 
   @Query(() => GetUserTweets)
   async getTweetsByUser(
-    @Ctx() { req }: MyContext,
-    @PubSub() pubSub: PubSubEngine
-  ): Promise<GetUserTweets> {
+    @Ctx() { req }: MyContext
+  ): // @PubSub() pubSub: PubSubEngine
+  Promise<GetUserTweets> {
     if (!req.session.userId) {
       return { error: "User is unauthorized", tweets: [] };
     }
@@ -140,8 +143,8 @@ export class PostsResolver {
         }
         finalTweets.push(oo);
       }
-      const payload: GetUserTweets = { error: "", tweets: finalTweets };
-      await pubSub.publish("TWEETS", payload);
+      // const payload: GetUserTweets = { error: "", tweets: finalTweets };
+      // await pubSub.publish("TWEETS", payload);
       return { error: "", tweets: finalTweets };
     } catch (error) {
       console.log("err");
@@ -194,16 +197,10 @@ export class PostsResolver {
     return { liked: `liked${like?.like_id}`, error: "" };
   }
 
-  // @Query(() => String)
-  // async hell(@Ctx() ctx: any) {
-  //   await ctx.req.pubsub.publish("MESSAGE");
-  //   return "Hello World";
-  // }
-
-  @Subscription(() => GetUserTweets, {
+  @Subscription(() => GetTweetResponse, {
     topics: "TWEETS",
   })
-  async subscription(@Root() gg: GetUserTweets): Promise<any> {
+  async subscription(@Root() gg: GetTweetResponse): Promise<any> {
     return gg;
   }
 }
