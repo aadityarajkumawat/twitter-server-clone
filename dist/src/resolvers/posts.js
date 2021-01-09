@@ -28,6 +28,7 @@ const Tweets_1 = require("../entities/Tweets");
 const typeorm_1 = require("typeorm");
 const User_1 = require("../entities/User");
 const Follow_1 = require("../entities/Follow");
+const triggers_1 = require("../../triggers");
 let PostsResolver = class PostsResolver {
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -63,11 +64,8 @@ let PostsResolver = class PostsResolver {
                         .returning("*")
                         .execute();
                     post = result.raw[0];
-                    const payload = {
-                        error: "",
-                        tweet: Object.assign(Object.assign({}, post), { liked: false }),
-                    };
-                    yield pubsub.publish("t", payload);
+                    const payload = post;
+                    yield pubsub.publish(triggers_1.TWEET, payload);
                 }
             }
             catch (err) {
@@ -141,7 +139,7 @@ let PostsResolver = class PostsResolver {
             }
         });
     }
-    likeTweet(options, { req }, pubsub) {
+    likeTweet(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { tweet_id } = options;
             if (!req.session.userId) {
@@ -151,18 +149,12 @@ let PostsResolver = class PostsResolver {
             let like = yield Tweets_1.Like.findOne({
                 where: { user_id: req.session.userId, tweet },
             });
-            const tweetAfterLike = yield Tweets_1.Tweet.findOne({ where: { tweet_id } });
             if (like) {
                 yield like.remove();
                 if (tweet) {
                     tweet.likes = tweet.likes - 1;
                     yield tweet.save();
                 }
-                const payload = {
-                    error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: false }),
-                };
-                yield pubsub.publish("t", payload);
                 return { liked: "unliked", error: "" };
             }
             try {
@@ -178,11 +170,6 @@ let PostsResolver = class PostsResolver {
                     yield tweet.save();
                 }
                 like = result.raw[0];
-                const payload = {
-                    error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: true }),
-                };
-                yield pubsub.publish("t", payload);
             }
             catch (err) {
                 console.log(err);
@@ -190,17 +177,12 @@ let PostsResolver = class PostsResolver {
             return { liked: `liked${like === null || like === void 0 ? void 0 : like.like_id}`, error: "" };
         });
     }
-    subscription(tweet) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return tweet;
-        });
-    }
 };
 __decorate([
     type_graphql_1.Mutation(() => constants_1.PostCreatedResponse),
     __param(0, type_graphql_1.Arg("options")),
     __param(1, type_graphql_1.Ctx()),
-    __param(2, type_graphql_1.PubSub()),
+    __param(2, type_graphql_1.Root()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [constants_1.PostTweetInput, Object, type_graphql_1.PubSubEngine]),
     __metadata("design:returntype", Promise)
@@ -224,20 +206,10 @@ __decorate([
     type_graphql_1.Mutation(() => constants_1.LikedTweet),
     __param(0, type_graphql_1.Arg("options")),
     __param(1, type_graphql_1.Ctx()),
-    __param(2, type_graphql_1.PubSub()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [constants_1.TweetInfo, Object, type_graphql_1.PubSubEngine]),
+    __metadata("design:paramtypes", [constants_1.TweetInfo, Object]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "likeTweet", null);
-__decorate([
-    type_graphql_1.Subscription(() => constants_1.GetTweetResponse, {
-        topics: "t",
-    }),
-    __param(0, type_graphql_1.Root()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [constants_1.GetTweetResponse]),
-    __metadata("design:returntype", Promise)
-], PostsResolver.prototype, "subscription", null);
 PostsResolver = __decorate([
     type_graphql_1.Resolver()
 ], PostsResolver);

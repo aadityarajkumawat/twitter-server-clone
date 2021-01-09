@@ -23,6 +23,7 @@ import { Tweet, Like } from "../entities/Tweets";
 import { getConnection } from "typeorm";
 import { User } from "../entities/User";
 import { Follow } from "../entities/Follow";
+import { TWEET } from "../triggers";
 
 @Resolver()
 export class PostsResolver {
@@ -64,8 +65,11 @@ export class PostsResolver {
           .execute();
 
         post = result.raw[0];
-        const payload: GetTweetResponse = { error: "", tweet: post };
-        await pubsub.publish("TWEETS", payload);
+        const payload: GetTweetResponse = {
+          error: "",
+          tweet: { ...post, liked: false },
+        };
+        await pubsub.publish("t", payload);
       }
     } catch (err) {
       console.log(err);
@@ -100,10 +104,7 @@ export class PostsResolver {
   }
 
   @Query(() => GetUserTweets)
-  async getTweetsByUser(
-    @Ctx() { req }: MyContext
-  ): // @PubSub() pubSub: PubSubEngine
-  Promise<GetUserTweets> {
+  async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetUserTweets> {
     if (!req.session.userId) {
       return { error: "User is unauthorized", tweets: [] };
     }
@@ -143,8 +144,7 @@ export class PostsResolver {
         }
         finalTweets.push(oo);
       }
-      // const payload: GetUserTweets = { error: "", tweets: finalTweets };
-      // await pubSub.publish("TWEETS", payload);
+
       return { error: "", tweets: finalTweets };
     } catch (error) {
       console.log("err");
@@ -155,7 +155,8 @@ export class PostsResolver {
   @Mutation(() => LikedTweet)
   async likeTweet(
     @Arg("options") options: TweetInfo,
-    @Ctx() { req }: MyContext
+    @Ctx() { req }: MyContext,
+    @PubSub() pubsub: PubSubEngine
   ): Promise<LikedTweet> {
     const { tweet_id } = options;
     if (!req.session.userId) {
@@ -167,12 +168,19 @@ export class PostsResolver {
       where: { user_id: req.session.userId, tweet },
     });
 
+    const tweetAfterLike = await Tweet.findOne({ where: { tweet_id } });
+
     if (like) {
       await like.remove();
       if (tweet) {
         tweet.likes = tweet.likes - 1;
         await tweet.save();
       }
+      const payload: GetTweetResponse = {
+        error: "",
+        tweet: { ...tweetAfterLike, liked: false },
+      };
+      await pubsub.publish("t", payload);
       return { liked: "unliked", error: "" };
     }
 
@@ -191,6 +199,11 @@ export class PostsResolver {
       }
 
       like = result.raw[0];
+      const payload: GetTweetResponse = {
+        error: "",
+        tweet: { ...tweetAfterLike, liked: true },
+      };
+      await pubsub.publish("t", payload);
     } catch (err) {
       console.log(err);
     }
@@ -198,9 +211,11 @@ export class PostsResolver {
   }
 
   @Subscription(() => GetTweetResponse, {
-    topics: "TWEETS",
+    topics: "t",
   })
-  async subscription(@Root() gg: GetTweetResponse): Promise<any> {
-    return gg;
+  async subscription(
+    @Root() tweet: GetTweetResponse
+  ): Promise<GetTweetResponse> {
+    return tweet;
   }
 }
