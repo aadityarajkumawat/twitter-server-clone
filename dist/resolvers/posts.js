@@ -119,7 +119,8 @@ let PostsResolver = class PostsResolver {
                     .where("tweet.userId IN (:...ids)", {
                     ids: [...followingIds, req.session.userId],
                 })
-                    .orderBy("tweet.created_At", "ASC")
+                    .limit(6)
+                    .orderBy("tweet.created_At", "DESC")
                     .execute();
                 const finalTweets = [];
                 let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
@@ -141,6 +142,53 @@ let PostsResolver = class PostsResolver {
             }
         });
     }
+    getPaginatedPosts({ req }, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return { error: "User is unauthorized", tweets: [] };
+            }
+            const { limit, offset } = options;
+            try {
+                const follow = yield Follow_1.Follow.find({
+                    where: { userId: req.session.userId },
+                });
+                const followingIds = [];
+                for (let i = 0; i < follow.length; i++) {
+                    followingIds.push(follow[i].following);
+                }
+                const tweets = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("*")
+                    .from(Tweets_1.Tweet, "tweet")
+                    .where("tweet.userId IN (:...ids)", {
+                    ids: [...followingIds, req.session.userId],
+                })
+                    .offset(offset)
+                    .limit(limit)
+                    .orderBy("tweet.created_At", "DESC")
+                    .execute();
+                const finalTweets = [];
+                let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
+                for (let i = 0; i < tweets.length; i++) {
+                    let currID = tweets[i].tweet_id;
+                    let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
+                    for (let j = 0; j < like.length; j++) {
+                        if (like[j].tweet_id === currID) {
+                            oo.liked = true;
+                        }
+                    }
+                    finalTweets.push(oo);
+                }
+                return { error: "", tweets: finalTweets };
+            }
+            catch (error) {
+                if (error.code == "2201W") {
+                    return { error: "", tweets: [] };
+                }
+                return { error: error.message, tweets: [] };
+            }
+        });
+    }
     likeTweet(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             const { tweet_id } = options;
@@ -154,13 +202,15 @@ let PostsResolver = class PostsResolver {
             const tweetAfterLike = yield Tweets_1.Tweet.findOne({ where: { tweet_id } });
             if (like) {
                 yield like.remove();
+                let newLikes = 0;
                 if (tweet) {
                     tweet.likes = tweet.likes - 1;
+                    newLikes = tweet.likes;
                     yield tweet.save();
                 }
                 const payload = {
                     error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: false }),
+                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: false, likes: newLikes }),
                 };
                 yield pubsub.publish("t", payload);
                 return { liked: "unliked", error: "" };
@@ -173,14 +223,16 @@ let PostsResolver = class PostsResolver {
                     .values({ tweet, user_id: req.session.userId, tweet_id })
                     .returning("*")
                     .execute();
+                let newLikes = 0;
                 if (tweet) {
                     tweet.likes = tweet.likes + 1;
+                    newLikes = tweet.likes;
                     yield tweet.save();
                 }
                 like = result.raw[0];
                 const payload = {
                     error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: true }),
+                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: true, likes: newLikes }),
                 };
                 yield pubsub.publish("t", payload);
             }
@@ -190,7 +242,7 @@ let PostsResolver = class PostsResolver {
             return { liked: `liked${like === null || like === void 0 ? void 0 : like.like_id}`, error: "" };
         });
     }
-    subscription(tweet) {
+    listenTweets(tweet) {
         return __awaiter(this, void 0, void 0, function* () {
             return tweet;
         });
@@ -221,6 +273,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getTweetsByUser", null);
 __decorate([
+    type_graphql_1.Query(() => constants_1.GetUserTweets),
+    __param(0, type_graphql_1.Ctx()),
+    __param(1, type_graphql_1.Arg("options")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, constants_1.PaginatingParams]),
+    __metadata("design:returntype", Promise)
+], PostsResolver.prototype, "getPaginatedPosts", null);
+__decorate([
     type_graphql_1.Mutation(() => constants_1.LikedTweet),
     __param(0, type_graphql_1.Arg("options")),
     __param(1, type_graphql_1.Ctx()),
@@ -237,7 +297,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [constants_1.GetTweetResponse]),
     __metadata("design:returntype", Promise)
-], PostsResolver.prototype, "subscription", null);
+], PostsResolver.prototype, "listenTweets", null);
 PostsResolver = __decorate([
     type_graphql_1.Resolver()
 ], PostsResolver);

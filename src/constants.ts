@@ -147,6 +147,14 @@ export class GetLikes {
   error: string;
 }
 
+@InputType()
+export class PaginatingParams {
+  @Field(() => Number)
+  offset: number;
+  @Field(() => Number)
+  limit: number;
+}
+
 export const validSchemaRegister = Yup.object().shape({
   email: Yup.string().email().required("Required"),
   password: Yup.string().min(8).max(15).required("Required"),

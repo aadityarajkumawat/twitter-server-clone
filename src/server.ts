@@ -82,10 +82,15 @@ const main = async () => {
   });
 
   server.applyMiddleware({ app, cors: false });
+
   const httpServer = http.createServer(app);
   server.installSubscriptionHandlers(httpServer);
+
   httpServer.listen(4000, () => {
-    console.log("Server started");
+    console.log(`server is at: http://localhost:4000${server.graphqlPath}`);
+    console.log(
+      `subscription is at: ws://localhost:4000${server.subscriptionsPath}`
+    );
   });
 };
 

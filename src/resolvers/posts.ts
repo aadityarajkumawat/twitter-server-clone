@@ -3,6 +3,7 @@ import {
   GetTweetResponse,
   GetUserTweets,
   LikedTweet,
+  PaginatingParams,
   PostCreatedResponse,
   PostTweetInput,
   TweetInfo,
@@ -10,6 +11,7 @@ import {
 import { MyContext } from "src/types";
 import {
   Arg,
+  Args,
   Ctx,
   Mutation,
   PubSub,
@@ -127,7 +129,8 @@ export class PostsResolver {
         .where("tweet.userId IN (:...ids)", {
           ids: [...followingIds, req.session.userId],
         })
-        .orderBy("tweet.created_At", "ASC")
+        .limit(6)
+        .orderBy("tweet.created_At", "DESC")
         .execute();
 
       const finalTweets = [];
@@ -152,6 +155,64 @@ export class PostsResolver {
     }
   }
 
+  @Query(() => GetUserTweets)
+  async getPaginatedPosts(
+    @Ctx() { req }: MyContext,
+    @Arg("options") options: PaginatingParams
+  ): Promise<GetUserTweets> {
+    if (!req.session.userId) {
+      return { error: "User is unauthorized", tweets: [] };
+    }
+
+    const { limit, offset } = options;
+
+    try {
+      const follow = await Follow.find({
+        where: { userId: req.session.userId },
+      });
+
+      const followingIds = [];
+
+      for (let i = 0; i < follow.length; i++) {
+        followingIds.push(follow[i].following);
+      }
+
+      const tweets: Array<Tweet> = await getConnection()
+        .createQueryBuilder()
+        .select("*")
+        .from(Tweet, "tweet")
+        .where("tweet.userId IN (:...ids)", {
+          ids: [...followingIds, req.session.userId],
+        })
+        .offset(offset)
+        .limit(limit)
+        .orderBy("tweet.created_At", "DESC")
+        .execute();
+
+      const finalTweets = [];
+
+      let like = await Like.find({ where: { user_id: req.session.userId } });
+
+      for (let i = 0; i < tweets.length; i++) {
+        let currID = tweets[i].tweet_id;
+        let oo = { ...tweets[i], liked: false };
+        for (let j = 0; j < like.length; j++) {
+          if (like[j].tweet_id === currID) {
+            oo.liked = true;
+          }
+        }
+        finalTweets.push(oo);
+      }
+
+      return { error: "", tweets: finalTweets };
+    } catch (error) {
+      if (error.code == "2201W") {
+        return { error: "", tweets: [] };
+      }
+      return { error: error.message, tweets: [] };
+    }
+  }
+
   @Mutation(() => LikedTweet)
   async likeTweet(
     @Arg("options") options: TweetInfo,
@@ -172,13 +233,15 @@ export class PostsResolver {
 
     if (like) {
       await like.remove();
+      let newLikes = 0;
       if (tweet) {
         tweet.likes = tweet.likes - 1;
+        newLikes = tweet.likes;
         await tweet.save();
       }
       const payload: GetTweetResponse = {
         error: "",
-        tweet: { ...tweetAfterLike, liked: false },
+        tweet: { ...tweetAfterLike, liked: false, likes: newLikes },
       };
       await pubsub.publish("t", payload);
       return { liked: "unliked", error: "" };
@@ -193,15 +256,17 @@ export class PostsResolver {
         .returning("*")
         .execute();
 
+      let newLikes = 0;
       if (tweet) {
         tweet.likes = tweet.likes + 1;
+        newLikes = tweet.likes;
         await tweet.save();
       }
 
       like = result.raw[0];
       const payload: GetTweetResponse = {
         error: "",
-        tweet: { ...tweetAfterLike, liked: true },
+        tweet: { ...tweetAfterLike, liked: true, likes: newLikes },
       };
       await pubsub.publish("t", payload);
     } catch (err) {
@@ -213,7 +278,7 @@ export class PostsResolver {
   @Subscription(() => GetTweetResponse, {
     topics: "t",
   })
-  async subscription(
+  async listenTweets(
     @Root() tweet: GetTweetResponse
   ): Promise<GetTweetResponse> {
     return tweet;

@@ -84,7 +84,8 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const httpServer = http_1.default.createServer(app);
     server.installSubscriptionHandlers(httpServer);
     httpServer.listen(4000, () => {
-        console.log("Server started");
+        console.log(`server is at: http://localhost:4000${server.graphqlPath}`);
+        console.log(`subscription is at: ws://localhost:4000${server.subscriptionsPath}`);
     });
 });
 main().catch((err) => {
