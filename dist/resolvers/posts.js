@@ -84,10 +84,13 @@ let PostsResolver = class PostsResolver {
             }
             try {
                 let tweet = yield Tweets_1.Tweet.findOne({ where: { tweet_id } });
+                let like = yield Tweets_1.Like.findOne({
+                    where: { tweet_id, user_id: req.session.userId },
+                });
                 if (tweet) {
                     return {
                         error: "",
-                        tweet,
+                        tweet: Object.assign(Object.assign({}, tweet), { liked: like ? true : false }),
                     };
                 }
                 else {

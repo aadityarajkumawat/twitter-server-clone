@@ -92,10 +92,13 @@ export class PostsResolver {
 
     try {
       let tweet = await Tweet.findOne({ where: { tweet_id } });
+      let like = await Like.findOne({
+        where: { tweet_id, user_id: req.session.userId },
+      });
       if (tweet) {
         return {
           error: "",
-          tweet,
+          tweet: { ...tweet, liked: like ? true : false },
         };
       } else {
         return { error: "", tweet: null };
