@@ -1,4 +1,5 @@
 import {
+  GetAllTweets,
   GetTweetById,
   GetTweetResponse,
   GetUserTweets,
@@ -108,10 +109,10 @@ export class PostsResolver {
     }
   }
 
-  @Query(() => GetUserTweets)
-  async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetUserTweets> {
+  @Query(() => GetAllTweets)
+  async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetAllTweets> {
     if (!req.session.userId) {
-      return { error: "User is unauthorized", tweets: [] };
+      return { error: "User is unauthorized", tweets: [], num: 0 };
     }
 
     try {
@@ -136,6 +137,15 @@ export class PostsResolver {
         .orderBy("tweet.created_At", "DESC")
         .execute();
 
+      const tw: Array<Tweet> = await getConnection()
+        .createQueryBuilder()
+        .select("*")
+        .from(Tweet, "tweet")
+        .where("tweet.userId IN (:...ids)", {
+          ids: [...followingIds, req.session.userId],
+        })
+        .execute();
+
       const finalTweets = [];
 
       let like = await Like.find({ where: { user_id: req.session.userId } });
@@ -151,10 +161,10 @@ export class PostsResolver {
         finalTweets.push(oo);
       }
 
-      return { error: "", tweets: finalTweets };
+      return { error: "", tweets: finalTweets, num: tw.length };
     } catch (error) {
       console.log("err");
-      return { error: error.message, tweets: [] };
+      return { error: error.message, tweets: [], num: 0 };
     }
   }
 
@@ -210,7 +220,7 @@ export class PostsResolver {
       return { error: "", tweets: finalTweets };
     } catch (error) {
       if (error.code == "2201W") {
-        return { error: "", tweets: [] };
+        return { error: "you", tweets: [] };
       }
       return { error: error.message, tweets: [] };
     }

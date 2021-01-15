@@ -123,6 +123,16 @@ export class GetUserTweets {
   error: string;
 }
 
+@ObjectType()
+export class GetAllTweets {
+  @Field(() => [GetTweet])
+  tweets: GetTweet[];
+  @Field()
+  error: string;
+  @Field()
+  num: number;
+}
+
 // Follow a user
 
 @ObjectType()

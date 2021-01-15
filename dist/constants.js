@@ -28,7 +28,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validSchemaLogin = exports.validSchemaRegister = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetUserTweets = exports.GetTweetById = exports.GetTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
+exports.validSchemaLogin = exports.validSchemaRegister = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetAllTweets = exports.GetUserTweets = exports.GetTweetById = exports.GetTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("./entities/User");
 const Yup = __importStar(require("yup"));
@@ -238,6 +238,24 @@ GetUserTweets = __decorate([
     type_graphql_1.ObjectType()
 ], GetUserTweets);
 exports.GetUserTweets = GetUserTweets;
+let GetAllTweets = class GetAllTweets {
+};
+__decorate([
+    type_graphql_1.Field(() => [GetTweet]),
+    __metadata("design:type", Array)
+], GetAllTweets.prototype, "tweets", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], GetAllTweets.prototype, "error", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Number)
+], GetAllTweets.prototype, "num", void 0);
+GetAllTweets = __decorate([
+    type_graphql_1.ObjectType()
+], GetAllTweets);
+exports.GetAllTweets = GetAllTweets;
 let FollowedAUser = class FollowedAUser {
 };
 __decorate([

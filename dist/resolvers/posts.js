@@ -105,7 +105,7 @@ let PostsResolver = class PostsResolver {
     getTweetsByUser({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
-                return { error: "User is unauthorized", tweets: [] };
+                return { error: "User is unauthorized", tweets: [], num: 0 };
             }
             try {
                 const follow = yield Follow_1.Follow.find({
@@ -125,6 +125,14 @@ let PostsResolver = class PostsResolver {
                     .limit(7)
                     .orderBy("tweet.created_At", "DESC")
                     .execute();
+                const tw = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("*")
+                    .from(Tweets_1.Tweet, "tweet")
+                    .where("tweet.userId IN (:...ids)", {
+                    ids: [...followingIds, req.session.userId],
+                })
+                    .execute();
                 const finalTweets = [];
                 let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
                 for (let i = 0; i < tweets.length; i++) {
@@ -137,11 +145,11 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                return { error: "", tweets: finalTweets };
+                return { error: "", tweets: finalTweets, num: tw.length };
             }
             catch (error) {
                 console.log("err");
-                return { error: error.message, tweets: [] };
+                return { error: error.message, tweets: [], num: 0 };
             }
         });
     }
@@ -186,7 +194,7 @@ let PostsResolver = class PostsResolver {
             }
             catch (error) {
                 if (error.code == "2201W") {
-                    return { error: "", tweets: [] };
+                    return { error: "you", tweets: [] };
                 }
                 return { error: error.message, tweets: [] };
             }
@@ -269,7 +277,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getTweetById", null);
 __decorate([
-    type_graphql_1.Query(() => constants_1.GetUserTweets),
+    type_graphql_1.Query(() => constants_1.GetAllTweets),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
