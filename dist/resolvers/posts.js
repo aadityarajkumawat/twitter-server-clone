@@ -122,7 +122,7 @@ let PostsResolver = class PostsResolver {
                     .where("tweet.userId IN (:...ids)", {
                     ids: [...followingIds, req.session.userId],
                 })
-                    .limit(6)
+                    .limit(7)
                     .orderBy("tweet.created_At", "DESC")
                     .execute();
                 const finalTweets = [];
