@@ -27,6 +27,7 @@ import { getConnection } from "typeorm";
 import { User } from "../entities/User";
 import { Follow } from "../entities/Follow";
 import { TWEET } from "../triggers";
+import { Profile } from "../entities/Profile";
 
 @Resolver()
 export class PostsResolver {
@@ -341,23 +342,61 @@ export class PostsResolver {
       return { error: "user is not authenticated", profile: null };
     }
 
-    const following = await getConnection()
-      .createQueryBuilder()
-      .select("COUNT(*)")
-      .from(Follow, "follow")
-      .where("follow.userId = :id", { id: req.session.userId })
-      .execute();
+    try {
+      const following = await getConnection()
+        .createQueryBuilder()
+        .select("COUNT(*)")
+        .from(Follow, "follow")
+        .where("follow.userId = :id", { id: req.session.userId })
+        .execute();
 
-    const followers = await getConnection()
-      .createQueryBuilder()
-      .select("COUNT(*)")
-      .from(Follow, "follow")
-      .where("follow.following = :id", { id: req.session.userId })
-      .execute();
+      const followers = await getConnection()
+        .createQueryBuilder()
+        .select("COUNT(*)")
+        .from(Follow, "follow")
+        .where("follow.following = :id", { id: req.session.userId })
+        .execute();
 
-    return {
-      error: "",
-      profile: { followers: followers[0].count, following: following[0].count },
-    };
+      const n = await getConnection()
+        .createQueryBuilder()
+        .select("COUNT(*)")
+        .from(Tweet, "tweet")
+        .where("tweet.rel_acc = :id", { id: req.session.userId })
+        .execute();
+
+      const num = n[0].count;
+      console.log(num);
+
+      const user = await User.findOne({ where: { id: req.session.userId } });
+      const profile = await Profile.findOne({ where: { user } });
+      if (profile) {
+        const { link, bio } = profile;
+
+        return {
+          error: "",
+          profile: {
+            followers: followers[0].count,
+            following: following[0].count,
+            bio,
+            link,
+            num,
+          },
+        };
+      } else {
+        return {
+          error: "",
+          profile: {
+            followers: followers[0].count,
+            following: following[0].count,
+            bio: "",
+            link: "",
+            num,
+          },
+        };
+      }
+    } catch (error) {
+      console.log(error);
+      return { error: error, profile: null };
+    }
   }
 }

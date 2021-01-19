@@ -180,6 +180,12 @@ export class Profile {
   followers: number;
   @Field(() => Number)
   following: number;
+  @Field(() => String)
+  bio: string;
+  @Field(() => String)
+  link: string;
+  @Field(() => Number)
+  num: number;
 }
 
 @ObjectType()

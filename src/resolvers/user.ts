@@ -10,6 +10,7 @@ import {
   validSchemaLogin,
 } from "../constants";
 import { getConnection } from "typeorm";
+import { Profile } from "../entities/Profile";
 
 @Resolver()
 export class UserResolver {
@@ -52,6 +53,12 @@ export class UserResolver {
           .execute();
 
         user = result.raw[0];
+
+        const profile = new Profile();
+        profile.bio = "";
+        profile.link = "";
+        profile.user = user;
+        await profile.save();
       } catch (err) {
         if (err.detail.includes("email")) {
           return {

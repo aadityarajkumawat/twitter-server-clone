@@ -29,6 +29,7 @@ const typeorm_1 = require("typeorm");
 const User_1 = require("../entities/User");
 const Follow_1 = require("../entities/Follow");
 const triggers_1 = require("../triggers");
+const Profile_1 = require("../entities/Profile");
 let PostsResolver = class PostsResolver {
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -300,22 +301,59 @@ let PostsResolver = class PostsResolver {
             if (!req.session.userId) {
                 return { error: "user is not authenticated", profile: null };
             }
-            const following = yield typeorm_1.getConnection()
-                .createQueryBuilder()
-                .select("COUNT(*)")
-                .from(Follow_1.Follow, "follow")
-                .where("follow.userId = :id", { id: req.session.userId })
-                .execute();
-            const followers = yield typeorm_1.getConnection()
-                .createQueryBuilder()
-                .select("COUNT(*)")
-                .from(Follow_1.Follow, "follow")
-                .where("follow.following = :id", { id: req.session.userId })
-                .execute();
-            return {
-                error: "",
-                profile: { followers: followers[0].count, following: following[0].count },
-            };
+            try {
+                const following = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("COUNT(*)")
+                    .from(Follow_1.Follow, "follow")
+                    .where("follow.userId = :id", { id: req.session.userId })
+                    .execute();
+                const followers = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("COUNT(*)")
+                    .from(Follow_1.Follow, "follow")
+                    .where("follow.following = :id", { id: req.session.userId })
+                    .execute();
+                const n = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("COUNT(*)")
+                    .from(Tweets_1.Tweet, "tweet")
+                    .where("tweet.rel_acc = :id", { id: req.session.userId })
+                    .execute();
+                const num = n[0].count;
+                console.log(num);
+                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                const profile = yield Profile_1.Profile.findOne({ where: { user } });
+                if (profile) {
+                    const { link, bio } = profile;
+                    return {
+                        error: "",
+                        profile: {
+                            followers: followers[0].count,
+                            following: following[0].count,
+                            bio,
+                            link,
+                            num,
+                        },
+                    };
+                }
+                else {
+                    return {
+                        error: "",
+                        profile: {
+                            followers: followers[0].count,
+                            following: following[0].count,
+                            bio: "",
+                            link: "",
+                            num,
+                        },
+                    };
+                }
+            }
+            catch (error) {
+                console.log(error);
+                return { error: error, profile: null };
+            }
         });
     }
 };

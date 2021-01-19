@@ -18,6 +18,7 @@ import { Follow } from "./entities/Follow";
 import { FollowResolver } from "./resolvers/follow";
 import http from "http";
 import { Images } from "./entities/Images";
+import { Profile } from "./entities/Profile";
 
 const main = async () => {
   const conn = await createConnection({
@@ -30,7 +31,7 @@ const main = async () => {
     logging: true,
     // synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User, Tweet, Like, Comment, Follow, Images],
+    entities: [User, Tweet, Like, Comment, Follow, Images, Profile],
   });
 
   // await conn.runMigrations();

@@ -318,6 +318,18 @@ __decorate([
     type_graphql_1.Field(() => Number),
     __metadata("design:type", Number)
 ], Profile.prototype, "following", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], Profile.prototype, "bio", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], Profile.prototype, "link", void 0);
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], Profile.prototype, "num", void 0);
 Profile = __decorate([
     type_graphql_1.ObjectType()
 ], Profile);

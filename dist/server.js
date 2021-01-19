@@ -32,6 +32,7 @@ const Follow_1 = require("./entities/Follow");
 const follow_1 = require("./resolvers/follow");
 const http_1 = __importDefault(require("http"));
 const Images_1 = require("./entities/Images");
+const Profile_1 = require("./entities/Profile");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
@@ -42,7 +43,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         database: "twitter66",
         logging: true,
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
-        entities: [User_1.User, Tweets_1.Tweet, Tweets_1.Like, Tweets_1.Comment, Follow_1.Follow, Images_1.Images],
+        entities: [User_1.User, Tweets_1.Tweet, Tweets_1.Like, Tweets_1.Comment, Follow_1.Follow, Images_1.Images, Profile_1.Profile],
     });
     const app = express_1.default();
     const pubsub = new apollo_server_express_1.PubSub();

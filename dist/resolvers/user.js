@@ -30,6 +30,7 @@ const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
 const constants_1 = require("../constants");
 const typeorm_1 = require("typeorm");
+const Profile_1 = require("../entities/Profile");
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -63,6 +64,11 @@ let UserResolver = class UserResolver {
                         .returning("*")
                         .execute();
                     user = result.raw[0];
+                    const profile = new Profile_1.Profile();
+                    profile.bio = "";
+                    profile.link = "";
+                    profile.user = user;
+                    yield profile.save();
                 }
                 catch (err) {
                     if (err.detail.includes("email")) {

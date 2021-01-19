@@ -7,7 +7,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
+  JoinColumn,
 } from "typeorm";
+import { Profile } from "./Profile";
 import { Tweet } from "./Tweets";
 
 @ObjectType()
@@ -48,4 +51,9 @@ export class User extends BaseEntity {
     cascade: ["insert", "remove", "update"],
   })
   tweets: Tweet[];
+
+  @OneToOne(() => Profile, (profile) => profile.user, {
+    cascade: ["insert", "remove", "update"],
+  })
+  profile: Profile;
 }
