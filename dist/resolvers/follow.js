@@ -34,7 +34,7 @@ let FollowResolver = class FollowResolver {
                 return { error: "User is not authenticated", followed: false };
             }
             const isAlready = yield Follow_1.Follow.findOne({
-                where: [{ following }, { userId: req.session.userId }],
+                where: [{ userId: req.session.userId, following }],
             });
             if (isAlready) {
                 isAlready.remove();

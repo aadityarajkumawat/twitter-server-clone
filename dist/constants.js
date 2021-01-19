@@ -28,7 +28,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validSchemaLogin = exports.validSchemaRegister = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetAllTweets = exports.GetUserTweets = exports.GetTweetById = exports.GetTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
+exports.validSchemaLogin = exports.validSchemaRegister = exports.GetProfile = exports.Profile = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetAllTweets = exports.GetUserTweets = exports.GetTweetById = exports.GetTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("./entities/User");
 const Yup = __importStar(require("yup"));
@@ -308,6 +308,34 @@ PaginatingParams = __decorate([
     type_graphql_1.InputType()
 ], PaginatingParams);
 exports.PaginatingParams = PaginatingParams;
+let Profile = class Profile {
+};
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], Profile.prototype, "followers", void 0);
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], Profile.prototype, "following", void 0);
+Profile = __decorate([
+    type_graphql_1.ObjectType()
+], Profile);
+exports.Profile = Profile;
+let GetProfile = class GetProfile {
+};
+__decorate([
+    type_graphql_1.Field(() => Profile),
+    __metadata("design:type", Object)
+], GetProfile.prototype, "profile", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], GetProfile.prototype, "error", void 0);
+GetProfile = __decorate([
+    type_graphql_1.ObjectType()
+], GetProfile);
+exports.GetProfile = GetProfile;
 exports.validSchemaRegister = Yup.object().shape({
     email: Yup.string().email().required("Required"),
     password: Yup.string().min(8).max(15).required("Required"),

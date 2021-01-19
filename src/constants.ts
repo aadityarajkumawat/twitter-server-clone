@@ -174,6 +174,22 @@ export interface Upload {
   createReadStream: () => Stream;
 }
 
+@ObjectType()
+export class Profile {
+  @Field(() => Number)
+  followers: number;
+  @Field(() => Number)
+  following: number;
+}
+
+@ObjectType()
+export class GetProfile {
+  @Field(() => Profile)
+  profile: Profile | null;
+  @Field(() => String)
+  error: string;
+}
+
 export const validSchemaRegister = Yup.object().shape({
   email: Yup.string().email().required("Required"),
   password: Yup.string().min(8).max(15).required("Required"),

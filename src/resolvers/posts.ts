@@ -1,5 +1,6 @@
 import {
   GetAllTweets,
+  GetProfile,
   GetTweetById,
   GetTweetResponse,
   GetUserTweets,
@@ -12,7 +13,6 @@ import {
 import { MyContext } from "src/types";
 import {
   Arg,
-  Args,
   Ctx,
   Mutation,
   PubSub,
@@ -72,7 +72,7 @@ export class PostsResolver {
           error: "",
           tweet: { ...post, liked: false },
         };
-        await pubsub.publish("t", payload);
+        await pubsub.publish(TWEET, payload);
       }
     } catch (err) {
       console.log(err);
@@ -256,7 +256,7 @@ export class PostsResolver {
         error: "",
         tweet: { ...tweetAfterLike, liked: false, likes: newLikes },
       };
-      await pubsub.publish("t", payload);
+      await pubsub.publish(TWEET, payload);
       return { liked: "unliked", error: "" };
     }
 
@@ -281,7 +281,7 @@ export class PostsResolver {
         error: "",
         tweet: { ...tweetAfterLike, liked: true, likes: newLikes },
       };
-      await pubsub.publish("t", payload);
+      await pubsub.publish(TWEET, payload);
     } catch (err) {
       console.log(err);
     }
@@ -289,11 +289,75 @@ export class PostsResolver {
   }
 
   @Subscription(() => GetTweetResponse, {
-    topics: "t",
+    topics: TWEET,
   })
   async listenTweets(
     @Root() tweet: GetTweetResponse
   ): Promise<GetTweetResponse> {
     return tweet;
+  }
+
+  @Query(() => GetUserTweets)
+  async getTweetsByUserF(@Ctx() { req }: MyContext): Promise<GetUserTweets> {
+    if (!req.session.userId) {
+      return { error: "user is not authenticated", tweets: [] };
+    }
+
+    try {
+      const tweets: Array<Tweet> = await getConnection()
+        .createQueryBuilder()
+        .select("*")
+        .from(Tweet, "tweet")
+        .where("tweet.rel_acc = :id", {
+          id: req.session.userId,
+        })
+        .limit(5)
+        .orderBy("tweet.created_At", "DESC")
+        .execute();
+      const finalTweets = [];
+
+      let like = await Like.find({ where: { user_id: req.session.userId } });
+
+      for (let i = 0; i < tweets.length; i++) {
+        let currID = tweets[i].tweet_id;
+        let oo = { ...tweets[i], liked: false };
+        for (let j = 0; j < like.length; j++) {
+          if (like[j].tweet_id === currID) {
+            oo.liked = true;
+          }
+        }
+        finalTweets.push(oo);
+      }
+      return { error: "", tweets: finalTweets };
+    } catch (error) {
+      console.log(error);
+      return { error, tweets: [] };
+    }
+  }
+
+  @Query(() => GetProfile)
+  async getUserProfile(@Ctx() { req }: MyContext): Promise<GetProfile> {
+    if (!req.session.userId) {
+      return { error: "user is not authenticated", profile: null };
+    }
+
+    const following = await getConnection()
+      .createQueryBuilder()
+      .select("COUNT(*)")
+      .from(Follow, "follow")
+      .where("follow.userId = :id", { id: req.session.userId })
+      .execute();
+
+    const followers = await getConnection()
+      .createQueryBuilder()
+      .select("COUNT(*)")
+      .from(Follow, "follow")
+      .where("follow.following = :id", { id: req.session.userId })
+      .execute();
+
+    return {
+      error: "",
+      profile: { followers: followers[0].count, following: following[0].count },
+    };
   }
 }

@@ -17,7 +17,7 @@ export class FollowResolver {
     }
 
     const isAlready = await Follow.findOne({
-      where: [{ following }, { userId: req.session.userId }],
+      where: [{ userId: req.session.userId, following }],
     });
 
     if (isAlready) {

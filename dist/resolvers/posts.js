@@ -28,6 +28,7 @@ const Tweets_1 = require("../entities/Tweets");
 const typeorm_1 = require("typeorm");
 const User_1 = require("../entities/User");
 const Follow_1 = require("../entities/Follow");
+const triggers_1 = require("../triggers");
 let PostsResolver = class PostsResolver {
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -67,7 +68,7 @@ let PostsResolver = class PostsResolver {
                         error: "",
                         tweet: Object.assign(Object.assign({}, post), { liked: false }),
                     };
-                    yield pubsub.publish("t", payload);
+                    yield pubsub.publish(triggers_1.TWEET, payload);
                 }
             }
             catch (err) {
@@ -223,7 +224,7 @@ let PostsResolver = class PostsResolver {
                     error: "",
                     tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: false, likes: newLikes }),
                 };
-                yield pubsub.publish("t", payload);
+                yield pubsub.publish(triggers_1.TWEET, payload);
                 return { liked: "unliked", error: "" };
             }
             try {
@@ -245,7 +246,7 @@ let PostsResolver = class PostsResolver {
                     error: "",
                     tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: true, likes: newLikes }),
                 };
-                yield pubsub.publish("t", payload);
+                yield pubsub.publish(triggers_1.TWEET, payload);
             }
             catch (err) {
                 console.log(err);
@@ -256,6 +257,65 @@ let PostsResolver = class PostsResolver {
     listenTweets(tweet) {
         return __awaiter(this, void 0, void 0, function* () {
             return tweet;
+        });
+    }
+    getTweetsByUserF({ req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return { error: "user is not authenticated", tweets: [] };
+            }
+            try {
+                const tweets = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("*")
+                    .from(Tweets_1.Tweet, "tweet")
+                    .where("tweet.rel_acc = :id", {
+                    id: req.session.userId,
+                })
+                    .limit(5)
+                    .orderBy("tweet.created_At", "DESC")
+                    .execute();
+                const finalTweets = [];
+                let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
+                for (let i = 0; i < tweets.length; i++) {
+                    let currID = tweets[i].tweet_id;
+                    let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
+                    for (let j = 0; j < like.length; j++) {
+                        if (like[j].tweet_id === currID) {
+                            oo.liked = true;
+                        }
+                    }
+                    finalTweets.push(oo);
+                }
+                return { error: "", tweets: finalTweets };
+            }
+            catch (error) {
+                console.log(error);
+                return { error, tweets: [] };
+            }
+        });
+    }
+    getUserProfile({ req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return { error: "user is not authenticated", profile: null };
+            }
+            const following = yield typeorm_1.getConnection()
+                .createQueryBuilder()
+                .select("COUNT(*)")
+                .from(Follow_1.Follow, "follow")
+                .where("follow.userId = :id", { id: req.session.userId })
+                .execute();
+            const followers = yield typeorm_1.getConnection()
+                .createQueryBuilder()
+                .select("COUNT(*)")
+                .from(Follow_1.Follow, "follow")
+                .where("follow.following = :id", { id: req.session.userId })
+                .execute();
+            return {
+                error: "",
+                profile: { followers: followers[0].count, following: following[0].count },
+            };
         });
     }
 };
@@ -302,13 +362,27 @@ __decorate([
 ], PostsResolver.prototype, "likeTweet", null);
 __decorate([
     type_graphql_1.Subscription(() => constants_1.GetTweetResponse, {
-        topics: "t",
+        topics: triggers_1.TWEET,
     }),
     __param(0, type_graphql_1.Root()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [constants_1.GetTweetResponse]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "listenTweets", null);
+__decorate([
+    type_graphql_1.Query(() => constants_1.GetUserTweets),
+    __param(0, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], PostsResolver.prototype, "getTweetsByUserF", null);
+__decorate([
+    type_graphql_1.Query(() => constants_1.GetProfile),
+    __param(0, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], PostsResolver.prototype, "getUserProfile", null);
 PostsResolver = __decorate([
     type_graphql_1.Resolver()
 ], PostsResolver);
