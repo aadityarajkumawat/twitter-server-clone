@@ -2,6 +2,7 @@ import { ObjectType, InputType, Field } from "type-graphql";
 import { User } from "./entities/User";
 import * as Yup from "yup";
 import { Like } from "./entities/Tweets";
+import { Stream } from "stream";
 
 export const __prod__ = process.env.NODE_ENV === "production";
 
@@ -163,6 +164,14 @@ export class PaginatingParams {
   offset: number;
   @Field(() => Number)
   limit: number;
+}
+
+// Image Upload
+export interface Upload {
+  filename: string;
+  mimetype: string;
+  encoding: string;
+  createReadStream: () => Stream;
 }
 
 export const validSchemaRegister = Yup.object().shape({

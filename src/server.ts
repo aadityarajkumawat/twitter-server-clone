@@ -17,6 +17,7 @@ import { PostsResolver } from "./resolvers/posts";
 import { Follow } from "./entities/Follow";
 import { FollowResolver } from "./resolvers/follow";
 import http from "http";
+import { Images } from "./entities/Images";
 
 const main = async () => {
   const conn = await createConnection({
@@ -29,7 +30,7 @@ const main = async () => {
     logging: true,
     // synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User, Tweet, Like, Comment, Follow],
+    entities: [User, Tweet, Like, Comment, Follow, Images],
   });
 
   // await conn.runMigrations();
@@ -39,6 +40,8 @@ const main = async () => {
 
   const RedisStore = connectRedis(session);
   const redisClient = redis.createClient();
+
+  app.use(express.json());
 
   app.use((req: any, _: any, next: any) => {
     req.pubsub = pubsub;
@@ -67,6 +70,8 @@ const main = async () => {
       resave: false,
     })
   );
+
+  app.use("/", require("./routes/imageUpload"));
 
   const server = new ApolloServer({
     schema: await buildSchema({
