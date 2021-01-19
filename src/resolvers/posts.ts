@@ -336,6 +336,54 @@ export class PostsResolver {
     }
   }
 
+  @Query(() => GetUserTweets)
+  async getPaginatedUserTweets(
+    @Ctx() { req }: MyContext,
+    @Arg("options") options: PaginatingParams
+  ): Promise<GetUserTweets> {
+    if (!req.session.userId) {
+      return { error: "user is not authenticated", tweets: [] };
+    }
+
+    const { limit, offset } = options;
+
+    try {
+      const tweets: Array<Tweet> = await getConnection()
+        .createQueryBuilder()
+        .select("*")
+        .from(Tweet, "tweet")
+        .where("tweet.userId = :id", {
+          id: req.session.userId,
+        })
+        .offset(offset)
+        .limit(limit)
+        .orderBy("tweet.created_At", "DESC")
+        .execute();
+
+      const finalTweets = [];
+
+      let like = await Like.find({ where: { user_id: req.session.userId } });
+
+      for (let i = 0; i < tweets.length; i++) {
+        let currID = tweets[i].tweet_id;
+        let oo = { ...tweets[i], liked: false };
+        for (let j = 0; j < like.length; j++) {
+          if (like[j].tweet_id === currID) {
+            oo.liked = true;
+          }
+        }
+        finalTweets.push(oo);
+      }
+
+      return { error: "", tweets: finalTweets };
+    } catch (error) {
+      if (error.code == "2201W") {
+        return { error: "you", tweets: [] };
+      }
+      return { error: error.message, tweets: [] };
+    }
+  }
+
   @Query(() => GetProfile)
   async getUserProfile(@Ctx() { req }: MyContext): Promise<GetProfile> {
     if (!req.session.userId) {

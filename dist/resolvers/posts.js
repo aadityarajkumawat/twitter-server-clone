@@ -296,6 +296,46 @@ let PostsResolver = class PostsResolver {
             }
         });
     }
+    getPaginatedUserTweets({ req }, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return { error: "user is not authenticated", tweets: [] };
+            }
+            const { limit, offset } = options;
+            try {
+                const tweets = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("*")
+                    .from(Tweets_1.Tweet, "tweet")
+                    .where("tweet.userId = :id", {
+                    id: req.session.userId,
+                })
+                    .offset(offset)
+                    .limit(limit)
+                    .orderBy("tweet.created_At", "DESC")
+                    .execute();
+                const finalTweets = [];
+                let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
+                for (let i = 0; i < tweets.length; i++) {
+                    let currID = tweets[i].tweet_id;
+                    let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
+                    for (let j = 0; j < like.length; j++) {
+                        if (like[j].tweet_id === currID) {
+                            oo.liked = true;
+                        }
+                    }
+                    finalTweets.push(oo);
+                }
+                return { error: "", tweets: finalTweets };
+            }
+            catch (error) {
+                if (error.code == "2201W") {
+                    return { error: "you", tweets: [] };
+                }
+                return { error: error.message, tweets: [] };
+            }
+        });
+    }
     getUserProfile({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
@@ -414,6 +454,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getTweetsByUserF", null);
+__decorate([
+    type_graphql_1.Query(() => constants_1.GetUserTweets),
+    __param(0, type_graphql_1.Ctx()),
+    __param(1, type_graphql_1.Arg("options")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, constants_1.PaginatingParams]),
+    __metadata("design:returntype", Promise)
+], PostsResolver.prototype, "getPaginatedUserTweets", null);
 __decorate([
     type_graphql_1.Query(() => constants_1.GetProfile),
     __param(0, type_graphql_1.Ctx()),
