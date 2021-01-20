@@ -204,6 +204,30 @@ export class EditProfile {
   link: string;
 }
 
+@ObjectType()
+export class DisplayProfiles {
+  @Field(() => [DisplayProfile])
+  profiles: DisplayProfile[];
+  @Field(() => String, { nullable: true })
+  error: string | null;
+}
+
+@ObjectType()
+export class DisplayProfile {
+  @Field(() => String)
+  url: string;
+  @Field(() => String)
+  name: string;
+  @Field(() => String)
+  username: string;
+}
+
+@InputType()
+export class Searched {
+  @Field(() => String)
+  search: string;
+}
+
 export const validSchemaRegister = Yup.object().shape({
   email: Yup.string().email().required("Required"),
   password: Yup.string().min(8).max(15).required("Required"),

@@ -34,6 +34,7 @@ const http_1 = __importDefault(require("http"));
 const Images_1 = require("./entities/Images");
 const Profile_1 = require("./entities/Profile");
 const image_1 = require("./resolvers/image");
+const search_1 = require("./resolvers/search");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
@@ -81,6 +82,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
                 posts_1.PostsResolver,
                 follow_1.FollowResolver,
                 image_1.ImageResolver,
+                search_1.SearchResolver,
             ],
             validate: false,
             pubSub: pubsub,

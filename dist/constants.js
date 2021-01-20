@@ -28,7 +28,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validSchemaLogin = exports.validSchemaRegister = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetAllTweets = exports.GetUserTweets = exports.GetTweetById = exports.GetTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
+exports.validSchemaLogin = exports.validSchemaRegister = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetAllTweets = exports.GetUserTweets = exports.GetTweetById = exports.GetTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("./entities/User");
 const Yup = __importStar(require("yup"));
@@ -362,6 +362,48 @@ EditProfile = __decorate([
     type_graphql_1.InputType()
 ], EditProfile);
 exports.EditProfile = EditProfile;
+let DisplayProfiles = class DisplayProfiles {
+};
+__decorate([
+    type_graphql_1.Field(() => [DisplayProfile]),
+    __metadata("design:type", Array)
+], DisplayProfiles.prototype, "profiles", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    __metadata("design:type", Object)
+], DisplayProfiles.prototype, "error", void 0);
+DisplayProfiles = __decorate([
+    type_graphql_1.ObjectType()
+], DisplayProfiles);
+exports.DisplayProfiles = DisplayProfiles;
+let DisplayProfile = class DisplayProfile {
+};
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], DisplayProfile.prototype, "url", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], DisplayProfile.prototype, "name", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], DisplayProfile.prototype, "username", void 0);
+DisplayProfile = __decorate([
+    type_graphql_1.ObjectType()
+], DisplayProfile);
+exports.DisplayProfile = DisplayProfile;
+let Searched = class Searched {
+};
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], Searched.prototype, "search", void 0);
+Searched = __decorate([
+    type_graphql_1.InputType()
+], Searched);
+exports.Searched = Searched;
 exports.validSchemaRegister = Yup.object().shape({
     email: Yup.string().email().required("Required"),
     password: Yup.string().min(8).max(15).required("Required"),

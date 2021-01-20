@@ -20,6 +20,7 @@ import http from "http";
 import { Images } from "./entities/Images";
 import { Profile } from "./entities/Profile";
 import { ImageResolver } from "./resolvers/image";
+import { SearchResolver } from "./resolvers/search";
 
 const main = async () => {
   const conn = await createConnection({
@@ -83,6 +84,7 @@ const main = async () => {
         PostsResolver,
         FollowResolver,
         ImageResolver,
+        SearchResolver,
       ],
       validate: false,
       pubSub: pubsub,
