@@ -263,7 +263,7 @@ let PostsResolver = class PostsResolver {
     getTweetsByUserF({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
-                return { error: "user is not authenticated", tweets: [] };
+                return { error: "user is not authenticated", tweets: [], num: 0 };
             }
             try {
                 const tweets = yield typeorm_1.getConnection()
@@ -274,6 +274,15 @@ let PostsResolver = class PostsResolver {
                     id: req.session.userId,
                 })
                     .limit(5)
+                    .orderBy("tweet.created_At", "DESC")
+                    .execute();
+                const allTweets = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("*")
+                    .from(Tweets_1.Tweet, "tweet")
+                    .where("tweet.rel_acc = :id", {
+                    id: req.session.userId,
+                })
                     .orderBy("tweet.created_At", "DESC")
                     .execute();
                 const finalTweets = [];
@@ -288,11 +297,11 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                return { error: "", tweets: finalTweets };
+                return { error: "", tweets: finalTweets, num: allTweets.length };
             }
             catch (error) {
                 console.log(error);
-                return { error, tweets: [] };
+                return { error, tweets: [], num: 0 };
             }
         });
     }
@@ -396,6 +405,32 @@ let PostsResolver = class PostsResolver {
             }
         });
     }
+    editProfile({ req }, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return false;
+            }
+            const { link, bio } = options;
+            try {
+                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                const currentProfile = yield Profile_1.Profile.findOne({ where: { user } });
+                console.log(currentProfile);
+                if (currentProfile) {
+                    currentProfile.bio = bio;
+                    currentProfile.link = link;
+                    yield currentProfile.save();
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            catch (error) {
+                console.log(error);
+                return false;
+            }
+        });
+    }
 };
 __decorate([
     type_graphql_1.Mutation(() => constants_1.PostCreatedResponse),
@@ -448,7 +483,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "listenTweets", null);
 __decorate([
-    type_graphql_1.Query(() => constants_1.GetUserTweets),
+    type_graphql_1.Query(() => constants_1.GetAllTweets),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -469,6 +504,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getUserProfile", null);
+__decorate([
+    type_graphql_1.Mutation(() => Boolean),
+    __param(0, type_graphql_1.Ctx()),
+    __param(1, type_graphql_1.Arg("options")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, constants_1.EditProfile]),
+    __metadata("design:returntype", Promise)
+], PostsResolver.prototype, "editProfile", null);
 PostsResolver = __decorate([
     type_graphql_1.Resolver()
 ], PostsResolver);

@@ -19,6 +19,7 @@ import { FollowResolver } from "./resolvers/follow";
 import http from "http";
 import { Images } from "./entities/Images";
 import { Profile } from "./entities/Profile";
+import { ImageResolver } from "./resolvers/image";
 
 const main = async () => {
   const conn = await createConnection({
@@ -76,7 +77,13 @@ const main = async () => {
 
   const server = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver, UserResolver, PostsResolver, FollowResolver],
+      resolvers: [
+        HelloResolver,
+        UserResolver,
+        PostsResolver,
+        FollowResolver,
+        ImageResolver,
+      ],
       validate: false,
       pubSub: pubsub,
     }),

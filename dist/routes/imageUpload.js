@@ -16,7 +16,6 @@ const express_1 = __importDefault(require("express"));
 const router = express_1.default.Router();
 const multer_1 = __importDefault(require("multer"));
 const cloudinary_1 = __importDefault(require("cloudinary"));
-const Images_1 = require("../entities/Images");
 cloudinary_1.default.v2.config({
     cloud_name: "devhelp",
     api_key: "349325875226191",
@@ -37,20 +36,15 @@ const upload = multer_1.default({
     storage,
     fileFilter: imageFilter,
 });
-router.post("/upload-profile", upload.single("profile"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/upload-profile", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.session.userId) {
-        yield cloudinary_1.default.v2.uploader.upload(req.file.path, { gravity: "center", crop: "fill" }, (err, result) => __awaiter(void 0, void 0, void 0, function* () {
-            if (err) {
-                res.json(err);
-            }
-            else {
-                const img = Images_1.Images.create({ url: result === null || result === void 0 ? void 0 : result.url });
-                yield img.save();
-                res.json(result);
-            }
-        }));
+        console.log(req.session.userId);
+        res.json("auth");
     }
-    res.json("user is not authenticated");
+    else {
+        console.log(req.headers.cookie);
+        res.json(req.headers.cookie);
+    }
 }));
 module.exports = router;
 //# sourceMappingURL=imageUpload.js.map

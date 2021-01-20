@@ -1,4 +1,5 @@
 import {
+  EditProfile,
   GetAllTweets,
   GetProfile,
   GetTweetById,
@@ -298,10 +299,10 @@ export class PostsResolver {
     return tweet;
   }
 
-  @Query(() => GetUserTweets)
-  async getTweetsByUserF(@Ctx() { req }: MyContext): Promise<GetUserTweets> {
+  @Query(() => GetAllTweets)
+  async getTweetsByUserF(@Ctx() { req }: MyContext): Promise<GetAllTweets> {
     if (!req.session.userId) {
-      return { error: "user is not authenticated", tweets: [] };
+      return { error: "user is not authenticated", tweets: [], num: 0 };
     }
 
     try {
@@ -315,6 +316,17 @@ export class PostsResolver {
         .limit(5)
         .orderBy("tweet.created_At", "DESC")
         .execute();
+
+      const allTweets: Array<Tweet> = await getConnection()
+        .createQueryBuilder()
+        .select("*")
+        .from(Tweet, "tweet")
+        .where("tweet.rel_acc = :id", {
+          id: req.session.userId,
+        })
+        .orderBy("tweet.created_At", "DESC")
+        .execute();
+
       const finalTweets = [];
 
       let like = await Like.find({ where: { user_id: req.session.userId } });
@@ -329,10 +341,10 @@ export class PostsResolver {
         }
         finalTweets.push(oo);
       }
-      return { error: "", tweets: finalTweets };
+      return { error: "", tweets: finalTweets, num: allTweets.length };
     } catch (error) {
       console.log(error);
-      return { error, tweets: [] };
+      return { error, tweets: [], num: 0 };
     }
   }
 
@@ -445,6 +457,35 @@ export class PostsResolver {
     } catch (error) {
       console.log(error);
       return { error: error, profile: null };
+    }
+  }
+
+  @Mutation(() => Boolean)
+  async editProfile(
+    @Ctx() { req }: MyContext,
+    @Arg("options") options: EditProfile
+  ): Promise<Boolean> {
+    if (!req.session.userId) {
+      return false;
+    }
+
+    const { link, bio } = options;
+    try {
+      const user = await User.findOne({ where: { id: req.session.userId } });
+      const currentProfile = await Profile.findOne({ where: { user } });
+      console.log(currentProfile)
+      if (currentProfile) {
+        currentProfile.bio = bio;
+        currentProfile.link = link;
+
+        await currentProfile.save();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.log(error);
+      return false;
     }
   }
 }

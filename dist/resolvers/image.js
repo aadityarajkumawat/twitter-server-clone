@@ -21,12 +21,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ImageUploads = void 0;
+exports.ImageResolver = void 0;
 const fs_1 = require("fs");
 const graphql_upload_1 = require("graphql-upload");
 const type_graphql_1 = require("type-graphql");
-let ImageUploads = class ImageUploads {
-    uploadProfileImage({ createReadStream, filename }) {
+let ImageResolver = class ImageResolver {
+    addProfilePicture({ createReadStream, filename }) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
                 return createReadStream()
@@ -43,9 +43,9 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], ImageUploads.prototype, "uploadProfileImage", null);
-ImageUploads = __decorate([
+], ImageResolver.prototype, "addProfilePicture", null);
+ImageResolver = __decorate([
     type_graphql_1.Resolver()
-], ImageUploads);
-exports.ImageUploads = ImageUploads;
+], ImageResolver);
+exports.ImageResolver = ImageResolver;
 //# sourceMappingURL=image.js.map

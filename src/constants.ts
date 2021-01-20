@@ -196,6 +196,14 @@ export class GetProfile {
   error: string;
 }
 
+@InputType()
+export class EditProfile {
+  @Field(() => String)
+  bio: string;
+  @Field(() => String)
+  link: string;
+}
+
 export const validSchemaRegister = Yup.object().shape({
   email: Yup.string().email().required("Required"),
   password: Yup.string().min(8).max(15).required("Required"),

@@ -34,27 +34,16 @@ const upload = multer({
   fileFilter: imageFilter,
 } as any);
 
-router.post(
-  "/upload-profile",
-  upload.single("profile"),
-  async (req: any, res) => {
-    if (req.session.userId) {
-      await cloudinary.v2.uploader.upload(
-        req.file.path,
-        { gravity: "center", crop: "fill" },
-        async (err, result) => {
-          if (err) {
-            res.json(err);
-          } else {
-            const img = Images.create({ url: result?.url });
-            await img.save();
-            res.json(result);
-          }
-        }
-      );
-    }
-    res.json("user is not authenticated");
+router.post("/upload-profile", async (req, res) => {
+  // @ts-ignore
+  if (req.session.userId) {
+    // @ts-ignore
+    console.log(req.session.userId);
+    res.json("auth");
+  } else {
+    console.log(req.headers.cookie);
+    res.json(req.headers.cookie);
   }
-);
+});
 
 module.exports = router;
