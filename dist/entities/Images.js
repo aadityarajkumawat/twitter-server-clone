@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Images = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
+const User_1 = require("./User");
 let Images = class Images extends typeorm_1.BaseEntity {
 };
 __decorate([
@@ -24,6 +25,15 @@ __decorate([
     typeorm_1.Column(),
     __metadata("design:type", String)
 ], Images.prototype, "url", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    typeorm_1.Column(),
+    __metadata("design:type", String)
+], Images.prototype, "type", void 0);
+__decorate([
+    typeorm_1.ManyToOne(() => User_1.User, (user) => user.images),
+    __metadata("design:type", User_1.User)
+], Images.prototype, "user", void 0);
 Images = __decorate([
     type_graphql_1.ObjectType(),
     typeorm_1.Entity()

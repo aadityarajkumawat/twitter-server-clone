@@ -22,26 +22,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ImageResolver = void 0;
-const fs_1 = require("fs");
-const graphql_upload_1 = require("graphql-upload");
+const constants_1 = require("../constants");
 const type_graphql_1 = require("type-graphql");
+const Images_1 = require("../entities/Images");
+const User_1 = require("../entities/User");
 let ImageResolver = class ImageResolver {
-    addProfilePicture({ createReadStream, filename }) {
+    addProfilePicture(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-                return createReadStream()
-                    .pipe(fs_1.createWriteStream(__dirname + `/../../images/${filename}`))
-                    .on("finish", () => resolve(true))
-                    .on("error", () => reject(false));
-            }));
+            console.log(req.session);
+            if (!req.session.userId) {
+                return false;
+            }
+            const { url, type } = options;
+            try {
+                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                console.log("\n\n\n", user, "\n\n\n", req.session.userId);
+                const image = Images_1.Images.create({ url, type, user });
+                yield image.save();
+                return true;
+            }
+            catch (error) {
+                console.log(error.message);
+                return false;
+            }
         });
     }
 };
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
-    __param(0, type_graphql_1.Arg("picture", () => graphql_upload_1.GraphQLUpload)),
+    __param(0, type_graphql_1.Arg("options")),
+    __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [constants_1.ImageParams, Object]),
     __metadata("design:returntype", Promise)
 ], ImageResolver.prototype, "addProfilePicture", null);
 ImageResolver = __decorate([

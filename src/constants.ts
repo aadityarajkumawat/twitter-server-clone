@@ -228,6 +228,16 @@ export class Searched {
   search: string;
 }
 
+export type ImageTypes = "profile" | "cover" | "feed";
+
+@InputType()
+export class ImageParams {
+  @Field(() => String)
+  url!: string;
+  @Field(() => String)
+  type!: ImageTypes;
+}
+
 export const validSchemaRegister = Yup.object().shape({
   email: Yup.string().email().required("Required"),
   password: Yup.string().min(8).max(15).required("Required"),

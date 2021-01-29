@@ -8,8 +8,8 @@ import {
   UpdateDateColumn,
   OneToMany,
   OneToOne,
-  JoinColumn,
 } from "typeorm";
+import { Images } from "./Images";
 import { Profile } from "./Profile";
 import { Tweet } from "./Tweets";
 
@@ -56,4 +56,8 @@ export class User extends BaseEntity {
     cascade: ["insert", "remove", "update"],
   })
   profile: Profile;
+  @OneToMany(() => Images, (images) => images.user, {
+    cascade: ["insert", "recover", "update"],
+  })
+  images: Images[];
 }
