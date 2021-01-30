@@ -36,9 +36,14 @@ let ImgResolver = class ImgResolver {
             const { type, url } = options;
             try {
                 const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
-                console.log(user);
-                const img = Images_1.Images.create({ type, url, user });
-                yield img.save();
+                const img = yield Images_1.Images.findOne({ where: { user } });
+                if (img) {
+                    img.url = url;
+                    yield img.save();
+                    return true;
+                }
+                const newImg = Images_1.Images.create({ type, url, user });
+                yield newImg.save();
                 return true;
             }
             catch (error) {

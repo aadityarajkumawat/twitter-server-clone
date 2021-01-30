@@ -20,9 +20,16 @@ export class ImgResolver {
 
     try {
       const user = await User.findOne({ where: { id: req.session.userId } });
-      console.log(user);
-      const img = Images.create({ type, url, user });
-      await img.save();
+      const img = await Images.findOne({ where: { user } });
+
+      if (img) {
+        img.url = url;
+        await img.save();
+        return true;
+      }
+
+      const newImg = Images.create({ type, url, user });
+      await newImg.save();
 
       return true;
     } catch (error) {
