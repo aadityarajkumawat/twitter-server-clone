@@ -49,7 +49,7 @@ export class ImgResolver {
 
     try {
       const user = await User.findOne({ where: { id } });
-      const img = await Images.findOne({ where: { user } });
+      const img = await Images.findOne({ where: { user, type: "profile" } });
       if (img) {
         return img.url;
       }

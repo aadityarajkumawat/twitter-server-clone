@@ -59,7 +59,7 @@ let ImgResolver = class ImgResolver {
             }
             try {
                 const user = yield User_1.User.findOne({ where: { id } });
-                const img = yield Images_1.Images.findOne({ where: { user } });
+                const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
                 if (img) {
                     return img.url;
                 }

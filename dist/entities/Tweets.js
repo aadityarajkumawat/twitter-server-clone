@@ -65,6 +65,11 @@ __decorate([
     __metadata("design:type", Number)
 ], Tweet.prototype, "comments", void 0);
 __decorate([
+    type_graphql_1.Field(),
+    typeorm_1.Column(),
+    __metadata("design:type", String)
+], Tweet.prototype, "img", void 0);
+__decorate([
     typeorm_1.OneToMany(() => Like, (like) => like.tweet, {
         cascade: ["insert", "remove", "update"],
     }),

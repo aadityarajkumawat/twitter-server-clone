@@ -35,7 +35,6 @@ const Images_1 = require("./entities/Images");
 const Profile_1 = require("./entities/Profile");
 const search_1 = require("./resolvers/search");
 const images_1 = require("./resolvers/images");
-const Pag_1 = require("./resolvers/Pag");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
@@ -82,7 +81,6 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
                 follow_1.FollowResolver,
                 search_1.SearchResolver,
                 images_1.ImgResolver,
-                Pag_1.PagResolver,
             ],
             validate: false,
             pubSub: pubsub,

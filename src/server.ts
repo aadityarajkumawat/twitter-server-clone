@@ -21,7 +21,6 @@ import { Images } from "./entities/Images";
 import { Profile } from "./entities/Profile";
 import { SearchResolver } from "./resolvers/search";
 import { ImgResolver } from "./resolvers/images";
-import { PagResolver } from "./resolvers/Pag";
 
 const main = async () => {
   const conn = await createConnection({
@@ -82,7 +81,6 @@ const main = async () => {
         FollowResolver,
         SearchResolver,
         ImgResolver,
-        PagResolver,
       ],
       validate: false,
       pubSub: pubsub,

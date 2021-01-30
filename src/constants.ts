@@ -60,6 +60,8 @@ export class PostTweetInput {
   tweet_content: string;
   @Field({ nullable: true })
   rel_acc?: number;
+  @Field({ nullable: true })
+  img?: string;
 }
 
 // Like a tweet
@@ -108,6 +110,32 @@ export class GetTweet {
   comments?: number;
   @Field()
   liked?: boolean;
+  @Field()
+  profile_img: string;
+}
+
+@ObjectType()
+export class GetTweet1 {
+  @Field()
+  tweet_id?: number;
+  @Field()
+  tweet_content?: string;
+  @Field(() => String)
+  created_At?: string;
+  @Field()
+  _type?: string;
+  @Field()
+  rel_acc?: number;
+  @Field()
+  username?: string;
+  @Field()
+  name?: string;
+  @Field()
+  likes?: number;
+  @Field()
+  comments?: number;
+  @Field()
+  liked?: boolean;
 }
 
 @InputType()
@@ -122,12 +150,14 @@ export class GetUserTweets {
   tweets: GetTweet[];
   @Field()
   error: string;
+  @Field()
+  num: number;
 }
 
 @ObjectType()
 export class GetAllTweets {
-  @Field(() => [GetTweet])
-  tweets: GetTweet[];
+  @Field(() => [GetTweet1])
+  tweets: GetTweet1[];
   @Field()
   error: string;
   @Field()

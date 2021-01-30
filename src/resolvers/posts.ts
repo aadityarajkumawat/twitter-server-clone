@@ -29,6 +29,7 @@ import { User } from "../entities/User";
 import { Follow } from "../entities/Follow";
 import { TWEET } from "../triggers";
 import { Profile } from "../entities/Profile";
+import { Images } from "../entities/Images";
 
 @Resolver()
 export class PostsResolver {
@@ -38,7 +39,7 @@ export class PostsResolver {
     @Ctx() { req }: MyContext,
     @PubSub() pubsub: PubSubEngine
   ): Promise<PostCreatedResponse> {
-    let { tweet_content, rel_acc } = options;
+    let { tweet_content, rel_acc, img } = options;
     console.log(req.session.userId);
     if (!req.session.userId) {
       return { error: "User is unauthorized" };
@@ -66,6 +67,7 @@ export class PostsResolver {
             name: user.name,
             likes: 0,
             comments: 0,
+            img: img ? img : "",
           })
           .returning("*")
           .execute();
@@ -99,10 +101,19 @@ export class PostsResolver {
       let like = await Like.findOne({
         where: { tweet_id, user_id: req.session.userId },
       });
+      let img;
+      if (tweet) {
+        const user = await User.findOne({ where: { id: tweet.rel_acc } });
+        img = await Images.findOne({ where: { user, type: "profile" } });
+      }
       if (tweet) {
         return {
           error: "",
-          tweet: { ...tweet, liked: like ? true : false },
+          tweet: {
+            ...tweet,
+            liked: like ? true : false,
+            profile_img: img ? img.url : "",
+          },
         };
       } else {
         return { error: "", tweet: null };
@@ -112,8 +123,8 @@ export class PostsResolver {
     }
   }
 
-  @Query(() => GetAllTweets)
-  async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetAllTweets> {
+  @Query(() => GetUserTweets)
+  async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetUserTweets> {
     if (!req.session.userId) {
       return { error: "User is unauthorized", tweets: [], num: 0 };
     }
@@ -164,7 +175,19 @@ export class PostsResolver {
         finalTweets.push(oo);
       }
 
-      return { error: "", tweets: finalTweets, num: tw.length };
+      const f = [];
+
+      for (let i = 0; i < finalTweets.length; i++) {
+        const ii = finalTweets[i].rel_acc;
+        const user = await User.findOne({ where: { id: ii } });
+        const img_url = await Images.findOne({
+          where: { user, type: "profile" },
+        });
+
+        f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
+      }
+
+      return { error: "", tweets: f, num: tw.length };
     } catch (error) {
       console.log("err");
       return { error: error.message, tweets: [], num: 0 };
@@ -177,7 +200,7 @@ export class PostsResolver {
     @Arg("options") options: PaginatingParams
   ): Promise<GetUserTweets> {
     if (!req.session.userId) {
-      return { error: "User is unauthorized", tweets: [] };
+      return { error: "User is unauthorized", tweets: [], num: 0 };
     }
 
     const { limit, offset } = options;
@@ -220,12 +243,24 @@ export class PostsResolver {
         finalTweets.push(oo);
       }
 
-      return { error: "", tweets: finalTweets };
+      const f = [];
+
+      for (let i = 0; i < finalTweets.length; i++) {
+        const ii = finalTweets[i].rel_acc;
+        const user = await User.findOne({ where: { id: ii } });
+        const img_url = await Images.findOne({
+          where: { user, type: "profile" },
+        });
+
+        f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
+      }
+
+      return { error: "", tweets: f, num: 0 };
     } catch (error) {
       if (error.code == "2201W") {
-        return { error: "you", tweets: [] };
+        return { error: "you", tweets: [], num: 0 };
       }
-      return { error: error.message, tweets: [] };
+      return { error: error.message, tweets: [], num: 0 };
     }
   }
 
@@ -244,6 +279,11 @@ export class PostsResolver {
     let like = await Like.findOne({
       where: { user_id: req.session.userId, tweet },
     });
+    let img;
+    if (tweet) {
+      const user = await User.findOne({ where: { id: tweet.rel_acc } });
+      img = await Images.findOne({ where: { user, type: "profile" } });
+    }
 
     const tweetAfterLike = await Tweet.findOne({ where: { tweet_id } });
 
@@ -255,9 +295,15 @@ export class PostsResolver {
         newLikes = tweet.likes;
         await tweet.save();
       }
+
       const payload: GetTweetResponse = {
         error: "",
-        tweet: { ...tweetAfterLike, liked: false, likes: newLikes },
+        tweet: {
+          ...tweetAfterLike,
+          liked: false,
+          likes: newLikes,
+          profile_img: img ? img.url : "",
+        },
       };
       await pubsub.publish(TWEET, payload);
       return { liked: "unliked", error: "" };
@@ -282,7 +328,12 @@ export class PostsResolver {
       like = result.raw[0];
       const payload: GetTweetResponse = {
         error: "",
-        tweet: { ...tweetAfterLike, liked: true, likes: newLikes },
+        tweet: {
+          ...tweetAfterLike,
+          liked: true,
+          likes: newLikes,
+          profile_img: img ? img.url : "",
+        },
       };
       await pubsub.publish(TWEET, payload);
     } catch (err) {
@@ -353,9 +404,9 @@ export class PostsResolver {
   async getPaginatedUserTweets(
     @Ctx() { req }: MyContext,
     @Arg("options") options: PaginatingParams
-  ): Promise<GetUserTweets> {
+  ): Promise<GetAllTweets> {
     if (!req.session.userId) {
-      return { error: "user is not authenticated", tweets: [] };
+      return { error: "user is not authenticated", tweets: [], num: 0 };
     }
 
     const { limit, offset } = options;
@@ -388,12 +439,12 @@ export class PostsResolver {
         finalTweets.push(oo);
       }
 
-      return { error: "", tweets: finalTweets };
+      return { error: "", tweets: finalTweets, num: 0 };
     } catch (error) {
       if (error.code == "2201W") {
-        return { error: "you", tweets: [] };
+        return { error: "you", tweets: [], num: 0 };
       }
-      return { error: error.message, tweets: [] };
+      return { error: error.message, tweets: [], num: 0 };
     }
   }
 

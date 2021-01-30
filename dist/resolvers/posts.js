@@ -30,10 +30,11 @@ const User_1 = require("../entities/User");
 const Follow_1 = require("../entities/Follow");
 const triggers_1 = require("../triggers");
 const Profile_1 = require("../entities/Profile");
+const Images_1 = require("../entities/Images");
 let PostsResolver = class PostsResolver {
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
-            let { tweet_content, rel_acc } = options;
+            let { tweet_content, rel_acc, img } = options;
             console.log(req.session.userId);
             if (!req.session.userId) {
                 return { error: "User is unauthorized" };
@@ -62,6 +63,7 @@ let PostsResolver = class PostsResolver {
                         name: user.name,
                         likes: 0,
                         comments: 0,
+                        img: img ? img : "",
                     })
                         .returning("*")
                         .execute();
@@ -90,10 +92,15 @@ let PostsResolver = class PostsResolver {
                 let like = yield Tweets_1.Like.findOne({
                     where: { tweet_id, user_id: req.session.userId },
                 });
+                let img;
+                if (tweet) {
+                    const user = yield User_1.User.findOne({ where: { id: tweet.rel_acc } });
+                    img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+                }
                 if (tweet) {
                     return {
                         error: "",
-                        tweet: Object.assign(Object.assign({}, tweet), { liked: like ? true : false }),
+                        tweet: Object.assign(Object.assign({}, tweet), { liked: like ? true : false, profile_img: img ? img.url : "" }),
                     };
                 }
                 else {
@@ -148,7 +155,16 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                return { error: "", tweets: finalTweets, num: tw.length };
+                const f = [];
+                for (let i = 0; i < finalTweets.length; i++) {
+                    const ii = finalTweets[i].rel_acc;
+                    const user = yield User_1.User.findOne({ where: { id: ii } });
+                    const img_url = yield Images_1.Images.findOne({
+                        where: { user, type: "profile" },
+                    });
+                    f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
+                }
+                return { error: "", tweets: f, num: tw.length };
             }
             catch (error) {
                 console.log("err");
@@ -159,7 +175,7 @@ let PostsResolver = class PostsResolver {
     getPaginatedPosts({ req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
-                return { error: "User is unauthorized", tweets: [] };
+                return { error: "User is unauthorized", tweets: [], num: 0 };
             }
             const { limit, offset } = options;
             try {
@@ -193,13 +209,22 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                return { error: "", tweets: finalTweets };
+                const f = [];
+                for (let i = 0; i < finalTweets.length; i++) {
+                    const ii = finalTweets[i].rel_acc;
+                    const user = yield User_1.User.findOne({ where: { id: ii } });
+                    const img_url = yield Images_1.Images.findOne({
+                        where: { user, type: "profile" },
+                    });
+                    f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
+                }
+                return { error: "", tweets: f, num: 0 };
             }
             catch (error) {
                 if (error.code == "2201W") {
-                    return { error: "you", tweets: [] };
+                    return { error: "you", tweets: [], num: 0 };
                 }
-                return { error: error.message, tweets: [] };
+                return { error: error.message, tweets: [], num: 0 };
             }
         });
     }
@@ -213,6 +238,11 @@ let PostsResolver = class PostsResolver {
             let like = yield Tweets_1.Like.findOne({
                 where: { user_id: req.session.userId, tweet },
             });
+            let img;
+            if (tweet) {
+                const user = yield User_1.User.findOne({ where: { id: tweet.rel_acc } });
+                img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+            }
             const tweetAfterLike = yield Tweets_1.Tweet.findOne({ where: { tweet_id } });
             if (like) {
                 yield like.remove();
@@ -224,7 +254,7 @@ let PostsResolver = class PostsResolver {
                 }
                 const payload = {
                     error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: false, likes: newLikes }),
+                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: false, likes: newLikes, profile_img: img ? img.url : "" }),
                 };
                 yield pubsub.publish(triggers_1.TWEET, payload);
                 return { liked: "unliked", error: "" };
@@ -246,7 +276,7 @@ let PostsResolver = class PostsResolver {
                 like = result.raw[0];
                 const payload = {
                     error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: true, likes: newLikes }),
+                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: true, likes: newLikes, profile_img: img ? img.url : "" }),
                 };
                 yield pubsub.publish(triggers_1.TWEET, payload);
             }
@@ -309,7 +339,7 @@ let PostsResolver = class PostsResolver {
     getPaginatedUserTweets({ req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
-                return { error: "user is not authenticated", tweets: [] };
+                return { error: "user is not authenticated", tweets: [], num: 0 };
             }
             const { limit, offset } = options;
             try {
@@ -336,13 +366,13 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                return { error: "", tweets: finalTweets };
+                return { error: "", tweets: finalTweets, num: 0 };
             }
             catch (error) {
                 if (error.code == "2201W") {
-                    return { error: "you", tweets: [] };
+                    return { error: "you", tweets: [], num: 0 };
                 }
-                return { error: error.message, tweets: [] };
+                return { error: error.message, tweets: [], num: 0 };
             }
         });
     }
@@ -451,7 +481,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getTweetById", null);
 __decorate([
-    type_graphql_1.Query(() => constants_1.GetAllTweets),
+    type_graphql_1.Query(() => constants_1.GetUserTweets),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
