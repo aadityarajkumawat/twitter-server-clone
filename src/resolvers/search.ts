@@ -18,7 +18,7 @@ export class SearchResolver {
 
     const profiles = await getConnection()
       .createQueryBuilder()
-      .select("name, username")
+      .select("name, username, id")
       .from(User, "user")
       .where("user.name LIKE :name", { name: `%${options.search}%` })
       .execute();

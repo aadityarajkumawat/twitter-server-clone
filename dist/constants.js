@@ -28,7 +28,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validSchemaLogin = exports.validSchemaRegister = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetAllTweets = exports.GetUserTweets = exports.GetTweetById = exports.GetTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
+exports.validSchemaLogin = exports.validSchemaRegister = exports.ProfileStuff = exports.ProfileItems = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetAllTweets = exports.GetUserTweets = exports.GetTweetById = exports.GetTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("./entities/User");
 const Yup = __importStar(require("yup"));
@@ -390,6 +390,10 @@ __decorate([
     type_graphql_1.Field(() => String),
     __metadata("design:type", String)
 ], DisplayProfile.prototype, "username", void 0);
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], DisplayProfile.prototype, "id", void 0);
 DisplayProfile = __decorate([
     type_graphql_1.ObjectType()
 ], DisplayProfile);
@@ -418,6 +422,62 @@ ImageParams = __decorate([
     type_graphql_1.InputType()
 ], ImageParams);
 exports.ImageParams = ImageParams;
+let ProfileItems = class ProfileItems {
+};
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], ProfileItems.prototype, "profile_img", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], ProfileItems.prototype, "cover_img", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], ProfileItems.prototype, "name", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], ProfileItems.prototype, "username", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], ProfileItems.prototype, "bio", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], ProfileItems.prototype, "link", void 0);
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], ProfileItems.prototype, "followers", void 0);
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], ProfileItems.prototype, "following", void 0);
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], ProfileItems.prototype, "num", void 0);
+ProfileItems = __decorate([
+    type_graphql_1.ObjectType()
+], ProfileItems);
+exports.ProfileItems = ProfileItems;
+let ProfileStuff = class ProfileStuff {
+};
+__decorate([
+    type_graphql_1.Field(() => ProfileItems),
+    __metadata("design:type", Object)
+], ProfileStuff.prototype, "profile", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], ProfileStuff.prototype, "error", void 0);
+ProfileStuff = __decorate([
+    type_graphql_1.ObjectType()
+], ProfileStuff);
+exports.ProfileStuff = ProfileStuff;
 exports.validSchemaRegister = Yup.object().shape({
     email: Yup.string().email().required("Required"),
     password: Yup.string().min(8).max(15).required("Required"),

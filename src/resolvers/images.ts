@@ -20,10 +20,11 @@ export class ImgResolver {
 
     try {
       const user = await User.findOne({ where: { id: req.session.userId } });
-      const img = await Images.findOne({ where: { user } });
+      const img = await Images.findOne({ where: { user, type } });
 
       if (img) {
         img.url = url;
+        img.type = type;
         await img.save();
         return true;
       }
@@ -49,6 +50,27 @@ export class ImgResolver {
     try {
       const user = await User.findOne({ where: { id } });
       const img = await Images.findOne({ where: { user } });
+      if (img) {
+        return img.url;
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  @Query(() => String, { nullable: true })
+  async getCoverImage(
+    @Ctx() { req }: MyContext,
+    @Arg("id") id: number
+  ): Promise<String | null> {
+    if (!req.session.userId) {
+      return null;
+    }
+
+    try {
+      const user = await User.findOne({ where: { id } });
+      const img = await Images.findOne({ where: { user, type: "cover" } });
       if (img) {
         return img.url;
       }

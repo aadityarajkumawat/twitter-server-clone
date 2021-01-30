@@ -35,7 +35,7 @@ let SearchResolver = class SearchResolver {
             }
             const profiles = yield typeorm_1.getConnection()
                 .createQueryBuilder()
-                .select("name, username")
+                .select("name, username, id")
                 .from(User_1.User, "user")
                 .where("user.name LIKE :name", { name: `%${options.search}%` })
                 .execute();

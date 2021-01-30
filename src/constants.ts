@@ -220,6 +220,8 @@ export class DisplayProfile {
   name: string;
   @Field(() => String)
   username: string;
+  @Field(() => Number)
+  id: number;
 }
 
 @InputType()
@@ -236,6 +238,36 @@ export class ImageParams {
   url!: string;
   @Field(() => String)
   type!: ImageTypes;
+}
+
+@ObjectType()
+export class ProfileItems {
+  @Field(() => String)
+  profile_img: string;
+  @Field(() => String)
+  cover_img: string;
+  @Field(() => String)
+  name: string;
+  @Field(() => String)
+  username: string;
+  @Field(() => String)
+  bio: string;
+  @Field(() => String)
+  link: string;
+  @Field(() => Number)
+  followers: number;
+  @Field(() => Number)
+  following: number;
+  @Field(() => Number)
+  num: number;
+}
+
+@ObjectType()
+export class ProfileStuff {
+  @Field(() => ProfileItems)
+  profile: ProfileItems | null;
+  @Field(() => String)
+  error: string;
 }
 
 export const validSchemaRegister = Yup.object().shape({

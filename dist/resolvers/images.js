@@ -36,9 +36,10 @@ let ImgResolver = class ImgResolver {
             const { type, url } = options;
             try {
                 const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
-                const img = yield Images_1.Images.findOne({ where: { user } });
+                const img = yield Images_1.Images.findOne({ where: { user, type } });
                 if (img) {
                     img.url = url;
+                    img.type = type;
                     yield img.save();
                     return true;
                 }
@@ -69,6 +70,24 @@ let ImgResolver = class ImgResolver {
             }
         });
     }
+    getCoverImage({ req }, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return null;
+            }
+            try {
+                const user = yield User_1.User.findOne({ where: { id } });
+                const img = yield Images_1.Images.findOne({ where: { user, type: "cover" } });
+                if (img) {
+                    return img.url;
+                }
+                return null;
+            }
+            catch (error) {
+                return null;
+            }
+        });
+    }
 };
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
@@ -86,6 +105,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, Number]),
     __metadata("design:returntype", Promise)
 ], ImgResolver.prototype, "getProfileImage", null);
+__decorate([
+    type_graphql_1.Query(() => String, { nullable: true }),
+    __param(0, type_graphql_1.Ctx()),
+    __param(1, type_graphql_1.Arg("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number]),
+    __metadata("design:returntype", Promise)
+], ImgResolver.prototype, "getCoverImage", null);
 ImgResolver = __decorate([
     type_graphql_1.Resolver()
 ], ImgResolver);

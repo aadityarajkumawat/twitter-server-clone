@@ -8,9 +8,13 @@ import {
   validSchemaRegister,
   UserLoginInput,
   validSchemaLogin,
+  ProfileStuff,
 } from "../constants";
 import { getConnection } from "typeorm";
 import { Profile } from "../entities/Profile";
+import { Images } from "../entities/Images";
+import { Follow } from "../entities/Follow";
+import { Tweet } from "../entities/Tweets";
 
 @Resolver()
 export class UserResolver {
@@ -140,6 +144,75 @@ export class UserResolver {
           errors: [{ field: "password", message: "password is incorrect" }],
         };
       }
+    }
+  }
+
+  @Query(() => ProfileStuff)
+  async getProfileStuff(
+    @Ctx() { req }: MyContext,
+    @Arg("id") id: number
+  ): Promise<ProfileStuff> {
+    if (!req.session.userId) {
+      return { error: "user not authenticated", profile: null };
+    }
+
+    try {
+      const user = await User.findOne({ where: { id } });
+      const profile_img = await Images.findOne({
+        where: { user, type: "profile" },
+      });
+
+      const cover_img = await Images.findOne({
+        where: { user, type: "cover" },
+      });
+
+      const profile = await Profile.findOne({ where: { user } });
+
+      const following = await getConnection()
+        .createQueryBuilder()
+        .select("COUNT(*)")
+        .from(Follow, "follow")
+        .where("follow.userId = :id", { id })
+        .execute();
+
+      const followers = await getConnection()
+        .createQueryBuilder()
+        .select("COUNT(*)")
+        .from(Follow, "follow")
+        .where("follow.following = :id", { id })
+        .execute();
+
+      const n = await getConnection()
+        .createQueryBuilder()
+        .select("COUNT(*)")
+        .from(Tweet, "tweet")
+        .where("tweet.rel_acc = :id", { id: req.session.userId })
+        .execute();
+
+      if (user && profile && following && followers) {
+        return {
+          error: "",
+          profile: {
+            bio: profile.bio,
+            cover_img: cover_img ? cover_img.url : "",
+            followers: followers[0].count,
+            following: following[0].count,
+            link: profile ? profile.link : "",
+            name: user.name,
+            profile_img: profile_img ? profile_img.url : "",
+            username: user.username,
+            num: n[0].count,
+          },
+        };
+      } else {
+        return {
+          error: "",
+          profile: null,
+        };
+      }
+    } catch (error) {
+      console.log(error.message);
+      return { error: error.message, profile: null };
     }
   }
 }

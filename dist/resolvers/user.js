@@ -31,6 +31,9 @@ const argon2_1 = __importDefault(require("argon2"));
 const constants_1 = require("../constants");
 const typeorm_1 = require("typeorm");
 const Profile_1 = require("../entities/Profile");
+const Images_1 = require("../entities/Images");
+const Follow_1 = require("../entities/Follow");
+const Tweets_1 = require("../entities/Tweets");
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -155,6 +158,67 @@ let UserResolver = class UserResolver {
             }
         });
     }
+    getProfileStuff({ req }, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return { error: "user not authenticated", profile: null };
+            }
+            try {
+                const user = yield User_1.User.findOne({ where: { id } });
+                const profile_img = yield Images_1.Images.findOne({
+                    where: { user, type: "profile" },
+                });
+                const cover_img = yield Images_1.Images.findOne({
+                    where: { user, type: "cover" },
+                });
+                const profile = yield Profile_1.Profile.findOne({ where: { user } });
+                const following = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("COUNT(*)")
+                    .from(Follow_1.Follow, "follow")
+                    .where("follow.userId = :id", { id })
+                    .execute();
+                const followers = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("COUNT(*)")
+                    .from(Follow_1.Follow, "follow")
+                    .where("follow.following = :id", { id })
+                    .execute();
+                const n = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("COUNT(*)")
+                    .from(Tweets_1.Tweet, "tweet")
+                    .where("tweet.rel_acc = :id", { id: req.session.userId })
+                    .execute();
+                if (user && profile && following && followers) {
+                    return {
+                        error: "",
+                        profile: {
+                            bio: profile.bio,
+                            cover_img: cover_img ? cover_img.url : "",
+                            followers: followers[0].count,
+                            following: following[0].count,
+                            link: profile ? profile.link : "",
+                            name: user.name,
+                            profile_img: profile_img ? profile_img.url : "",
+                            username: user.username,
+                            num: n[0].count,
+                        },
+                    };
+                }
+                else {
+                    return {
+                        error: "",
+                        profile: null,
+                    };
+                }
+            }
+            catch (error) {
+                console.log(error.message);
+                return { error: error.message, profile: null };
+            }
+        });
+    }
 };
 __decorate([
     type_graphql_1.Query(() => User_1.User, { nullable: true }),
@@ -179,6 +243,14 @@ __decorate([
     __metadata("design:paramtypes", [constants_1.UserLoginInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "login", null);
+__decorate([
+    type_graphql_1.Query(() => constants_1.ProfileStuff),
+    __param(0, type_graphql_1.Ctx()),
+    __param(1, type_graphql_1.Arg("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "getProfileStuff", null);
 UserResolver = __decorate([
     type_graphql_1.Resolver()
 ], UserResolver);
