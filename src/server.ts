@@ -19,8 +19,9 @@ import { FollowResolver } from "./resolvers/follow";
 import http from "http";
 import { Images } from "./entities/Images";
 import { Profile } from "./entities/Profile";
-import { ImageResolver } from "./resolvers/image";
 import { SearchResolver } from "./resolvers/search";
+import { ImgResolver } from "./resolvers/images";
+import { PagResolver } from "./resolvers/Pag";
 
 const main = async () => {
   const conn = await createConnection({
@@ -43,8 +44,6 @@ const main = async () => {
 
   const RedisStore = connectRedis(session);
   const redisClient = redis.createClient();
-
-  app.use(express.json());
 
   app.use((req: any, _: any, next: any) => {
     req.pubsub = pubsub;
@@ -74,8 +73,6 @@ const main = async () => {
     })
   );
 
-  app.use("/", require("./routes/imageUpload"));
-
   const server = new ApolloServer({
     schema: await buildSchema({
       resolvers: [
@@ -83,8 +80,9 @@ const main = async () => {
         UserResolver,
         PostsResolver,
         FollowResolver,
-        ImageResolver,
         SearchResolver,
+        ImgResolver,
+        PagResolver,
       ],
       validate: false,
       pubSub: pubsub,

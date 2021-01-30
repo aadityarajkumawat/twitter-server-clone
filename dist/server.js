@@ -33,8 +33,9 @@ const follow_1 = require("./resolvers/follow");
 const http_1 = __importDefault(require("http"));
 const Images_1 = require("./entities/Images");
 const Profile_1 = require("./entities/Profile");
-const image_1 = require("./resolvers/image");
 const search_1 = require("./resolvers/search");
+const images_1 = require("./resolvers/images");
+const Pag_1 = require("./resolvers/Pag");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
@@ -51,7 +52,6 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const pubsub = new apollo_server_express_1.PubSub();
     const RedisStore = connect_redis_1.default(express_session_1.default);
     const redisClient = redis_1.default.createClient();
-    app.use(express_1.default.json());
     app.use((req, _, next) => {
         req.pubsub = pubsub;
         next();
@@ -73,7 +73,6 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         secret: "thisissomerandomwhichbecomesusajibrish",
         resave: false,
     }));
-    app.use("/", require("./routes/imageUpload"));
     const server = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
             resolvers: [
@@ -81,8 +80,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
                 user_1.UserResolver,
                 posts_1.PostsResolver,
                 follow_1.FollowResolver,
-                image_1.ImageResolver,
                 search_1.SearchResolver,
+                images_1.ImgResolver,
+                Pag_1.PagResolver,
             ],
             validate: false,
             pubSub: pubsub,

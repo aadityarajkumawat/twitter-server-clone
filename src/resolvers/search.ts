@@ -11,6 +11,7 @@ export class SearchResolver {
     @Ctx() { req }: MyContext,
     @Arg("options") options: Searched
   ): Promise<DisplayProfiles> {
+    console.log(req.session);
     if (!req.session.userId) {
       return { error: "user not authenticated", profiles: [] };
     }

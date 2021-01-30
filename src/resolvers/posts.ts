@@ -39,6 +39,7 @@ export class PostsResolver {
     @PubSub() pubsub: PubSubEngine
   ): Promise<PostCreatedResponse> {
     let { tweet_content, rel_acc } = options;
+    console.log(req.session.userId);
     if (!req.session.userId) {
       return { error: "User is unauthorized" };
     }
@@ -473,7 +474,7 @@ export class PostsResolver {
     try {
       const user = await User.findOne({ where: { id: req.session.userId } });
       const currentProfile = await Profile.findOne({ where: { user } });
-      console.log(currentProfile)
+      console.log(currentProfile);
       if (currentProfile) {
         currentProfile.bio = bio;
         currentProfile.link = link;

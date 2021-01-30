@@ -21,38 +21,68 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SearchResolver = void 0;
+exports.ImgResolver = void 0;
 const constants_1 = require("../constants");
 const User_1 = require("../entities/User");
 const type_graphql_1 = require("type-graphql");
-const typeorm_1 = require("typeorm");
-let SearchResolver = class SearchResolver {
-    getSearchResults({ req }, options) {
+const Images_1 = require("../entities/Images");
+let ImgResolver = class ImgResolver {
+    saveImage({ req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(req.session);
             if (!req.session.userId) {
-                return { error: "user not authenticated", profiles: [] };
+                return false;
             }
-            const profiles = yield typeorm_1.getConnection()
-                .createQueryBuilder()
-                .select("name, username")
-                .from(User_1.User, "user")
-                .where("user.name LIKE :name", { name: `%${options.search}%` })
-                .execute();
-            return { error: null, profiles };
+            const { type, url } = options;
+            try {
+                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                console.log(user);
+                const img = Images_1.Images.create({ type, url, user });
+                yield img.save();
+                return true;
+            }
+            catch (error) {
+                return false;
+            }
+        });
+    }
+    getProfileImage({ req }, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return null;
+            }
+            try {
+                const user = yield User_1.User.findOne({ where: { id } });
+                const img = yield Images_1.Images.findOne({ where: { user } });
+                if (img) {
+                    return img.url;
+                }
+                return null;
+            }
+            catch (error) {
+                return null;
+            }
         });
     }
 };
 __decorate([
-    type_graphql_1.Query(() => constants_1.DisplayProfiles),
+    type_graphql_1.Mutation(() => Boolean),
     __param(0, type_graphql_1.Ctx()),
     __param(1, type_graphql_1.Arg("options")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, constants_1.Searched]),
+    __metadata("design:paramtypes", [Object, constants_1.ImageParams]),
     __metadata("design:returntype", Promise)
-], SearchResolver.prototype, "getSearchResults", null);
-SearchResolver = __decorate([
+], ImgResolver.prototype, "saveImage", null);
+__decorate([
+    type_graphql_1.Query(() => String, { nullable: true }),
+    __param(0, type_graphql_1.Ctx()),
+    __param(1, type_graphql_1.Arg("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number]),
+    __metadata("design:returntype", Promise)
+], ImgResolver.prototype, "getProfileImage", null);
+ImgResolver = __decorate([
     type_graphql_1.Resolver()
-], SearchResolver);
-exports.SearchResolver = SearchResolver;
-//# sourceMappingURL=search.js.map
+], ImgResolver);
+exports.ImgResolver = ImgResolver;
+//# sourceMappingURL=images.js.map

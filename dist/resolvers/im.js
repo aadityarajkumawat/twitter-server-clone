@@ -21,38 +21,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SearchResolver = void 0;
-const constants_1 = require("../constants");
-const User_1 = require("../entities/User");
+exports.ImgResolver = void 0;
 const type_graphql_1 = require("type-graphql");
-const typeorm_1 = require("typeorm");
-let SearchResolver = class SearchResolver {
-    getSearchResults({ req }, options) {
+let ImgResolver = class ImgResolver {
+    getSearchResults1({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(req.session);
             if (!req.session.userId) {
-                return { error: "user not authenticated", profiles: [] };
+                return false;
             }
-            const profiles = yield typeorm_1.getConnection()
-                .createQueryBuilder()
-                .select("name, username")
-                .from(User_1.User, "user")
-                .where("user.name LIKE :name", { name: `%${options.search}%` })
-                .execute();
-            return { error: null, profiles };
+            return true;
         });
     }
 };
 __decorate([
-    type_graphql_1.Query(() => constants_1.DisplayProfiles),
+    type_graphql_1.Query(() => Boolean),
     __param(0, type_graphql_1.Ctx()),
-    __param(1, type_graphql_1.Arg("options")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, constants_1.Searched]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], SearchResolver.prototype, "getSearchResults", null);
-SearchResolver = __decorate([
+], ImgResolver.prototype, "getSearchResults1", null);
+ImgResolver = __decorate([
     type_graphql_1.Resolver()
-], SearchResolver);
-exports.SearchResolver = SearchResolver;
-//# sourceMappingURL=search.js.map
+], ImgResolver);
+exports.ImgResolver = ImgResolver;
+//# sourceMappingURL=im.js.map

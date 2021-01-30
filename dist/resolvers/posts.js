@@ -34,6 +34,7 @@ let PostsResolver = class PostsResolver {
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             let { tweet_content, rel_acc } = options;
+            console.log(req.session.userId);
             if (!req.session.userId) {
                 return { error: "User is unauthorized" };
             }
