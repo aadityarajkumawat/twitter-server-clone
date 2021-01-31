@@ -166,6 +166,10 @@ export class UserResolver {
         where: { user, type: "cover" },
       });
 
+      const follow = await Follow.findOne({
+        where: { userId: req.session.userId, following: id },
+      });
+
       const profile = await Profile.findOne({ where: { user } });
 
       const following = await getConnection()
@@ -202,6 +206,7 @@ export class UserResolver {
             profile_img: profile_img ? profile_img.url : "",
             username: user.username,
             num: n[0].count,
+            isFollowed: follow ? true : false,
           },
         };
       } else {

@@ -171,6 +171,9 @@ let UserResolver = class UserResolver {
                 const cover_img = yield Images_1.Images.findOne({
                     where: { user, type: "cover" },
                 });
+                const follow = yield Follow_1.Follow.findOne({
+                    where: { userId: req.session.userId, following: id },
+                });
                 const profile = yield Profile_1.Profile.findOne({ where: { user } });
                 const following = yield typeorm_1.getConnection()
                     .createQueryBuilder()
@@ -203,6 +206,7 @@ let UserResolver = class UserResolver {
                             profile_img: profile_img ? profile_img.url : "",
                             username: user.username,
                             num: n[0].count,
+                            isFollowed: follow ? true : false,
                         },
                     };
                 }

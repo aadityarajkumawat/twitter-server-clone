@@ -522,6 +522,10 @@ __decorate([
     type_graphql_1.Field(() => Number),
     __metadata("design:type", Number)
 ], ProfileItems.prototype, "num", void 0);
+__decorate([
+    type_graphql_1.Field(() => Boolean),
+    __metadata("design:type", Boolean)
+], ProfileItems.prototype, "isFollowed", void 0);
 ProfileItems = __decorate([
     type_graphql_1.ObjectType()
 ], ProfileItems);

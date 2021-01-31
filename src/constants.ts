@@ -293,6 +293,8 @@ export class ProfileItems {
   following: number;
   @Field(() => Number)
   num: number;
+  @Field(() => Boolean)
+  isFollowed: boolean;
 }
 
 @ObjectType()
