@@ -28,7 +28,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validSchemaLogin = exports.validSchemaRegister = exports.ProfileStuff = exports.ProfileItems = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetPaginatedUserTweets = exports.GetUserTweets = exports.GetPaginatedFeedTweets = exports.GetFeedTweets = exports.GetTweetById = exports.GetOneTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
+exports.validSchemaLogin = exports.validSchemaRegister = exports.ProfileStuff = exports.ProfileItems = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingUserParams = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetPaginatedUserTweets = exports.GetUserTweets = exports.GetPaginatedFeedTweets = exports.GetFeedTweets = exports.GetTweetById = exports.GetOneTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("./entities/User");
 const Yup = __importStar(require("yup"));
@@ -352,6 +352,24 @@ PaginatingParams = __decorate([
     type_graphql_1.InputType()
 ], PaginatingParams);
 exports.PaginatingParams = PaginatingParams;
+let PaginatingUserParams = class PaginatingUserParams {
+};
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], PaginatingUserParams.prototype, "offset", void 0);
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], PaginatingUserParams.prototype, "limit", void 0);
+__decorate([
+    type_graphql_1.Field(() => Number),
+    __metadata("design:type", Number)
+], PaginatingUserParams.prototype, "id", void 0);
+PaginatingUserParams = __decorate([
+    type_graphql_1.InputType()
+], PaginatingUserParams);
+exports.PaginatingUserParams = PaginatingUserParams;
 let Profile = class Profile {
 };
 __decorate([

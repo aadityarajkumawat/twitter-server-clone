@@ -300,7 +300,7 @@ let PostsResolver = class PostsResolver {
             return tweet;
         });
     }
-    getTweetsByUserF({ req }) {
+    getTweetsByUserF({ req }, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
                 return { error: "user is not authenticated", tweets: [], num: 0 };
@@ -311,7 +311,7 @@ let PostsResolver = class PostsResolver {
                     .select("*")
                     .from(Tweets_1.Tweet, "tweet")
                     .where("tweet.rel_acc = :id", {
-                    id: req.session.userId,
+                    id,
                 })
                     .limit(5)
                     .orderBy("tweet.created_At", "DESC")
@@ -321,12 +321,12 @@ let PostsResolver = class PostsResolver {
                     .select("*")
                     .from(Tweets_1.Tweet, "tweet")
                     .where("tweet.rel_acc = :id", {
-                    id: req.session.userId,
+                    id,
                 })
                     .orderBy("tweet.created_At", "DESC")
                     .execute();
                 const finalTweets = [];
-                let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
+                let like = yield Tweets_1.Like.find({ where: { user_id: id } });
                 for (let i = 0; i < tweets.length; i++) {
                     let currID = tweets[i].tweet_id;
                     let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
@@ -359,21 +359,21 @@ let PostsResolver = class PostsResolver {
             if (!req.session.userId) {
                 return { error: "user is not authenticated", tweets: [] };
             }
-            const { limit, offset } = options;
+            const { limit, offset, id } = options;
             try {
                 const tweets = yield typeorm_1.getConnection()
                     .createQueryBuilder()
                     .select("*")
                     .from(Tweets_1.Tweet, "tweet")
                     .where("tweet.userId = :id", {
-                    id: req.session.userId,
+                    id,
                 })
                     .offset(offset)
                     .limit(limit)
                     .orderBy("tweet.created_At", "DESC")
                     .execute();
                 const finalTweets = [];
-                let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
+                let like = yield Tweets_1.Like.find({ where: { user_id: id } });
                 for (let i = 0; i < tweets.length; i++) {
                     let currID = tweets[i].tweet_id;
                     let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
@@ -543,8 +543,9 @@ __decorate([
 __decorate([
     type_graphql_1.Query(() => constants_1.GetUserTweets),
     __param(0, type_graphql_1.Ctx()),
+    __param(1, type_graphql_1.Arg("id")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Number]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getTweetsByUserF", null);
 __decorate([
@@ -552,7 +553,7 @@ __decorate([
     __param(0, type_graphql_1.Ctx()),
     __param(1, type_graphql_1.Arg("options")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, constants_1.PaginatingParams]),
+    __metadata("design:paramtypes", [Object, constants_1.PaginatingUserParams]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getPaginatedUserTweets", null);
 __decorate([

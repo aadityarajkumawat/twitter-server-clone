@@ -9,6 +9,7 @@ import {
   GetUserTweets,
   LikedTweet,
   PaginatingParams,
+  PaginatingUserParams,
   PostCreatedResponse,
   PostTweetInput,
   TweetInfo,
@@ -364,7 +365,10 @@ export class PostsResolver {
   }
 
   @Query(() => GetUserTweets)
-  async getTweetsByUserF(@Ctx() { req }: MyContext): Promise<GetUserTweets> {
+  async getTweetsByUserF(
+    @Ctx() { req }: MyContext,
+    @Arg("id") id: number
+  ): Promise<GetUserTweets> {
     if (!req.session.userId) {
       return { error: "user is not authenticated", tweets: [], num: 0 };
     }
@@ -375,7 +379,7 @@ export class PostsResolver {
         .select("*")
         .from(Tweet, "tweet")
         .where("tweet.rel_acc = :id", {
-          id: req.session.userId,
+          id,
         })
         .limit(5)
         .orderBy("tweet.created_At", "DESC")
@@ -386,14 +390,14 @@ export class PostsResolver {
         .select("*")
         .from(Tweet, "tweet")
         .where("tweet.rel_acc = :id", {
-          id: req.session.userId,
+          id,
         })
         .orderBy("tweet.created_At", "DESC")
         .execute();
 
       const finalTweets = [];
 
-      let like = await Like.find({ where: { user_id: req.session.userId } });
+      let like = await Like.find({ where: { user_id: id } });
 
       for (let i = 0; i < tweets.length; i++) {
         let currID = tweets[i].tweet_id;
@@ -428,13 +432,13 @@ export class PostsResolver {
   @Query(() => GetPaginatedUserTweets)
   async getPaginatedUserTweets(
     @Ctx() { req }: MyContext,
-    @Arg("options") options: PaginatingParams
+    @Arg("options") options: PaginatingUserParams
   ): Promise<GetPaginatedUserTweets> {
     if (!req.session.userId) {
       return { error: "user is not authenticated", tweets: [] };
     }
 
-    const { limit, offset } = options;
+    const { limit, offset, id } = options;
 
     try {
       const tweets: Array<Tweet> = await getConnection()
@@ -442,7 +446,7 @@ export class PostsResolver {
         .select("*")
         .from(Tweet, "tweet")
         .where("tweet.userId = :id", {
-          id: req.session.userId,
+          id,
         })
         .offset(offset)
         .limit(limit)
@@ -451,7 +455,7 @@ export class PostsResolver {
 
       const finalTweets = [];
 
-      let like = await Like.find({ where: { user_id: req.session.userId } });
+      let like = await Like.find({ where: { user_id: id } });
 
       for (let i = 0; i < tweets.length; i++) {
         let currID = tweets[i].tweet_id;

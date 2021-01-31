@@ -186,7 +186,7 @@ export class UserResolver {
         .createQueryBuilder()
         .select("COUNT(*)")
         .from(Tweet, "tweet")
-        .where("tweet.rel_acc = :id", { id: req.session.userId })
+        .where("tweet.rel_acc = :id", { id })
         .execute();
 
       if (user && profile && following && followers) {

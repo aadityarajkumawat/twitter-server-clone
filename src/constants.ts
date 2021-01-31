@@ -189,6 +189,16 @@ export class PaginatingParams {
   limit: number;
 }
 
+@InputType()
+export class PaginatingUserParams {
+  @Field(() => Number)
+  offset: number;
+  @Field(() => Number)
+  limit: number;
+  @Field(() => Number)
+  id: number;
+}
+
 // Image Upload
 export interface Upload {
   filename: string;
