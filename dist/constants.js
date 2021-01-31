@@ -28,7 +28,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validSchemaLogin = exports.validSchemaRegister = exports.ProfileStuff = exports.ProfileItems = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetAllTweets = exports.GetUserTweets = exports.GetTweetById = exports.GetTweet1 = exports.GetTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
+exports.validSchemaLogin = exports.validSchemaRegister = exports.ProfileStuff = exports.ProfileItems = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetPaginatedUserTweets = exports.GetUserTweets = exports.GetPaginatedFeedTweets = exports.GetFeedTweets = exports.GetTweetById = exports.GetOneTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("./entities/User");
 const Yup = __importStar(require("yup"));
@@ -161,7 +161,7 @@ exports.TweetInfo = TweetInfo;
 let GetTweetResponse = class GetTweetResponse {
 };
 __decorate([
-    type_graphql_1.Field(() => GetTweet, { nullable: true }),
+    type_graphql_1.Field(() => GetOneTweet, { nullable: true }),
     __metadata("design:type", Object)
 ], GetTweetResponse.prototype, "tweet", void 0);
 __decorate([
@@ -172,102 +172,60 @@ GetTweetResponse = __decorate([
     type_graphql_1.ObjectType()
 ], GetTweetResponse);
 exports.GetTweetResponse = GetTweetResponse;
-let GetTweet = class GetTweet {
+let GetOneTweet = class GetOneTweet {
 };
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", Number)
-], GetTweet.prototype, "tweet_id", void 0);
+], GetOneTweet.prototype, "tweet_id", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], GetTweet.prototype, "tweet_content", void 0);
+], GetOneTweet.prototype, "tweet_content", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
     __metadata("design:type", String)
-], GetTweet.prototype, "created_At", void 0);
+], GetOneTweet.prototype, "created_At", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], GetTweet.prototype, "_type", void 0);
+], GetOneTweet.prototype, "_type", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", Number)
-], GetTweet.prototype, "rel_acc", void 0);
+], GetOneTweet.prototype, "rel_acc", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], GetTweet.prototype, "username", void 0);
+], GetOneTweet.prototype, "username", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], GetTweet.prototype, "name", void 0);
+], GetOneTweet.prototype, "name", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", Number)
-], GetTweet.prototype, "likes", void 0);
+], GetOneTweet.prototype, "likes", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", Number)
-], GetTweet.prototype, "comments", void 0);
+], GetOneTweet.prototype, "comments", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", Boolean)
-], GetTweet.prototype, "liked", void 0);
+], GetOneTweet.prototype, "liked", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], GetTweet.prototype, "profile_img", void 0);
-GetTweet = __decorate([
+], GetOneTweet.prototype, "profile_img", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], GetOneTweet.prototype, "img", void 0);
+GetOneTweet = __decorate([
     type_graphql_1.ObjectType()
-], GetTweet);
-exports.GetTweet = GetTweet;
-let GetTweet1 = class GetTweet1 {
-};
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", Number)
-], GetTweet1.prototype, "tweet_id", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], GetTweet1.prototype, "tweet_content", void 0);
-__decorate([
-    type_graphql_1.Field(() => String),
-    __metadata("design:type", String)
-], GetTweet1.prototype, "created_At", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], GetTweet1.prototype, "_type", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", Number)
-], GetTweet1.prototype, "rel_acc", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], GetTweet1.prototype, "username", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], GetTweet1.prototype, "name", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", Number)
-], GetTweet1.prototype, "likes", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", Number)
-], GetTweet1.prototype, "comments", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", Boolean)
-], GetTweet1.prototype, "liked", void 0);
-GetTweet1 = __decorate([
-    type_graphql_1.ObjectType()
-], GetTweet1);
-exports.GetTweet1 = GetTweet1;
+], GetOneTweet);
+exports.GetOneTweet = GetOneTweet;
 let GetTweetById = class GetTweetById {
 };
 __decorate([
@@ -278,10 +236,42 @@ GetTweetById = __decorate([
     type_graphql_1.InputType()
 ], GetTweetById);
 exports.GetTweetById = GetTweetById;
+let GetFeedTweets = class GetFeedTweets {
+};
+__decorate([
+    type_graphql_1.Field(() => [GetOneTweet]),
+    __metadata("design:type", Array)
+], GetFeedTweets.prototype, "tweets", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], GetFeedTweets.prototype, "error", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Number)
+], GetFeedTweets.prototype, "num", void 0);
+GetFeedTweets = __decorate([
+    type_graphql_1.ObjectType()
+], GetFeedTweets);
+exports.GetFeedTweets = GetFeedTweets;
+let GetPaginatedFeedTweets = class GetPaginatedFeedTweets {
+};
+__decorate([
+    type_graphql_1.Field(() => [GetOneTweet]),
+    __metadata("design:type", Array)
+], GetPaginatedFeedTweets.prototype, "tweets", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], GetPaginatedFeedTweets.prototype, "error", void 0);
+GetPaginatedFeedTweets = __decorate([
+    type_graphql_1.ObjectType()
+], GetPaginatedFeedTweets);
+exports.GetPaginatedFeedTweets = GetPaginatedFeedTweets;
 let GetUserTweets = class GetUserTweets {
 };
 __decorate([
-    type_graphql_1.Field(() => [GetTweet]),
+    type_graphql_1.Field(() => [GetOneTweet]),
     __metadata("design:type", Array)
 ], GetUserTweets.prototype, "tweets", void 0);
 __decorate([
@@ -296,24 +286,20 @@ GetUserTweets = __decorate([
     type_graphql_1.ObjectType()
 ], GetUserTweets);
 exports.GetUserTweets = GetUserTweets;
-let GetAllTweets = class GetAllTweets {
+let GetPaginatedUserTweets = class GetPaginatedUserTweets {
 };
 __decorate([
-    type_graphql_1.Field(() => [GetTweet1]),
+    type_graphql_1.Field(() => [GetOneTweet]),
     __metadata("design:type", Array)
-], GetAllTweets.prototype, "tweets", void 0);
+], GetPaginatedUserTweets.prototype, "tweets", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], GetAllTweets.prototype, "error", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", Number)
-], GetAllTweets.prototype, "num", void 0);
-GetAllTweets = __decorate([
+], GetPaginatedUserTweets.prototype, "error", void 0);
+GetPaginatedUserTweets = __decorate([
     type_graphql_1.ObjectType()
-], GetAllTweets);
-exports.GetAllTweets = GetAllTweets;
+], GetPaginatedUserTweets);
+exports.GetPaginatedUserTweets = GetPaginatedUserTweets;
 let FollowedAUser = class FollowedAUser {
 };
 __decorate([

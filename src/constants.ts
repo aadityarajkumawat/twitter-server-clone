@@ -82,14 +82,14 @@ export class TweetInfo {
 // Fetch a tweet
 @ObjectType()
 export class GetTweetResponse {
-  @Field(() => GetTweet, { nullable: true })
-  tweet?: GetTweet | null;
+  @Field(() => GetOneTweet, { nullable: true })
+  tweet?: GetOneTweet | null;
   @Field({ nullable: true })
   error: string;
 }
 
 @ObjectType()
-export class GetTweet {
+export class GetOneTweet {
   @Field()
   tweet_id?: number;
   @Field()
@@ -112,32 +112,9 @@ export class GetTweet {
   liked?: boolean;
   @Field()
   profile_img: string;
+  @Field()
+  img: string;
 }
-
-@ObjectType()
-export class GetTweet1 {
-  @Field()
-  tweet_id?: number;
-  @Field()
-  tweet_content?: string;
-  @Field(() => String)
-  created_At?: string;
-  @Field()
-  _type?: string;
-  @Field()
-  rel_acc?: number;
-  @Field()
-  username?: string;
-  @Field()
-  name?: string;
-  @Field()
-  likes?: number;
-  @Field()
-  comments?: number;
-  @Field()
-  liked?: boolean;
-}
-
 @InputType()
 export class GetTweetById {
   @Field()
@@ -145,9 +122,9 @@ export class GetTweetById {
 }
 
 @ObjectType()
-export class GetUserTweets {
-  @Field(() => [GetTweet])
-  tweets: GetTweet[];
+export class GetFeedTweets {
+  @Field(() => [GetOneTweet])
+  tweets: GetOneTweet[];
   @Field()
   error: string;
   @Field()
@@ -155,13 +132,29 @@ export class GetUserTweets {
 }
 
 @ObjectType()
-export class GetAllTweets {
-  @Field(() => [GetTweet1])
-  tweets: GetTweet1[];
+export class GetPaginatedFeedTweets {
+  @Field(() => [GetOneTweet])
+  tweets: GetOneTweet[];
+  @Field()
+  error: string;
+}
+
+@ObjectType()
+export class GetUserTweets {
+  @Field(() => [GetOneTweet])
+  tweets: GetOneTweet[];
   @Field()
   error: string;
   @Field()
   num: number;
+}
+
+@ObjectType()
+export class GetPaginatedUserTweets {
+  @Field(() => [GetOneTweet])
+  tweets: GetOneTweet[];
+  @Field()
+  error: string;
 }
 
 // Follow a user

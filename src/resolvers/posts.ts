@@ -1,6 +1,8 @@
 import {
   EditProfile,
-  GetAllTweets,
+  GetFeedTweets,
+  GetPaginatedFeedTweets,
+  GetPaginatedUserTweets,
   GetProfile,
   GetTweetById,
   GetTweetResponse,
@@ -113,6 +115,7 @@ export class PostsResolver {
             ...tweet,
             liked: like ? true : false,
             profile_img: img ? img.url : "",
+            img: tweet.img,
           },
         };
       } else {
@@ -123,8 +126,8 @@ export class PostsResolver {
     }
   }
 
-  @Query(() => GetUserTweets)
-  async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetUserTweets> {
+  @Query(() => GetFeedTweets)
+  async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetFeedTweets> {
     if (!req.session.userId) {
       return { error: "User is unauthorized", tweets: [], num: 0 };
     }
@@ -194,13 +197,13 @@ export class PostsResolver {
     }
   }
 
-  @Query(() => GetUserTweets)
+  @Query(() => GetPaginatedFeedTweets)
   async getPaginatedPosts(
     @Ctx() { req }: MyContext,
     @Arg("options") options: PaginatingParams
-  ): Promise<GetUserTweets> {
+  ): Promise<GetPaginatedFeedTweets> {
     if (!req.session.userId) {
-      return { error: "User is unauthorized", tweets: [], num: 0 };
+      return { error: "User is unauthorized", tweets: [] };
     }
 
     const { limit, offset } = options;
@@ -255,12 +258,12 @@ export class PostsResolver {
         f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
       }
 
-      return { error: "", tweets: f, num: 0 };
+      return { error: "", tweets: f };
     } catch (error) {
       if (error.code == "2201W") {
-        return { error: "you", tweets: [], num: 0 };
+        return { error: "you", tweets: [] };
       }
-      return { error: error.message, tweets: [], num: 0 };
+      return { error: error.message, tweets: [] };
     }
   }
 
@@ -303,6 +306,7 @@ export class PostsResolver {
           liked: false,
           likes: newLikes,
           profile_img: img ? img.url : "",
+          img: tweetAfterLike ? tweetAfterLike.img : "",
         },
       };
       await pubsub.publish(TWEET, payload);
@@ -333,6 +337,7 @@ export class PostsResolver {
           liked: true,
           likes: newLikes,
           profile_img: img ? img.url : "",
+          img: tweetAfterLike ? tweetAfterLike.img : "",
         },
       };
       await pubsub.publish(TWEET, payload);
@@ -348,11 +353,18 @@ export class PostsResolver {
   async listenTweets(
     @Root() tweet: GetTweetResponse
   ): Promise<GetTweetResponse> {
+    const user = await User.findOne({ where: { id: tweet.tweet?.rel_acc } });
+    const img = await Images.findOne({ where: { user, type: "profile" } });
+    if (img && tweet.tweet) {
+      tweet.tweet.profile_img = img.url;
+    } else if (tweet.tweet) {
+      tweet.tweet.profile_img = "";
+    }
     return tweet;
   }
 
-  @Query(() => GetAllTweets)
-  async getTweetsByUserF(@Ctx() { req }: MyContext): Promise<GetAllTweets> {
+  @Query(() => GetUserTweets)
+  async getTweetsByUserF(@Ctx() { req }: MyContext): Promise<GetUserTweets> {
     if (!req.session.userId) {
       return { error: "user is not authenticated", tweets: [], num: 0 };
     }
@@ -393,20 +405,33 @@ export class PostsResolver {
         }
         finalTweets.push(oo);
       }
-      return { error: "", tweets: finalTweets, num: allTweets.length };
+
+      const f = [];
+
+      for (let i = 0; i < finalTweets.length; i++) {
+        const ii = finalTweets[i].rel_acc;
+        const user = await User.findOne({ where: { id: ii } });
+        const img_url = await Images.findOne({
+          where: { user, type: "profile" },
+        });
+
+        f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
+      }
+
+      return { error: "", tweets: f, num: allTweets.length };
     } catch (error) {
       console.log(error);
       return { error, tweets: [], num: 0 };
     }
   }
 
-  @Query(() => GetUserTweets)
+  @Query(() => GetPaginatedUserTweets)
   async getPaginatedUserTweets(
     @Ctx() { req }: MyContext,
     @Arg("options") options: PaginatingParams
-  ): Promise<GetAllTweets> {
+  ): Promise<GetPaginatedUserTweets> {
     if (!req.session.userId) {
-      return { error: "user is not authenticated", tweets: [], num: 0 };
+      return { error: "user is not authenticated", tweets: [] };
     }
 
     const { limit, offset } = options;
@@ -439,12 +464,24 @@ export class PostsResolver {
         finalTweets.push(oo);
       }
 
-      return { error: "", tweets: finalTweets, num: 0 };
+      const f = [];
+
+      for (let i = 0; i < finalTweets.length; i++) {
+        const ii = finalTweets[i].rel_acc;
+        const user = await User.findOne({ where: { id: ii } });
+        const img_url = await Images.findOne({
+          where: { user, type: "profile" },
+        });
+
+        f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
+      }
+
+      return { error: "", tweets: f };
     } catch (error) {
       if (error.code == "2201W") {
-        return { error: "you", tweets: [], num: 0 };
+        return { error: "you", tweets: [] };
       }
-      return { error: error.message, tweets: [], num: 0 };
+      return { error: error.message, tweets: [] };
     }
   }
 

@@ -100,7 +100,7 @@ let PostsResolver = class PostsResolver {
                 if (tweet) {
                     return {
                         error: "",
-                        tweet: Object.assign(Object.assign({}, tweet), { liked: like ? true : false, profile_img: img ? img.url : "" }),
+                        tweet: Object.assign(Object.assign({}, tweet), { liked: like ? true : false, profile_img: img ? img.url : "", img: tweet.img }),
                     };
                 }
                 else {
@@ -175,7 +175,7 @@ let PostsResolver = class PostsResolver {
     getPaginatedPosts({ req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
-                return { error: "User is unauthorized", tweets: [], num: 0 };
+                return { error: "User is unauthorized", tweets: [] };
             }
             const { limit, offset } = options;
             try {
@@ -218,13 +218,13 @@ let PostsResolver = class PostsResolver {
                     });
                     f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
-                return { error: "", tweets: f, num: 0 };
+                return { error: "", tweets: f };
             }
             catch (error) {
                 if (error.code == "2201W") {
-                    return { error: "you", tweets: [], num: 0 };
+                    return { error: "you", tweets: [] };
                 }
-                return { error: error.message, tweets: [], num: 0 };
+                return { error: error.message, tweets: [] };
             }
         });
     }
@@ -254,7 +254,7 @@ let PostsResolver = class PostsResolver {
                 }
                 const payload = {
                     error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: false, likes: newLikes, profile_img: img ? img.url : "" }),
+                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: false, likes: newLikes, profile_img: img ? img.url : "", img: tweetAfterLike ? tweetAfterLike.img : "" }),
                 };
                 yield pubsub.publish(triggers_1.TWEET, payload);
                 return { liked: "unliked", error: "" };
@@ -276,7 +276,7 @@ let PostsResolver = class PostsResolver {
                 like = result.raw[0];
                 const payload = {
                     error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: true, likes: newLikes, profile_img: img ? img.url : "" }),
+                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: true, likes: newLikes, profile_img: img ? img.url : "", img: tweetAfterLike ? tweetAfterLike.img : "" }),
                 };
                 yield pubsub.publish(triggers_1.TWEET, payload);
             }
@@ -287,7 +287,16 @@ let PostsResolver = class PostsResolver {
         });
     }
     listenTweets(tweet) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            const user = yield User_1.User.findOne({ where: { id: (_a = tweet.tweet) === null || _a === void 0 ? void 0 : _a.rel_acc } });
+            const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+            if (img && tweet.tweet) {
+                tweet.tweet.profile_img = img.url;
+            }
+            else if (tweet.tweet) {
+                tweet.tweet.profile_img = "";
+            }
             return tweet;
         });
     }
@@ -328,7 +337,16 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                return { error: "", tweets: finalTweets, num: allTweets.length };
+                const f = [];
+                for (let i = 0; i < finalTweets.length; i++) {
+                    const ii = finalTweets[i].rel_acc;
+                    const user = yield User_1.User.findOne({ where: { id: ii } });
+                    const img_url = yield Images_1.Images.findOne({
+                        where: { user, type: "profile" },
+                    });
+                    f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
+                }
+                return { error: "", tweets: f, num: allTweets.length };
             }
             catch (error) {
                 console.log(error);
@@ -339,7 +357,7 @@ let PostsResolver = class PostsResolver {
     getPaginatedUserTweets({ req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
-                return { error: "user is not authenticated", tweets: [], num: 0 };
+                return { error: "user is not authenticated", tweets: [] };
             }
             const { limit, offset } = options;
             try {
@@ -366,13 +384,22 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                return { error: "", tweets: finalTweets, num: 0 };
+                const f = [];
+                for (let i = 0; i < finalTweets.length; i++) {
+                    const ii = finalTweets[i].rel_acc;
+                    const user = yield User_1.User.findOne({ where: { id: ii } });
+                    const img_url = yield Images_1.Images.findOne({
+                        where: { user, type: "profile" },
+                    });
+                    f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
+                }
+                return { error: "", tweets: f };
             }
             catch (error) {
                 if (error.code == "2201W") {
-                    return { error: "you", tweets: [], num: 0 };
+                    return { error: "you", tweets: [] };
                 }
-                return { error: error.message, tweets: [], num: 0 };
+                return { error: error.message, tweets: [] };
             }
         });
     }
@@ -481,14 +508,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getTweetById", null);
 __decorate([
-    type_graphql_1.Query(() => constants_1.GetUserTweets),
+    type_graphql_1.Query(() => constants_1.GetFeedTweets),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getTweetsByUser", null);
 __decorate([
-    type_graphql_1.Query(() => constants_1.GetUserTweets),
+    type_graphql_1.Query(() => constants_1.GetPaginatedFeedTweets),
     __param(0, type_graphql_1.Ctx()),
     __param(1, type_graphql_1.Arg("options")),
     __metadata("design:type", Function),
@@ -514,14 +541,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "listenTweets", null);
 __decorate([
-    type_graphql_1.Query(() => constants_1.GetAllTweets),
+    type_graphql_1.Query(() => constants_1.GetUserTweets),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "getTweetsByUserF", null);
 __decorate([
-    type_graphql_1.Query(() => constants_1.GetUserTweets),
+    type_graphql_1.Query(() => constants_1.GetPaginatedUserTweets),
     __param(0, type_graphql_1.Ctx()),
     __param(1, type_graphql_1.Arg("options")),
     __metadata("design:type", Function),

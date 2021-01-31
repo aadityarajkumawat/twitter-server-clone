@@ -20,7 +20,7 @@ export class SearchResolver {
       .createQueryBuilder()
       .select("name, username, id")
       .from(User, "user")
-      .where("user.name LIKE :name", { name: `%${options.search}%` })
+      .where("user.username LIKE :name", { name: `%${options.search}%` })
       .execute();
 
     return { error: null, profiles };
