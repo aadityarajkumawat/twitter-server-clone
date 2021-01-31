@@ -238,13 +238,13 @@ export class DisplayProfiles {
 @ObjectType()
 export class DisplayProfile {
   @Field(() => String)
-  url: string;
-  @Field(() => String)
   name: string;
   @Field(() => String)
   username: string;
   @Field(() => Number)
   id: number;
+  @Field(() => String)
+  img: string;
 }
 
 @InputType()

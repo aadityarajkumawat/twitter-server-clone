@@ -3,6 +3,7 @@ import { User } from "../entities/User";
 import { MyContext } from "src/types";
 import { Arg, Ctx, Query, Resolver } from "type-graphql";
 import { getConnection } from "typeorm";
+import { Images } from "../entities/Images";
 
 @Resolver()
 export class SearchResolver {
@@ -23,6 +24,19 @@ export class SearchResolver {
       .where("user.username LIKE :name", { name: `%${options.search}%` })
       .execute();
 
-    return { error: null, profiles };
+    console.log(profiles);
+
+    const f = [];
+
+    for (let i = 0; i < profiles.length; i++) {
+      const ii = profiles[i].id;
+      const user = await User.findOne({ where: { id: ii } });
+      const img = await Images.findOne({ where: { user, type: "profile" } });
+      f.push({ ...profiles[i], img: img ? img.url : "" });
+    }
+
+    console.log(f);
+
+    return { error: null, profiles: f };
   }
 }

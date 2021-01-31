@@ -425,10 +425,6 @@ let DisplayProfile = class DisplayProfile {
 __decorate([
     type_graphql_1.Field(() => String),
     __metadata("design:type", String)
-], DisplayProfile.prototype, "url", void 0);
-__decorate([
-    type_graphql_1.Field(() => String),
-    __metadata("design:type", String)
 ], DisplayProfile.prototype, "name", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
@@ -438,6 +434,10 @@ __decorate([
     type_graphql_1.Field(() => Number),
     __metadata("design:type", Number)
 ], DisplayProfile.prototype, "id", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], DisplayProfile.prototype, "img", void 0);
 DisplayProfile = __decorate([
     type_graphql_1.ObjectType()
 ], DisplayProfile);
