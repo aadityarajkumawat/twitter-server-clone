@@ -218,10 +218,16 @@ let PostsResolver = class PostsResolver {
                     });
                     f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
-                return { error: "", tweets: f };
+                return new Promise((resolve, _) => {
+                    setTimeout(() => {
+                        resolve({ error: "", tweets: f });
+                        console.log("loading...");
+                    }, 2000);
+                });
             }
             catch (error) {
                 if (error.code == "2201W") {
+                    console.log(error.message);
                     return { error: "you", tweets: [] };
                 }
                 return { error: error.message, tweets: [] };

@@ -38,12 +38,8 @@ const images_1 = require("./resolvers/images");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
-        host: "localhost",
-        port: 5432,
-        username: "postgres",
-        password: "AwS56$ds",
-        database: "twitter66",
-        logging: true,
+        url: "postgres://postgres:postgres@localhost:5432/twitter66",
+        synchronize: true,
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
         entities: [User_1.User, Tweets_1.Tweet, Tweets_1.Like, Tweets_1.Comment, Follow_1.Follow, Images_1.Images, Profile_1.Profile],
     });
@@ -94,9 +90,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     server.applyMiddleware({ app, cors: false });
     const httpServer = http_1.default.createServer(app);
     server.installSubscriptionHandlers(httpServer);
-    httpServer.listen(4000, () => {
-        console.log(`server is at: http://localhost:4000${server.graphqlPath}`);
-        console.log(`subscription is at: ws://localhost:4000${server.subscriptionsPath}`);
+    httpServer.listen(4001, () => {
+        console.log(`server is at: http://localhost:4001${server.graphqlPath}`);
+        console.log(`subscription is at: ws://localhost:4001${server.subscriptionsPath}`);
     });
 });
 main().catch((err) => {

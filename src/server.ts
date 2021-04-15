@@ -25,13 +25,9 @@ import { ImgResolver } from "./resolvers/images";
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
-    host: "localhost",
-    port: 5432,
-    username: "postgres",
-    password: "AwS56$ds",
-    database: "twitter66",
-    logging: true,
-    // synchronize: true,
+    url: "postgres://postgres:postgres@localhost:5432/twitter66",
+    // logging: true,
+    synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
     entities: [User, Tweet, Like, Comment, Follow, Images, Profile],
   });
@@ -97,10 +93,10 @@ const main = async () => {
   const httpServer = http.createServer(app);
   server.installSubscriptionHandlers(httpServer);
 
-  httpServer.listen(4000, () => {
-    console.log(`server is at: http://localhost:4000${server.graphqlPath}`);
+  httpServer.listen(4001, () => {
+    console.log(`server is at: http://localhost:4001${server.graphqlPath}`);
     console.log(
-      `subscription is at: ws://localhost:4000${server.subscriptionsPath}`
+      `subscription is at: ws://localhost:4001${server.subscriptionsPath}`
     );
   });
 };
