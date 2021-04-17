@@ -209,20 +209,20 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                const f = [];
+                const tweetsResponse = [];
                 for (let i = 0; i < finalTweets.length; i++) {
                     const ii = finalTweets[i].rel_acc;
                     const user = yield User_1.User.findOne({ where: { id: ii } });
                     const img_url = yield Images_1.Images.findOne({
                         where: { user, type: "profile" },
                     });
-                    f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
+                    tweetsResponse.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
                 return new Promise((resolve, _) => {
                     setTimeout(() => {
-                        resolve({ error: "", tweets: f });
+                        resolve({ error: "", tweets: tweetsResponse });
                         console.log("loading...");
-                    }, 2000);
+                    }, 300);
                 });
             }
             catch (error) {
@@ -399,7 +399,11 @@ let PostsResolver = class PostsResolver {
                     });
                     f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
-                return { error: "", tweets: f };
+                return new Promise((resolve, _) => {
+                    setTimeout(() => {
+                        resolve({ error: "", tweets: f });
+                    }, 500);
+                });
             }
             catch (error) {
                 if (error.code == "2201W") {

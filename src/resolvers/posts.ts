@@ -1,6 +1,7 @@
 import {
   EditProfile,
   GetFeedTweets,
+  GetOneTweet,
   GetPaginatedFeedTweets,
   GetPaginatedUserTweets,
   GetProfile,
@@ -247,7 +248,7 @@ export class PostsResolver {
         finalTweets.push(oo);
       }
 
-      const f: any = [];
+      const tweetsResponse: GetOneTweet[] = [];
 
       for (let i = 0; i < finalTweets.length; i++) {
         const ii = finalTweets[i].rel_acc;
@@ -256,17 +257,18 @@ export class PostsResolver {
           where: { user, type: "profile" },
         });
 
-        f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
+        tweetsResponse.push({
+          ...finalTweets[i],
+          profile_img: img_url ? img_url.url : "",
+        });
       }
 
       return new Promise((resolve, _) => {
         setTimeout(() => {
-          resolve({ error: "", tweets: f });
+          resolve({ error: "", tweets: tweetsResponse });
           console.log("loading...");
-        }, 2000);
+        }, 300);
       });
-
-      // return { error: "", tweets: f };
     } catch (error) {
       if (error.code == "2201W") {
         console.log(error.message);
@@ -476,7 +478,7 @@ export class PostsResolver {
         finalTweets.push(oo);
       }
 
-      const f = [];
+      const f: GetOneTweet[] = [];
 
       for (let i = 0; i < finalTweets.length; i++) {
         const ii = finalTweets[i].rel_acc;
@@ -488,7 +490,11 @@ export class PostsResolver {
         f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
       }
 
-      return { error: "", tweets: f };
+      return new Promise((resolve, _) => {
+        setTimeout(() => {
+          resolve({ error: "", tweets: f });
+        }, 500);
+      });
     } catch (error) {
       if (error.code == "2201W") {
         return { error: "you", tweets: [] };
