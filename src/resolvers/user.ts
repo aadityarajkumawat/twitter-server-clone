@@ -9,6 +9,7 @@ import {
   UserLoginInput,
   validSchemaLogin,
   ProfileStuff,
+  MeResponse,
 } from "../constants";
 import { getConnection } from "typeorm";
 import { Profile } from "../entities/Profile";
@@ -18,14 +19,36 @@ import { Tweet } from "../entities/Tweets";
 
 @Resolver()
 export class UserResolver {
-  @Query(() => User, { nullable: true })
-  async me(@Ctx() { req }: MyContext) {
+  @Query(() => MeResponse, { nullable: true })
+  async me(@Ctx() { req }: MyContext): Promise<MeResponse> {
     if (!req.session.userId) {
-      return null;
+      return { error: "User not authenticated", user: undefined };
     }
 
-    const user = await User.findOne({ where: { id: req.session.userId } });
-    return user;
+    try {
+      const user = await User.findOne({ where: { id: req.session.userId } });
+      if (!user) return { error: "No user", user: undefined };
+      const img = await Images.findOne({ where: { user, type: "profile" } });
+      if (!img) return { error: "No image", user: undefined };
+
+      const { id, email, createdAt, updatedAt, username, phone, name } = user;
+
+      return {
+        error: undefined,
+        user: {
+          id,
+          email,
+          createdAt,
+          updatedAt,
+          username,
+          phone,
+          name,
+          img: img.url,
+        },
+      };
+    } catch (error) {
+      return { error: error.message, user: undefined };
+    }
   }
 
   @Mutation(() => UserResponse)

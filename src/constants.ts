@@ -2,7 +2,6 @@ import { ObjectType, InputType, Field } from "type-graphql";
 import { User } from "./entities/User";
 import * as Yup from "yup";
 import { Like } from "./entities/Tweets";
-import { Stream } from "stream";
 
 export const __prod__ = process.env.NODE_ENV === "production";
 
@@ -200,12 +199,12 @@ export class PaginatingUserParams {
 }
 
 // Image Upload
-export interface Upload {
-  filename: string;
-  mimetype: string;
-  encoding: string;
-  createReadStream: () => Stream;
-}
+// export interface Upload {
+//   filename: string;
+//   mimetype: string;
+//   encoding: string;
+//   createReadStream: () => Stream;
+// }
 
 @ObjectType()
 export class Profile {
@@ -316,3 +315,31 @@ export const validSchemaLogin = Yup.object().shape({
   email: Yup.string().email().required("Required"),
   password: Yup.string().min(8).max(15).required("Required"),
 });
+
+@ObjectType()
+export class MeUser {
+  @Field()
+  id!: number;
+  @Field(() => String)
+  email!: string;
+  @Field(() => String)
+  createdAt: string;
+  @Field(() => String)
+  updatedAt: string;
+  @Field(() => String)
+  username!: string;
+  @Field(() => String)
+  name!: string;
+  @Field(() => String)
+  phone!: string;
+  @Field(() => String)
+  img!: string;
+}
+
+@ObjectType()
+export class MeResponse {
+  @Field(() => MeUser, { nullable: true })
+  user?: MeUser;
+  @Field(() => String, { nullable: true })
+  error?: string;
+}

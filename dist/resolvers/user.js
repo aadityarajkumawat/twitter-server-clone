@@ -38,10 +38,33 @@ let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!req.session.userId) {
-                return null;
+                return { error: "User not authenticated", user: undefined };
             }
-            const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
-            return user;
+            try {
+                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                if (!user)
+                    return { error: "No user", user: undefined };
+                const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+                if (!img)
+                    return { error: "No image", user: undefined };
+                const { id, email, createdAt, updatedAt, username, phone, name } = user;
+                return {
+                    error: undefined,
+                    user: {
+                        id,
+                        email,
+                        createdAt,
+                        updatedAt,
+                        username,
+                        phone,
+                        name,
+                        img: img.url,
+                    },
+                };
+            }
+            catch (error) {
+                return { error: error.message, user: undefined };
+            }
         });
     }
     register(options, { req }) {
@@ -225,7 +248,7 @@ let UserResolver = class UserResolver {
     }
 };
 __decorate([
-    type_graphql_1.Query(() => User_1.User, { nullable: true }),
+    type_graphql_1.Query(() => constants_1.MeResponse, { nullable: true }),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
