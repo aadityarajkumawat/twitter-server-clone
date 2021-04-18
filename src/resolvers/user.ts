@@ -19,22 +19,22 @@ import { Tweet } from "../entities/Tweets";
 
 @Resolver()
 export class UserResolver {
-  @Query(() => MeResponse, { nullable: true })
+  @Query(() => MeResponse)
   async me(@Ctx() { req }: MyContext): Promise<MeResponse> {
     if (!req.session.userId) {
-      return { error: "User not authenticated", user: undefined };
+      return { error: "User not authenticated", user: null };
     }
 
     try {
       const user = await User.findOne({ where: { id: req.session.userId } });
-      if (!user) return { error: "No user", user: undefined };
+      if (!user) return { error: "No user", user: null };
       const img = await Images.findOne({ where: { user, type: "profile" } });
-      if (!img) return { error: "No image", user: undefined };
+      if (!img) return { error: "No image", user: null };
 
       const { id, email, createdAt, updatedAt, username, phone, name } = user;
 
       return {
-        error: undefined,
+        error: "",
         user: {
           id,
           email,
@@ -47,7 +47,7 @@ export class UserResolver {
         },
       };
     } catch (error) {
-      return { error: error.message, user: undefined };
+      return { error: error.message, user: null };
     }
   }
 

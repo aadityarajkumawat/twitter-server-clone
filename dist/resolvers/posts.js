@@ -221,8 +221,7 @@ let PostsResolver = class PostsResolver {
                 return new Promise((resolve, _) => {
                     setTimeout(() => {
                         resolve({ error: "", tweets: tweetsResponse });
-                        console.log("loading...");
-                    }, 300);
+                    }, 500);
                 });
             }
             catch (error) {
@@ -303,7 +302,11 @@ let PostsResolver = class PostsResolver {
             else if (tweet.tweet) {
                 tweet.tweet.profile_img = "";
             }
-            return tweet;
+            return new Promise((resolve, _) => {
+                setTimeout(() => {
+                    resolve(tweet);
+                }, 2000);
+            });
         });
     }
     getTweetsByUserF({ req }, id) {
@@ -438,7 +441,6 @@ let PostsResolver = class PostsResolver {
                     .where("tweet.rel_acc = :id", { id: req.session.userId })
                     .execute();
                 const num = n[0].count;
-                console.log(num);
                 const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
                 const profile = yield Profile_1.Profile.findOne({ where: { user } });
                 if (profile) {

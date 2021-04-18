@@ -161,7 +161,7 @@ exports.TweetInfo = TweetInfo;
 let GetTweetResponse = class GetTweetResponse {
 };
 __decorate([
-    type_graphql_1.Field(() => GetOneTweet, { nullable: true }),
+    type_graphql_1.Field(() => GetOneTweet),
     __metadata("design:type", Object)
 ], GetTweetResponse.prototype, "tweet", void 0);
 __decorate([
@@ -595,11 +595,11 @@ exports.MeUser = MeUser;
 let MeResponse = class MeResponse {
 };
 __decorate([
-    type_graphql_1.Field(() => MeUser, { nullable: true }),
-    __metadata("design:type", MeUser)
+    type_graphql_1.Field(() => MeUser),
+    __metadata("design:type", Object)
 ], MeResponse.prototype, "user", void 0);
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
+    type_graphql_1.Field(() => String),
     __metadata("design:type", String)
 ], MeResponse.prototype, "error", void 0);
 MeResponse = __decorate([

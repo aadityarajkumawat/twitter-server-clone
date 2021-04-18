@@ -266,8 +266,7 @@ export class PostsResolver {
       return new Promise((resolve, _) => {
         setTimeout(() => {
           resolve({ error: "", tweets: tweetsResponse });
-          console.log("loading...");
-        }, 300);
+        }, 500);
       });
     } catch (error) {
       if (error.code == "2201W") {
@@ -371,7 +370,12 @@ export class PostsResolver {
     } else if (tweet.tweet) {
       tweet.tweet.profile_img = "";
     }
-    return tweet;
+
+    return new Promise((resolve, _) => {
+      setTimeout(() => {
+        resolve(tweet);
+      }, 2000);
+    });
   }
 
   @Query(() => GetUserTweets)
@@ -532,7 +536,6 @@ export class PostsResolver {
         .execute();
 
       const num = n[0].count;
-      console.log(num);
 
       const user = await User.findOne({ where: { id: req.session.userId } });
       const profile = await Profile.findOne({ where: { user } });

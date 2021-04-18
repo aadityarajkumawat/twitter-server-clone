@@ -81,8 +81,8 @@ export class TweetInfo {
 // Fetch a tweet
 @ObjectType()
 export class GetTweetResponse {
-  @Field(() => GetOneTweet, { nullable: true })
-  tweet?: GetOneTweet | null;
+  @Field(() => GetOneTweet)
+  tweet: GetOneTweet | null;
   @Field({ nullable: true })
   error: string;
 }
@@ -338,8 +338,8 @@ export class MeUser {
 
 @ObjectType()
 export class MeResponse {
-  @Field(() => MeUser, { nullable: true })
-  user?: MeUser;
-  @Field(() => String, { nullable: true })
-  error?: string;
+  @Field(() => MeUser)
+  user: MeUser | null;
+  @Field(() => String)
+  error: string;
 }
