@@ -31,6 +31,8 @@ const Follow_1 = require("../entities/Follow");
 const triggers_1 = require("../triggers");
 const Profile_1 = require("../entities/Profile");
 const Images_1 = require("../entities/Images");
+const user_1 = require("./user");
+const userResolvers = new user_1.UserResolver();
 let PostsResolver = class PostsResolver {
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -501,6 +503,18 @@ let PostsResolver = class PostsResolver {
             }
         });
     }
+    profileStuffAndUserTweets(ctx, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const getProfileStuff = userResolvers.getProfileStuff;
+            const profileStuff = yield getProfileStuff(ctx, id);
+            const userTweets = yield this.getTweetsByUserF(ctx, id);
+            return {
+                error: "",
+                profile: profileStuff.profile,
+                tweets: userTweets.tweets,
+            };
+        });
+    }
 };
 __decorate([
     type_graphql_1.Mutation(() => constants_1.PostCreatedResponse),
@@ -583,6 +597,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, constants_1.EditProfile]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "editProfile", null);
+__decorate([
+    type_graphql_1.Query(() => constants_1.ProfileStuffAndUserTweets),
+    __param(0, type_graphql_1.Ctx()),
+    __param(1, type_graphql_1.Arg("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number]),
+    __metadata("design:returntype", Promise)
+], PostsResolver.prototype, "profileStuffAndUserTweets", null);
 PostsResolver = __decorate([
     type_graphql_1.Resolver()
 ], PostsResolver);

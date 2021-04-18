@@ -5,7 +5,6 @@ import { Like } from "./entities/Tweets";
 
 export const __prod__ = process.env.NODE_ENV === "production";
 
-// User Authentication
 @ObjectType()
 export class UserResponse {
   @Field(() => [FieldError], { nullable: true })
@@ -198,14 +197,6 @@ export class PaginatingUserParams {
   id: number;
 }
 
-// Image Upload
-// export interface Upload {
-//   filename: string;
-//   mimetype: string;
-//   encoding: string;
-//   createReadStream: () => Stream;
-// }
-
 @ObjectType()
 export class Profile {
   @Field(() => Number)
@@ -340,6 +331,16 @@ export class MeUser {
 export class MeResponse {
   @Field(() => MeUser)
   user: MeUser | null;
+  @Field(() => String)
+  error: string;
+}
+
+@ObjectType()
+export class ProfileStuffAndUserTweets {
+  @Field(() => ProfileItems)
+  profile: ProfileItems | null;
+  @Field(() => [GetOneTweet])
+  tweets: GetOneTweet[] | null;
   @Field(() => String)
   error: string;
 }

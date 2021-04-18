@@ -13,6 +13,7 @@ import {
   PaginatingUserParams,
   PostCreatedResponse,
   PostTweetInput,
+  ProfileStuffAndUserTweets,
   TweetInfo,
 } from "../constants";
 import { MyContext } from "src/types";
@@ -34,6 +35,9 @@ import { Follow } from "../entities/Follow";
 import { TWEET } from "../triggers";
 import { Profile } from "../entities/Profile";
 import { Images } from "../entities/Images";
+
+import { UserResolver } from "./user";
+const userResolvers = new UserResolver();
 
 @Resolver()
 export class PostsResolver {
@@ -597,5 +601,22 @@ export class PostsResolver {
       console.log(error);
       return false;
     }
+  }
+
+  @Query(() => ProfileStuffAndUserTweets)
+  async profileStuffAndUserTweets(
+    @Ctx() ctx: MyContext,
+    @Arg("id") id: number
+  ): Promise<ProfileStuffAndUserTweets> {
+    const getProfileStuff = userResolvers.getProfileStuff;
+
+    const profileStuff = await getProfileStuff(ctx, id);
+    const userTweets = await this.getTweetsByUserF(ctx, id);
+
+    return {
+      error: "",
+      profile: profileStuff.profile,
+      tweets: userTweets.tweets,
+    };
   }
 }
