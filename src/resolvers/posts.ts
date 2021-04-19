@@ -584,19 +584,24 @@ export class PostsResolver {
     }
 
     const { link, bio } = options;
+    let result = false;
     try {
       const user = await User.findOne({ where: { id: req.session.userId } });
       const currentProfile = await Profile.findOne({ where: { user } });
-      console.log(currentProfile);
       if (currentProfile) {
         currentProfile.bio = bio;
         currentProfile.link = link;
 
         await currentProfile.save();
-        return true;
+        result = true;
       } else {
-        return false;
+        result = false;
       }
+      return new Promise((resolve, _) => {
+        setTimeout(() => {
+          resolve(result);
+        }, 2000);
+      });
     } catch (error) {
       console.log(error);
       return false;
@@ -613,10 +618,14 @@ export class PostsResolver {
     const profileStuff = await getProfileStuff(ctx, id);
     const userTweets = await this.getTweetsByUserF(ctx, id);
 
-    return {
-      error: "",
-      profile: profileStuff.profile,
-      tweets: userTweets.tweets,
-    };
+    return new Promise((resolve, _) => {
+      setTimeout(() => {
+        resolve({
+          error: "",
+          profile: profileStuff.profile,
+          tweets: userTweets.tweets,
+        });
+      }, 1000);
+    });
   }
 }

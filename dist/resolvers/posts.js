@@ -483,19 +483,24 @@ let PostsResolver = class PostsResolver {
                 return false;
             }
             const { link, bio } = options;
+            let result = false;
             try {
                 const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
                 const currentProfile = yield Profile_1.Profile.findOne({ where: { user } });
-                console.log(currentProfile);
                 if (currentProfile) {
                     currentProfile.bio = bio;
                     currentProfile.link = link;
                     yield currentProfile.save();
-                    return true;
+                    result = true;
                 }
                 else {
-                    return false;
+                    result = false;
                 }
+                return new Promise((resolve, _) => {
+                    setTimeout(() => {
+                        resolve(result);
+                    }, 2000);
+                });
             }
             catch (error) {
                 console.log(error);
@@ -508,11 +513,15 @@ let PostsResolver = class PostsResolver {
             const getProfileStuff = userResolvers.getProfileStuff;
             const profileStuff = yield getProfileStuff(ctx, id);
             const userTweets = yield this.getTweetsByUserF(ctx, id);
-            return {
-                error: "",
-                profile: profileStuff.profile,
-                tweets: userTweets.tweets,
-            };
+            return new Promise((resolve, _) => {
+                setTimeout(() => {
+                    resolve({
+                        error: "",
+                        profile: profileStuff.profile,
+                        tweets: userTweets.tweets,
+                    });
+                }, 1000);
+            });
         });
     }
 };
