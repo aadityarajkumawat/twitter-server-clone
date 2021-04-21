@@ -34,6 +34,9 @@ const Images_1 = require("../entities/Images");
 const user_1 = require("./user");
 const userResolvers = new user_1.UserResolver();
 let PostsResolver = class PostsResolver {
+    constructor() {
+        this.t = 200;
+    }
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             let { tweet_content, rel_acc, img } = options;
@@ -223,7 +226,7 @@ let PostsResolver = class PostsResolver {
                 return new Promise((resolve, _) => {
                     setTimeout(() => {
                         resolve({ error: "", tweets: tweetsResponse });
-                    }, 500);
+                    }, this.t);
                 });
             }
             catch (error) {
@@ -307,7 +310,7 @@ let PostsResolver = class PostsResolver {
             return new Promise((resolve, _) => {
                 setTimeout(() => {
                     resolve(tweet);
-                }, 2000);
+                }, this.t);
             });
         });
     }
@@ -407,7 +410,7 @@ let PostsResolver = class PostsResolver {
                 return new Promise((resolve, _) => {
                     setTimeout(() => {
                         resolve({ error: "", tweets: f });
-                    }, 500);
+                    }, this.t);
                 });
             }
             catch (error) {
@@ -499,7 +502,7 @@ let PostsResolver = class PostsResolver {
                 return new Promise((resolve, _) => {
                     setTimeout(() => {
                         resolve(result);
-                    }, 2000);
+                    }, this.t);
                 });
             }
             catch (error) {
@@ -520,7 +523,7 @@ let PostsResolver = class PostsResolver {
                         profile: profileStuff.profile,
                         tweets: userTweets.tweets,
                     });
-                }, 1000);
+                }, this.t);
             });
         });
     }

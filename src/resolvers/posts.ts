@@ -41,6 +41,8 @@ const userResolvers = new UserResolver();
 
 @Resolver()
 export class PostsResolver {
+  t = 200;
+
   @Mutation(() => PostCreatedResponse)
   async createPost(
     @Arg("options") options: PostTweetInput,
@@ -270,7 +272,7 @@ export class PostsResolver {
       return new Promise((resolve, _) => {
         setTimeout(() => {
           resolve({ error: "", tweets: tweetsResponse });
-        }, 500);
+        }, this.t);
       });
     } catch (error) {
       if (error.code == "2201W") {
@@ -378,7 +380,7 @@ export class PostsResolver {
     return new Promise((resolve, _) => {
       setTimeout(() => {
         resolve(tweet);
-      }, 2000);
+      }, this.t);
     });
   }
 
@@ -501,7 +503,7 @@ export class PostsResolver {
       return new Promise((resolve, _) => {
         setTimeout(() => {
           resolve({ error: "", tweets: f });
-        }, 500);
+        }, this.t);
       });
     } catch (error) {
       if (error.code == "2201W") {
@@ -600,7 +602,7 @@ export class PostsResolver {
       return new Promise((resolve, _) => {
         setTimeout(() => {
           resolve(result);
-        }, 2000);
+        }, this.t);
       });
     } catch (error) {
       console.log(error);
@@ -625,7 +627,7 @@ export class PostsResolver {
           profile: profileStuff.profile,
           tweets: userTweets.tweets,
         });
-      }, 1000);
+      }, this.t);
     });
   }
 }
