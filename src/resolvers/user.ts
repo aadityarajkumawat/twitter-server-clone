@@ -10,6 +10,7 @@ import {
   validSchemaLogin,
   ProfileStuff,
   MeResponse,
+  NUserResponse,
 } from "../constants";
 import { getConnection } from "typeorm";
 import { Profile } from "../entities/Profile";
@@ -242,5 +243,27 @@ export class UserResolver {
       console.log(error.message);
       return { error: error.message, profile: null };
     }
+  }
+
+  @Query(() => NUserResponse)
+  async getUserByUsername(
+    @Arg("username") username: string
+  ): Promise<NUserResponse> {
+    const user = await User.findOne({ where: { username } });
+    if (!user) return { error: "No user", user: null };
+    const img = await Images.findOne({ where: { user, type: "profile" } });
+    if (!img) return { error: "No image", user: null };
+
+    const { id, name } = user;
+
+    return {
+      error: "",
+      user: {
+        id,
+        username,
+        name,
+        img: img.url,
+      },
+    };
   }
 }

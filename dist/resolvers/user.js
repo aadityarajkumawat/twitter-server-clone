@@ -246,6 +246,26 @@ let UserResolver = class UserResolver {
             }
         });
     }
+    getUserByUsername(username) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield User_1.User.findOne({ where: { username } });
+            if (!user)
+                return { error: "No user", user: null };
+            const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+            if (!img)
+                return { error: "No image", user: null };
+            const { id, name } = user;
+            return {
+                error: "",
+                user: {
+                    id,
+                    username,
+                    name,
+                    img: img.url,
+                },
+            };
+        });
+    }
 };
 __decorate([
     type_graphql_1.Query(() => constants_1.MeResponse),
@@ -278,6 +298,13 @@ __decorate([
     __metadata("design:paramtypes", [Object, Number]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "getProfileStuff", null);
+__decorate([
+    type_graphql_1.Query(() => constants_1.NUserResponse),
+    __param(0, type_graphql_1.Arg("username")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "getUserByUsername", null);
 UserResolver = __decorate([
     type_graphql_1.Resolver()
 ], UserResolver);

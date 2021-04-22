@@ -28,7 +28,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProfileStuffAndUserTweets = exports.MeResponse = exports.MeUser = exports.validSchemaLogin = exports.validSchemaRegister = exports.ProfileStuff = exports.ProfileItems = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingUserParams = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetPaginatedUserTweets = exports.GetUserTweets = exports.GetPaginatedFeedTweets = exports.GetFeedTweets = exports.GetTweetById = exports.GetOneTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
+exports.NUser = exports.NUserResponse = exports.ProfileStuffAndUserTweets = exports.MeResponse = exports.MeUser = exports.validSchemaLogin = exports.validSchemaRegister = exports.ProfileStuff = exports.ProfileItems = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingUserParams = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetPaginatedUserTweets = exports.GetUserTweets = exports.GetPaginatedFeedTweets = exports.GetFeedTweets = exports.GetTweetById = exports.GetOneTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("./entities/User");
 const Yup = __importStar(require("yup"));
@@ -624,4 +624,40 @@ ProfileStuffAndUserTweets = __decorate([
     type_graphql_1.ObjectType()
 ], ProfileStuffAndUserTweets);
 exports.ProfileStuffAndUserTweets = ProfileStuffAndUserTweets;
+let NUserResponse = class NUserResponse {
+};
+__decorate([
+    type_graphql_1.Field(() => NUser),
+    __metadata("design:type", Object)
+], NUserResponse.prototype, "user", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], NUserResponse.prototype, "error", void 0);
+NUserResponse = __decorate([
+    type_graphql_1.ObjectType()
+], NUserResponse);
+exports.NUserResponse = NUserResponse;
+let NUser = class NUser {
+};
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Number)
+], NUser.prototype, "id", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], NUser.prototype, "username", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], NUser.prototype, "name", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
+], NUser.prototype, "img", void 0);
+NUser = __decorate([
+    type_graphql_1.ObjectType()
+], NUser);
+exports.NUser = NUser;
 //# sourceMappingURL=constants.js.map

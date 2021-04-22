@@ -344,3 +344,23 @@ export class ProfileStuffAndUserTweets {
   @Field(() => String)
   error: string;
 }
+
+@ObjectType()
+export class NUserResponse {
+  @Field(() => NUser)
+  user: NUser | null;
+  @Field(() => String)
+  error: string;
+}
+
+@ObjectType()
+export class NUser {
+  @Field()
+  id!: number;
+  @Field(() => String)
+  username!: string;
+  @Field(() => String)
+  name!: string;
+  @Field(() => String)
+  img!: string;
+}
