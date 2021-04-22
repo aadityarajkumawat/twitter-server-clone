@@ -30,7 +30,6 @@ export class UserResolver {
       const user = await User.findOne({ where: { id: req.session.userId } });
       if (!user) return { error: "No user", user: null };
       const img = await Images.findOne({ where: { user, type: "profile" } });
-      if (!img) return { error: "No image", user: null };
 
       const { id, email, createdAt, updatedAt, username, phone, name } = user;
 
@@ -44,10 +43,11 @@ export class UserResolver {
           username,
           phone,
           name,
-          img: img.url,
+          img: img ? img.url : "",
         },
       };
     } catch (error) {
+      console.log(error.message);
       return { error: error.message, user: null };
     }
   }
