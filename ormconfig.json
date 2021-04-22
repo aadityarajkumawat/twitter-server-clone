@@ -3,8 +3,7 @@
   "host": "localhost",
   "port": 5432,
   "username": "postgres",
-  "password": "AwS56$ds",
-  "database": "twitter66",
-  "synchronize": true,
-  "logging": false
+  "password": "postgres",
+  "database": "twitter67",
+  "entities": ["dist/entities/*.js"]
 }

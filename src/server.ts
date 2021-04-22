@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import "dotenv-safe/config";
 import express from "express";
 import { ApolloServer, PubSub } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -25,9 +26,9 @@ import { ImgResolver } from "./resolvers/images";
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
-    url: "postgres://postgres:postgres@localhost:5432/twitter66",
+    url: process.env.DATABASE_URL,
     // logging: true,
-    synchronize: true,
+    // synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
     entities: [User, Tweet, Like, Comment, Follow, Images, Profile],
   });
@@ -38,16 +39,18 @@ const main = async () => {
   const pubsub = new PubSub();
 
   const RedisStore = connectRedis(session);
-  const redisClient = redis.createClient();
+  const redisClient = redis.createClient({ url: process.env.REDIS_URL });
 
   app.use((req: any, _: any, next: any) => {
     req.pubsub = pubsub;
     next();
   });
 
+  app.set("proxy", 1);
+
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -61,9 +64,10 @@ const main = async () => {
         httpOnly: true,
         sameSite: "lax",
         secure: __prod__,
+        domain: __prod__ ? ".twitter.com" : undefined,
       },
       saveUninitialized: false,
-      secret: "thisissomerandomwhichbecomesusajibrish",
+      secret: process.env.SESSION_SECRET,
       resave: false,
     })
   );
@@ -93,7 +97,7 @@ const main = async () => {
   const httpServer = http.createServer(app);
   server.installSubscriptionHandlers(httpServer);
 
-  httpServer.listen(4001, () => {
+  httpServer.listen(parseInt(process.env.PORT), () => {
     console.log(`server is at: http://localhost:4001${server.graphqlPath}`);
     console.log(
       `subscription is at: ws://localhost:4001${server.subscriptionsPath}`

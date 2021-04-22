@@ -6,7 +6,9 @@
   "scripts": {
     "watch": "tsc -w",
     "start": "nodemon dist/server.js",
-    "create:migration": "mikro-orm migration:create"
+    "create:migration": "mikro-orm migration:create",
+    "build": "tsc",
+    "gen-env": "npx gen-env-types .env -o src/env.d.ts -e ."
   },
   "author": "Edy Dee",
   "license": "MIT",
@@ -21,6 +23,7 @@
     "cloudinary": "^1.23.0",
     "connect-redis": "^5.0.0",
     "cors": "^2.8.5",
+    "dotenv-safe": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "graphql": "^15.4.0",
