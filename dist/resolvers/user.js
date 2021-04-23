@@ -61,7 +61,6 @@ let UserResolver = class UserResolver {
                 };
             }
             catch (error) {
-                console.log(error.message);
                 return { error: error.message, user: null };
             }
         });
@@ -165,7 +164,6 @@ let UserResolver = class UserResolver {
                     };
                 }
                 req.session.userId = user.id;
-                console.log(req.session);
                 return { user };
             }
             else {
@@ -240,7 +238,6 @@ let UserResolver = class UserResolver {
                 }
             }
             catch (error) {
-                console.log(error.message);
                 return { error: error.message, profile: null };
             }
         });

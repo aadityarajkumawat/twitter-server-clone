@@ -40,7 +40,6 @@ let PostsResolver = class PostsResolver {
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             let { tweet_content, rel_acc, img } = options;
-            console.log(req.session.userId);
             if (!req.session.userId) {
                 return { error: "User is unauthorized" };
             }
@@ -81,7 +80,6 @@ let PostsResolver = class PostsResolver {
                 }
             }
             catch (err) {
-                console.log(err);
             }
             return { error: "", uploaded: `uploaded${post.tweet_id}` };
         });
@@ -172,7 +170,6 @@ let PostsResolver = class PostsResolver {
                 return { error: "", tweets: f, num: tw.length };
             }
             catch (error) {
-                console.log("err");
                 return { error: error.message, tweets: [], num: 0 };
             }
         });
@@ -231,7 +228,6 @@ let PostsResolver = class PostsResolver {
             }
             catch (error) {
                 if (error.code == "2201W") {
-                    console.log(error.message);
                     return { error: "you", tweets: [] };
                 }
                 return { error: error.message, tweets: [] };
@@ -291,7 +287,6 @@ let PostsResolver = class PostsResolver {
                 yield pubsub.publish(triggers_1.TWEET, payload);
             }
             catch (err) {
-                console.log(err);
             }
             return { liked: `liked${like === null || like === void 0 ? void 0 : like.like_id}`, error: "" };
         });
@@ -363,7 +358,6 @@ let PostsResolver = class PostsResolver {
                 return { error: "", tweets: f, num: allTweets.length };
             }
             catch (error) {
-                console.log(error);
                 return { error, tweets: [], num: 0 };
             }
         });
@@ -475,7 +469,6 @@ let PostsResolver = class PostsResolver {
                 }
             }
             catch (error) {
-                console.log(error);
                 return { error: error, profile: null };
             }
         });
@@ -506,7 +499,6 @@ let PostsResolver = class PostsResolver {
                 });
             }
             catch (error) {
-                console.log(error);
                 return false;
             }
         });

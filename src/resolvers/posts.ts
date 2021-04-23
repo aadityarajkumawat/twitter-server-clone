@@ -50,7 +50,7 @@ export class PostsResolver {
     @PubSub() pubsub: PubSubEngine
   ): Promise<PostCreatedResponse> {
     let { tweet_content, rel_acc, img } = options;
-    console.log(req.session.userId);
+    // console.log(req.session.userId);
     if (!req.session.userId) {
       return { error: "User is unauthorized" };
     }
@@ -90,7 +90,7 @@ export class PostsResolver {
         await pubsub.publish(TWEET, payload);
       }
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
 
     return { error: "", uploaded: `uploaded${post.tweet_id}` };
@@ -200,7 +200,7 @@ export class PostsResolver {
 
       return { error: "", tweets: f, num: tw.length };
     } catch (error) {
-      console.log("err");
+      // console.log("err");
       return { error: error.message, tweets: [], num: 0 };
     }
   }
@@ -276,7 +276,7 @@ export class PostsResolver {
       });
     } catch (error) {
       if (error.code == "2201W") {
-        console.log(error.message);
+        // console.log(error.message);
         return { error: "you", tweets: [] };
       }
       return { error: error.message, tweets: [] };
@@ -358,7 +358,7 @@ export class PostsResolver {
       };
       await pubsub.publish(TWEET, payload);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
     return { liked: `liked${like?.like_id}`, error: "" };
   }
@@ -444,7 +444,7 @@ export class PostsResolver {
 
       return { error: "", tweets: f, num: allTweets.length };
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return { error, tweets: [], num: 0 };
     }
   }
@@ -571,7 +571,7 @@ export class PostsResolver {
         };
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return { error: error, profile: null };
     }
   }
@@ -605,7 +605,7 @@ export class PostsResolver {
         }, this.t);
       });
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       return false;
     }
   }

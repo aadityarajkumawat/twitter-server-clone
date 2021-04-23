@@ -12,7 +12,7 @@ export class SearchResolver {
     @Ctx() { req }: MyContext,
     @Arg("options") options: Searched
   ): Promise<DisplayProfiles> {
-    console.log(req.session);
+    // console.log(req.session);
     if (!req.session.userId) {
       return { error: "user not authenticated", profiles: [] };
     }
@@ -24,7 +24,7 @@ export class SearchResolver {
       .where("user.username LIKE :name", { name: `%${options.search}%` })
       .execute();
 
-    console.log(profiles);
+    // console.log(profiles);
 
     const f = [];
 
@@ -35,7 +35,7 @@ export class SearchResolver {
       f.push({ ...profiles[i], img: img ? img.url : "" });
     }
 
-    console.log(f);
+    // console.log(f);
 
     return { error: null, profiles: f };
   }

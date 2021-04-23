@@ -47,7 +47,7 @@ export class UserResolver {
         },
       };
     } catch (error) {
-      console.log(error.message);
+      // console.log(error.message);
       return { error: error.message, user: null };
     }
   }
@@ -158,7 +158,6 @@ export class UserResolver {
         };
       }
       req.session.userId = user.id;
-      console.log(req.session);
       return { user };
     } else {
       if ((await optValid).validationError.includes("email")) {
@@ -240,7 +239,7 @@ export class UserResolver {
         };
       }
     } catch (error) {
-      console.log(error.message);
+      // console.log(error.message);
       return { error: error.message, profile: null };
     }
   }

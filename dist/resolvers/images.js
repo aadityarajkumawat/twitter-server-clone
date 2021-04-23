@@ -29,7 +29,6 @@ const Images_1 = require("../entities/Images");
 let ImgResolver = class ImgResolver {
     saveImage({ req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(req.session);
             if (!req.session.userId) {
                 return false;
             }

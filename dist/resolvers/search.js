@@ -30,7 +30,6 @@ const Images_1 = require("../entities/Images");
 let SearchResolver = class SearchResolver {
     getSearchResults({ req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(req.session);
             if (!req.session.userId) {
                 return { error: "user not authenticated", profiles: [] };
             }
@@ -40,7 +39,6 @@ let SearchResolver = class SearchResolver {
                 .from(User_1.User, "user")
                 .where("user.username LIKE :name", { name: `%${options.search}%` })
                 .execute();
-            console.log(profiles);
             const f = [];
             for (let i = 0; i < profiles.length; i++) {
                 const ii = profiles[i].id;
@@ -48,7 +46,6 @@ let SearchResolver = class SearchResolver {
                 const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
                 f.push(Object.assign(Object.assign({}, profiles[i]), { img: img ? img.url : "" }));
             }
-            console.log(f);
             return { error: null, profiles: f };
         });
     }
