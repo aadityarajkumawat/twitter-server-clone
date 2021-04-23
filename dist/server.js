@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
+require("dotenv-safe/config");
 const express_1 = __importDefault(require("express"));
 const apollo_server_express_1 = require("apollo-server-express");
 const type_graphql_1 = require("type-graphql");
@@ -38,21 +39,22 @@ const images_1 = require("./resolvers/images");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
-        url: "postgres://postgres:postgres@localhost:5432/twitter66",
-        synchronize: true,
+        url: process.env.DATABASE_URL,
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
         entities: [User_1.User, Tweets_1.Tweet, Tweets_1.Like, Tweets_1.Comment, Follow_1.Follow, Images_1.Images, Profile_1.Profile],
     });
+    yield conn.runMigrations();
     const app = express_1.default();
     const pubsub = new apollo_server_express_1.PubSub();
     const RedisStore = connect_redis_1.default(express_session_1.default);
-    const redisClient = redis_1.default.createClient();
+    const redisClient = redis_1.default.createClient({ url: process.env.REDIS_URL });
     app.use((req, _, next) => {
         req.pubsub = pubsub;
         next();
     });
+    app.set("trust proxy", 1);
     app.use(cors_1.default({
-        origin: "http://localhost:3000",
+        origin: process.env.CORS_ORIGIN,
         credentials: true,
     }));
     app.use(express_session_1.default({
@@ -63,9 +65,10 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             httpOnly: true,
             sameSite: "lax",
             secure: constants_1.__prod__,
+            domain: constants_1.__prod__ ? ".edydee.xyz" : undefined,
         },
         saveUninitialized: false,
-        secret: "thisissomerandomwhichbecomesusajibrish",
+        secret: process.env.SESSION_SECRET,
         resave: false,
     }));
     const server = new apollo_server_express_1.ApolloServer({
@@ -90,7 +93,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     server.applyMiddleware({ app, cors: false });
     const httpServer = http_1.default.createServer(app);
     server.installSubscriptionHandlers(httpServer);
-    httpServer.listen(4001, () => {
+    httpServer.listen(parseInt(process.env.PORT), () => {
         console.log(`server is at: http://localhost:4001${server.graphqlPath}`);
         console.log(`subscription is at: ws://localhost:4001${server.subscriptionsPath}`);
     });

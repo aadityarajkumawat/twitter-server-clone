@@ -33,7 +33,7 @@ const main = async () => {
     entities: [User, Tweet, Like, Comment, Follow, Images, Profile],
   });
 
-  // await conn.runMigrations();
+  await conn.runMigrations();
 
   const app = express();
   const pubsub = new PubSub();
@@ -46,7 +46,7 @@ const main = async () => {
     next();
   });
 
-  app.set("proxy", 1);
+  app.set("trust proxy", 1);
 
   app.use(
     cors({
@@ -64,7 +64,7 @@ const main = async () => {
         httpOnly: true,
         sameSite: "lax",
         secure: __prod__,
-        domain: __prod__ ? ".twitter.com" : undefined,
+        domain: __prod__ ? ".edydee.xyz" : undefined,
       },
       saveUninitialized: false,
       secret: process.env.SESSION_SECRET,
