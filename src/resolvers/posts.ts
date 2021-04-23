@@ -41,8 +41,6 @@ const userResolvers = new UserResolver();
 
 @Resolver()
 export class PostsResolver {
-  t = 200;
-
   @Mutation(() => PostCreatedResponse)
   async createPost(
     @Arg("options") options: PostTweetInput,
@@ -50,7 +48,6 @@ export class PostsResolver {
     @PubSub() pubsub: PubSubEngine
   ): Promise<PostCreatedResponse> {
     let { tweet_content, rel_acc, img } = options;
-    // console.log(req.session.userId);
     if (!req.session.userId) {
       return { error: "User is unauthorized" };
     }
@@ -269,11 +266,7 @@ export class PostsResolver {
         });
       }
 
-      return new Promise((resolve, _) => {
-        setTimeout(() => {
-          resolve({ error: "", tweets: tweetsResponse });
-        }, this.t);
-      });
+      return { error: "", tweets: tweetsResponse };
     } catch (error) {
       if (error.code == "2201W") {
         // console.log(error.message);
@@ -377,11 +370,7 @@ export class PostsResolver {
       tweet.tweet.profile_img = "";
     }
 
-    return new Promise((resolve, _) => {
-      setTimeout(() => {
-        resolve(tweet);
-      }, this.t);
-    });
+    return tweet;
   }
 
   @Query(() => GetUserTweets)
@@ -500,11 +489,7 @@ export class PostsResolver {
         f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
       }
 
-      return new Promise((resolve, _) => {
-        setTimeout(() => {
-          resolve({ error: "", tweets: f });
-        }, this.t);
-      });
+      return { error: "", tweets: f };
     } catch (error) {
       if (error.code == "2201W") {
         return { error: "you", tweets: [] };
@@ -599,11 +584,8 @@ export class PostsResolver {
       } else {
         result = false;
       }
-      return new Promise((resolve, _) => {
-        setTimeout(() => {
-          resolve(result);
-        }, this.t);
-      });
+
+      return result;
     } catch (error) {
       // console.log(error);
       return false;
@@ -620,14 +602,10 @@ export class PostsResolver {
     const profileStuff = await getProfileStuff(ctx, id);
     const userTweets = await this.getTweetsByUserF(ctx, id);
 
-    return new Promise((resolve, _) => {
-      setTimeout(() => {
-        resolve({
-          error: "",
-          profile: profileStuff.profile,
-          tweets: userTweets.tweets,
-        });
-      }, this.t);
-    });
+    return {
+      error: "",
+      profile: profileStuff.profile,
+      tweets: userTweets.tweets,
+    };
   }
 }

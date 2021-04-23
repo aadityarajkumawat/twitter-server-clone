@@ -34,9 +34,6 @@ const Images_1 = require("../entities/Images");
 const user_1 = require("./user");
 const userResolvers = new user_1.UserResolver();
 let PostsResolver = class PostsResolver {
-    constructor() {
-        this.t = 200;
-    }
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             let { tweet_content, rel_acc, img } = options;
@@ -220,11 +217,7 @@ let PostsResolver = class PostsResolver {
                     });
                     tweetsResponse.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
-                return new Promise((resolve, _) => {
-                    setTimeout(() => {
-                        resolve({ error: "", tweets: tweetsResponse });
-                    }, this.t);
-                });
+                return { error: "", tweets: tweetsResponse };
             }
             catch (error) {
                 if (error.code == "2201W") {
@@ -302,11 +295,7 @@ let PostsResolver = class PostsResolver {
             else if (tweet.tweet) {
                 tweet.tweet.profile_img = "";
             }
-            return new Promise((resolve, _) => {
-                setTimeout(() => {
-                    resolve(tweet);
-                }, this.t);
-            });
+            return tweet;
         });
     }
     getTweetsByUserF({ req }, id) {
@@ -401,11 +390,7 @@ let PostsResolver = class PostsResolver {
                     });
                     f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
-                return new Promise((resolve, _) => {
-                    setTimeout(() => {
-                        resolve({ error: "", tweets: f });
-                    }, this.t);
-                });
+                return { error: "", tweets: f };
             }
             catch (error) {
                 if (error.code == "2201W") {
@@ -492,11 +477,7 @@ let PostsResolver = class PostsResolver {
                 else {
                     result = false;
                 }
-                return new Promise((resolve, _) => {
-                    setTimeout(() => {
-                        resolve(result);
-                    }, this.t);
-                });
+                return result;
             }
             catch (error) {
                 return false;
@@ -508,15 +489,11 @@ let PostsResolver = class PostsResolver {
             const getProfileStuff = userResolvers.getProfileStuff;
             const profileStuff = yield getProfileStuff(ctx, id);
             const userTweets = yield this.getTweetsByUserF(ctx, id);
-            return new Promise((resolve, _) => {
-                setTimeout(() => {
-                    resolve({
-                        error: "",
-                        profile: profileStuff.profile,
-                        tweets: userTweets.tweets,
-                    });
-                }, this.t);
-            });
+            return {
+                error: "",
+                profile: profileStuff.profile,
+                tweets: userTweets.tweets,
+            };
         });
     }
 };
