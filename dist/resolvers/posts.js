@@ -132,7 +132,7 @@ let PostsResolver = class PostsResolver {
                     .where("tweet.userId IN (:...ids)", {
                     ids: [...followingIds, req.session.userId],
                 })
-                    .limit(7)
+                    .limit(10)
                     .orderBy("tweet.created_At", "DESC")
                     .execute();
                 const tw = yield typeorm_1.getConnection()
