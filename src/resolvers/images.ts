@@ -11,7 +11,6 @@ export class ImgResolver {
     @Ctx() { req }: MyContext,
     @Arg("options") options: ImageParams
   ): Promise<boolean> {
-    // console.log(req.session);
     if (!req.session.userId) {
       return false;
     }

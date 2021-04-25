@@ -15,6 +15,7 @@ import {
   PostTweetInput,
   ProfileStuffAndUserTweets,
   TweetInfo,
+  __prod__,
 } from "../constants";
 import { MyContext } from "src/types";
 import {
@@ -37,6 +38,7 @@ import { Profile } from "../entities/Profile";
 import { Images } from "../entities/Images";
 
 import { UserResolver } from "./user";
+import { dataOnSteroids } from "../helpers/dataOnSteroids";
 const userResolvers = new UserResolver();
 
 @Resolver()
@@ -51,7 +53,8 @@ export class PostsResolver {
     if (!req.session.userId) {
       return { error: "User is unauthorized" };
     }
-    let post;
+
+    let post: Tweet;
     try {
       const user = await User.findOne({ where: { id: req.session.userId } });
       let tweetType = "tweet";
@@ -60,37 +63,45 @@ export class PostsResolver {
       } else {
         rel_acc = req.session.userId;
       }
-      if (user) {
-        const result = await getConnection()
-          .createQueryBuilder()
-          .insert()
-          .into(Tweet)
-          .values({
-            user,
-            tweet_content,
-            _type: tweetType,
-            rel_acc,
-            username: user.username,
-            name: user.name,
-            likes: 0,
-            comments: 0,
-            img: img ? img : "",
-          })
-          .returning("*")
-          .execute();
+      if (!user) return { error: "user not found", uploaded: "" };
+      const result = await getConnection()
+        .createQueryBuilder()
+        .insert()
+        .into(Tweet)
+        .values({
+          user,
+          tweet_content,
+          _type: tweetType,
+          rel_acc,
+          username: user.username,
+          name: user.name,
+          likes: 0,
+          comments: 0,
+          img: img ? img : "",
+        })
+        .returning("*")
+        .execute();
 
-        post = result.raw[0];
-        const payload: GetTweetResponse = {
-          error: "",
-          tweet: { ...post, liked: false },
-        };
-        await pubsub.publish(TWEET, payload);
-      }
+      post = result.raw[0];
+
+      const profileI = await Images.findOne({ where: { user } });
+      if (!profileI) return { error: "images not found", uploaded: "" };
+
+      const payload: GetTweetResponse = {
+        error: "",
+        tweet: { ...post, liked: false, profile_img: profileI?.url },
+      };
+      await pubsub.publish(TWEET, payload);
+
+      const __data__: PostCreatedResponse = {
+        error: "",
+        uploaded: `uploaded${post.tweet_id}`,
+      };
+
+      return dataOnSteroids(__data__);
     } catch (err) {
-      // console.log(err);
+      return { error: err.message, uploaded: "" };
     }
-
-    return { error: "", uploaded: `uploaded${post.tweet_id}` };
   }
 
   @Query(() => GetTweetResponse)
@@ -113,19 +124,19 @@ export class PostsResolver {
         const user = await User.findOne({ where: { id: tweet.rel_acc } });
         img = await Images.findOne({ where: { user, type: "profile" } });
       }
-      if (tweet) {
-        return {
-          error: "",
-          tweet: {
-            ...tweet,
-            liked: like ? true : false,
-            profile_img: img ? img.url : "",
-            img: tweet.img,
-          },
-        };
-      } else {
-        return { error: "", tweet: null };
-      }
+      if (!tweet) return { error: "tweet not found", tweet: null };
+
+      const __data__: GetTweetResponse = {
+        error: "",
+        tweet: {
+          ...tweet,
+          liked: like ? true : false,
+          profile_img: img ? img.url : "",
+          img: tweet.img,
+        },
+      };
+
+      return dataOnSteroids(__data__);
     } catch (error) {
       return { error: error.message, tweet: null };
     }
@@ -195,9 +206,9 @@ export class PostsResolver {
         f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
       }
 
-      return { error: "", tweets: f, num: tw.length };
+      const __data__: GetFeedTweets = { error: "", tweets: f, num: tw.length };
+      return dataOnSteroids(__data__);
     } catch (error) {
-      // console.log("err");
       return { error: error.message, tweets: [], num: 0 };
     }
   }
@@ -266,10 +277,14 @@ export class PostsResolver {
         });
       }
 
-      return { error: "", tweets: tweetsResponse };
+      const __data__: GetPaginatedFeedTweets = {
+        error: "",
+        tweets: tweetsResponse,
+      };
+
+      return dataOnSteroids(__data__);
     } catch (error) {
       if (error.code == "2201W") {
-        // console.log(error.message);
         return { error: "you", tweets: [] };
       }
       return { error: error.message, tweets: [] };
@@ -431,9 +446,13 @@ export class PostsResolver {
         f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
       }
 
-      return { error: "", tweets: f, num: allTweets.length };
+      const __data__: GetUserTweets = {
+        error: "",
+        tweets: f,
+        num: allTweets.length,
+      };
+      return dataOnSteroids(__data__);
     } catch (error) {
-      // console.log(error);
       return { error, tweets: [], num: 0 };
     }
   }
@@ -489,7 +508,8 @@ export class PostsResolver {
         f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
       }
 
-      return { error: "", tweets: f };
+      const __data__: GetPaginatedUserTweets = { error: "", tweets: f };
+      return dataOnSteroids(__data__);
     } catch (error) {
       if (error.code == "2201W") {
         return { error: "you", tweets: [] };
@@ -530,33 +550,22 @@ export class PostsResolver {
 
       const user = await User.findOne({ where: { id: req.session.userId } });
       const profile = await Profile.findOne({ where: { user } });
-      if (profile) {
-        const { link, bio } = profile;
+      if (!profile) return { error: "profile not found", profile: null };
+      const { link, bio } = profile;
 
-        return {
-          error: "",
-          profile: {
-            followers: followers[0].count,
-            following: following[0].count,
-            bio,
-            link,
-            num,
-          },
-        };
-      } else {
-        return {
-          error: "",
-          profile: {
-            followers: followers[0].count,
-            following: following[0].count,
-            bio: "",
-            link: "",
-            num,
-          },
-        };
-      }
+      const __data__: GetProfile = {
+        error: "",
+        profile: {
+          followers: followers[0].count,
+          following: following[0].count,
+          bio,
+          link,
+          num,
+        },
+      };
+
+      return dataOnSteroids(__data__);
     } catch (error) {
-      // console.log(error);
       return { error: error, profile: null };
     }
   }
@@ -585,9 +594,9 @@ export class PostsResolver {
         result = false;
       }
 
-      return result;
+      const __data__: Boolean = result;
+      return dataOnSteroids(__data__);
     } catch (error) {
-      // console.log(error);
       return false;
     }
   }
@@ -602,10 +611,12 @@ export class PostsResolver {
     const profileStuff = await getProfileStuff(ctx, id);
     const userTweets = await this.getTweetsByUserF(ctx, id);
 
-    return {
+    const __data__: ProfileStuffAndUserTweets = {
       error: "",
       profile: profileStuff.profile,
       tweets: userTweets.tweets,
     };
+
+    return dataOnSteroids(__data__);
   }
 }

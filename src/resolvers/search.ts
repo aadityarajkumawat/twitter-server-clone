@@ -12,7 +12,6 @@ export class SearchResolver {
     @Ctx() { req }: MyContext,
     @Arg("options") options: Searched
   ): Promise<DisplayProfiles> {
-    // console.log(req.session);
     if (!req.session.userId) {
       return { error: "user not authenticated", profiles: [] };
     }
@@ -24,8 +23,6 @@ export class SearchResolver {
       .where("user.username LIKE :name", { name: `%${options.search}%` })
       .execute();
 
-    // console.log(profiles);
-
     const f = [];
 
     for (let i = 0; i < profiles.length; i++) {
@@ -34,8 +31,6 @@ export class SearchResolver {
       const img = await Images.findOne({ where: { user, type: "profile" } });
       f.push({ ...profiles[i], img: img ? img.url : "" });
     }
-
-    // console.log(f);
 
     return { error: null, profiles: f };
   }

@@ -76,7 +76,7 @@ let UserResolver = class UserResolver {
                 .catch((err) => {
                 return { isCorrect: false, validationError: err.message };
             });
-            if ((yield optValid).isCorrect) {
+            if (!(yield optValid).isCorrect) {
                 const hashedPossword = yield argon2_1.default.hash(password);
                 let user;
                 try {
@@ -92,7 +92,15 @@ let UserResolver = class UserResolver {
                     profile.bio = "";
                     profile.link = "";
                     profile.user = user;
+                    const profileImage = new Images_1.Images();
+                    profileImage.url = "https://i.ibb.co/8MyWxs6/plca.jpg";
+                    profileImage.type = "profile";
+                    const coverImage = new Images_1.Images();
+                    coverImage.url = "https://i.ibb.co/VqQKHsL/Grey-thumb.png";
+                    coverImage.type = "cover";
                     yield profile.save();
+                    yield profileImage.save();
+                    yield coverImage.save();
                 }
                 catch (err) {
                     if (err.detail.includes("email")) {

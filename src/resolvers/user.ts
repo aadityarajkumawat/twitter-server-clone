@@ -47,7 +47,6 @@ export class UserResolver {
         },
       };
     } catch (error) {
-      // console.log(error.message);
       return { error: error.message, user: null };
     }
   }
@@ -58,6 +57,7 @@ export class UserResolver {
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const { email, password, username, phone, name } = options;
+
     const optValid = validSchemaRegister
       .validate(options)
       .then(() => {
@@ -67,7 +67,7 @@ export class UserResolver {
         return { isCorrect: false, validationError: err.message };
       });
 
-    if ((await optValid).isCorrect) {
+    if (!(await optValid).isCorrect) {
       const hashedPossword = await argon2.hash(password);
       let user;
 
@@ -86,7 +86,18 @@ export class UserResolver {
         profile.bio = "";
         profile.link = "";
         profile.user = user;
+
+        const profileImage = new Images();
+        profileImage.url = "https://i.ibb.co/8MyWxs6/plca.jpg";
+        profileImage.type = "profile";
+
+        const coverImage = new Images();
+        coverImage.url = "https://i.ibb.co/VqQKHsL/Grey-thumb.png";
+        coverImage.type = "cover";
+
         await profile.save();
+        await profileImage.save();
+        await coverImage.save();
       } catch (err) {
         if (err.detail.includes("email")) {
           return {
