@@ -5,7 +5,7 @@ export function dataOnSteroids(data: any) {
   if (__prod__) {
     return data;
   } else {
-    const delayedData = delay(1500, data);
+    const delayedData = delay(150, data);
     return delayedData;
   }
 }
