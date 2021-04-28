@@ -46,7 +46,8 @@ import {
   getFeedTweets,
   getNumberOfTweetsInFeed,
 } from "../helpers/getFeedTweets";
-import { TweetWithLikedStatus } from "src/interfaces";
+import { addLikedStatusToTweets } from "../helpers/addLikedStatusToTweets";
+import { addProfileImageToTweets } from "../helpers/addProfileImageToTweets";
 const userResolvers = new UserResolver();
 
 @Resolver()
@@ -155,60 +156,48 @@ export class PostsResolver {
   @UseMiddleware(Auth)
   async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetFeedTweets> {
     try {
-      const follow = await Follow.find({
-        where: { userId: req.session.userId },
-      });
+      const userId = req.session.userId;
+      const follow = await Follow.find({ where: { userId } });
 
       const followingIds = [];
       for (let i = 0; i < follow.length; i++) {
         followingIds.push(follow[i].following);
       }
 
-      const tweets = await getFeedTweets(followingIds, req.session.userId);
+      const tweets = await getFeedTweets(followingIds, userId);
+
+      /**
+       * To return the total number of tweets in user's
+       * feed, used in pagination on frontend
+       */
       const numberOfTweetsInFeed = await getNumberOfTweetsInFeed(
         followingIds,
-        req.session.userId
+        userId
       );
 
-      const tweetsWithLikedStatus: Array<TweetWithLikedStatus> = [];
+      /**
+       * The return type of tweet needs a liked by logged in
+       * user status and a profile image of user, which are added
+       * additionally on the fly.
+       */
+      const tweetsWithLikedStatus = await addLikedStatusToTweets(
+        tweets,
+        userId
+      );
 
-      for (let i = 0; i < tweets.length; i++) {
-        let currID = tweets[i].tweet_id;
-        let tweetWithLikedStatus = { ...tweets[i], liked: false };
-
-        const numberOfLikes = await Like.count({
-          where: { user_id: req.session.userId, tweet_id: currID },
-        });
-
-        if (numberOfLikes === 1) {
-          tweetWithLikedStatus.liked = true;
-        }
-        tweetsWithLikedStatus.push(tweetWithLikedStatus);
-      }
-
-      const f = [];
-
-      for (let i = 0; i < tweetsWithLikedStatus.length; i++) {
-        const ii = tweetsWithLikedStatus[i].rel_acc;
-        const user = await User.findOne({ where: { id: ii } });
-        const img_url = await Images.findOne({
-          where: { user, type: "profile" },
-        });
-
-        f.push({
-          ...tweetsWithLikedStatus[i],
-          profile_img: img_url ? img_url.url : "",
-        });
-      }
+      const tweetsWithProfileImage = await addProfileImageToTweets(
+        tweetsWithLikedStatus
+      );
 
       const __data__: GetFeedTweets = {
-        error: "",
-        tweets: f,
-        num: parseInt(numberOfTweetsInFeed[0].count),
+        error: undefined,
+        tweets: tweetsWithProfileImage,
+        num: numberOfTweetsInFeed,
       };
+
       return dataOnSteroids(__data__);
     } catch (error) {
-      return { error: error.message, tweets: [], num: 0 };
+      return { error: error.message, tweets: undefined, num: undefined };
     }
   }
 

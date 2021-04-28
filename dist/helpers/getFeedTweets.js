@@ -34,8 +34,7 @@ const getNumberOfTweetsInFeed = (followingIds, userId) => __awaiter(void 0, void
         ids: [...followingIds, userId],
     })
         .execute();
-    console.log(s);
-    return s;
+    return parseInt(s[0].count);
 });
 exports.getNumberOfTweetsInFeed = getNumberOfTweetsInFeed;
 //# sourceMappingURL=getFeedTweets.js.map

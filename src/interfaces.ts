@@ -13,3 +13,7 @@ type BetterTweet = Omit<Tweet, BaseEntityFunctions>;
 export interface TweetWithLikedStatus extends BetterTweet {
   liked: boolean;
 }
+
+export interface TweetWithProfileImage extends TweetWithLikedStatus {
+  profile_img: string;
+}

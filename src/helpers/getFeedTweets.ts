@@ -20,7 +20,7 @@ export const getFeedTweets = async (
 export const getNumberOfTweetsInFeed = async (
   followingIds: Array<number>,
   userId: number
-): Promise<any> => {
+): Promise<number> => {
   const s = await getConnection()
     .createQueryBuilder()
     .select("COUNT(*)")
@@ -29,7 +29,6 @@ export const getNumberOfTweetsInFeed = async (
       ids: [...followingIds, userId],
     })
     .execute();
-  console.log(s);
 
-  return s;
+  return parseInt(s[0].count);
 };

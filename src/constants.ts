@@ -121,12 +121,12 @@ export class GetTweetById {
 
 @ObjectType()
 export class GetFeedTweets {
-  @Field(() => [GetOneTweet])
-  tweets: GetOneTweet[];
-  @Field()
-  error: string;
-  @Field()
-  num: number;
+  @Field(() => [GetOneTweet], { nullable: true })
+  tweets?: GetOneTweet[];
+  @Field({ nullable: true })
+  error?: string;
+  @Field({ nullable: true })
+  num?: number;
 }
 
 @ObjectType()

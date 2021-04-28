@@ -239,15 +239,15 @@ exports.GetTweetById = GetTweetById;
 let GetFeedTweets = class GetFeedTweets {
 };
 __decorate([
-    type_graphql_1.Field(() => [GetOneTweet]),
+    type_graphql_1.Field(() => [GetOneTweet], { nullable: true }),
     __metadata("design:type", Array)
 ], GetFeedTweets.prototype, "tweets", void 0);
 __decorate([
-    type_graphql_1.Field(),
+    type_graphql_1.Field({ nullable: true }),
     __metadata("design:type", String)
 ], GetFeedTweets.prototype, "error", void 0);
 __decorate([
-    type_graphql_1.Field(),
+    type_graphql_1.Field({ nullable: true }),
     __metadata("design:type", Number)
 ], GetFeedTweets.prototype, "num", void 0);
 GetFeedTweets = __decorate([

@@ -36,6 +36,8 @@ const dataOnSteroids_1 = require("../helpers/dataOnSteroids");
 const Auth_1 = require("../middlewares/Auth");
 const Time_1 = require("../middlewares/Time");
 const getFeedTweets_1 = require("../helpers/getFeedTweets");
+const addLikedStatusToTweets_1 = require("../helpers/addLikedStatusToTweets");
+const addProfileImageToTweets_1 = require("../helpers/addProfileImageToTweets");
 const userResolvers = new user_1.UserResolver();
 let PostsResolver = class PostsResolver {
     createPost(options, { req }, pubsub) {
@@ -121,45 +123,25 @@ let PostsResolver = class PostsResolver {
     getTweetsByUser({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const follow = yield Follow_1.Follow.find({
-                    where: { userId: req.session.userId },
-                });
+                const userId = req.session.userId;
+                const follow = yield Follow_1.Follow.find({ where: { userId } });
                 const followingIds = [];
                 for (let i = 0; i < follow.length; i++) {
                     followingIds.push(follow[i].following);
                 }
-                const tweets = yield getFeedTweets_1.getFeedTweets(followingIds, req.session.userId);
-                const numberOfTweetsInFeed = yield getFeedTweets_1.getNumberOfTweetsInFeed(followingIds, req.session.userId);
-                const tweetsWithLikedStatus = [];
-                for (let i = 0; i < tweets.length; i++) {
-                    let currID = tweets[i].tweet_id;
-                    let tweetWithLikedStatus = Object.assign(Object.assign({}, tweets[i]), { liked: false });
-                    const numberOfLikes = yield Tweets_1.Like.count({
-                        where: { user_id: req.session.userId, tweet_id: currID },
-                    });
-                    if (numberOfLikes === 1) {
-                        tweetWithLikedStatus.liked = true;
-                    }
-                    tweetsWithLikedStatus.push(tweetWithLikedStatus);
-                }
-                const f = [];
-                for (let i = 0; i < tweetsWithLikedStatus.length; i++) {
-                    const ii = tweetsWithLikedStatus[i].rel_acc;
-                    const user = yield User_1.User.findOne({ where: { id: ii } });
-                    const img_url = yield Images_1.Images.findOne({
-                        where: { user, type: "profile" },
-                    });
-                    f.push(Object.assign(Object.assign({}, tweetsWithLikedStatus[i]), { profile_img: img_url ? img_url.url : "" }));
-                }
+                const tweets = yield getFeedTweets_1.getFeedTweets(followingIds, userId);
+                const numberOfTweetsInFeed = yield getFeedTweets_1.getNumberOfTweetsInFeed(followingIds, userId);
+                const tweetsWithLikedStatus = yield addLikedStatusToTweets_1.addLikedStatusToTweets(tweets, userId);
+                const tweetsWithProfileImage = yield addProfileImageToTweets_1.addProfileImageToTweets(tweetsWithLikedStatus);
                 const __data__ = {
-                    error: "",
-                    tweets: f,
-                    num: parseInt(numberOfTweetsInFeed[0].count),
+                    error: undefined,
+                    tweets: tweetsWithProfileImage,
+                    num: numberOfTweetsInFeed,
                 };
                 return dataOnSteroids_1.dataOnSteroids(__data__);
             }
             catch (error) {
-                return { error: error.message, tweets: [], num: 0 };
+                return { error: error.message, tweets: undefined, num: undefined };
             }
         });
     }
