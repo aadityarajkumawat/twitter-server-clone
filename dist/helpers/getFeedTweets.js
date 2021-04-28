@@ -26,7 +26,7 @@ const getFeedTweets = (followingIds, userId) => __awaiter(void 0, void 0, void 0
 });
 exports.getFeedTweets = getFeedTweets;
 const getNumberOfTweetsInFeed = (followingIds, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield typeorm_1.getConnection()
+    const s = yield typeorm_1.getConnection()
         .createQueryBuilder()
         .select("COUNT(*)")
         .from(Tweets_1.Tweet, "tweet")
@@ -34,6 +34,8 @@ const getNumberOfTweetsInFeed = (followingIds, userId) => __awaiter(void 0, void
         ids: [...followingIds, userId],
     })
         .execute();
+    console.log(s);
+    return s;
 });
 exports.getNumberOfTweetsInFeed = getNumberOfTweetsInFeed;
 //# sourceMappingURL=getFeedTweets.js.map

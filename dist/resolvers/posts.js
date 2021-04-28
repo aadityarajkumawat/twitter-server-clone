@@ -154,7 +154,7 @@ let PostsResolver = class PostsResolver {
                 const __data__ = {
                     error: "",
                     tweets: f,
-                    num: numberOfTweetsInFeed,
+                    num: parseInt(numberOfTweetsInFeed[0].count),
                 };
                 return dataOnSteroids_1.dataOnSteroids(__data__);
             }

@@ -204,7 +204,7 @@ export class PostsResolver {
       const __data__: GetFeedTweets = {
         error: "",
         tweets: f,
-        num: numberOfTweetsInFeed,
+        num: parseInt(numberOfTweetsInFeed[0].count),
       };
       return dataOnSteroids(__data__);
     } catch (error) {
