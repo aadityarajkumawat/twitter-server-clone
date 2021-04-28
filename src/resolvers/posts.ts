@@ -17,7 +17,7 @@ import {
   TweetInfo,
   __prod__,
 } from "../constants";
-import { MyContext } from "src/types";
+import { MyContext } from "../types";
 import {
   Arg,
   Ctx,
@@ -28,6 +28,7 @@ import {
   Resolver,
   Root,
   Subscription,
+  UseMiddleware,
 } from "type-graphql";
 import { Tweet, Like } from "../entities/Tweets";
 import { getConnection } from "typeorm";
@@ -39,31 +40,39 @@ import { Images } from "../entities/Images";
 
 import { UserResolver } from "./user";
 import { dataOnSteroids } from "../helpers/dataOnSteroids";
+import { Auth } from "../middlewares/Auth";
+import { Time } from "../middlewares/Time";
+import {
+  getFeedTweets,
+  getNumberOfTweetsInFeed,
+} from "../helpers/getFeedTweets";
+import { TweetWithLikedStatus } from "src/interfaces";
 const userResolvers = new UserResolver();
 
 @Resolver()
 export class PostsResolver {
   @Mutation(() => PostCreatedResponse)
+  @UseMiddleware(Time)
+  @UseMiddleware(Auth)
   async createPost(
     @Arg("options") options: PostTweetInput,
     @Ctx() { req }: MyContext,
     @PubSub() pubsub: PubSubEngine
   ): Promise<PostCreatedResponse> {
     let { tweet_content, rel_acc, img } = options;
-    if (!req.session.userId) {
-      return { error: "User is unauthorized" };
-    }
-
     let post: Tweet;
+
     try {
       const user = await User.findOne({ where: { id: req.session.userId } });
+      if (!user) return { error: "user not found", uploaded: "" };
+
       let tweetType = "tweet";
       if (rel_acc) {
         tweetType = "retweet";
       } else {
         rel_acc = req.session.userId;
       }
-      if (!user) return { error: "user not found", uploaded: "" };
+
       const result = await getConnection()
         .createQueryBuilder()
         .insert()
@@ -105,17 +114,16 @@ export class PostsResolver {
   }
 
   @Query(() => GetTweetResponse)
+  @UseMiddleware(Auth)
   async getTweetById(
     @Arg("options") options: GetTweetById,
     @Ctx() { req }: MyContext
   ): Promise<GetTweetResponse> {
     const { tweet_id } = options;
-    if (!req.session.userId) {
-      return { error: "User is unauthorized", tweet: null };
-    }
 
     try {
       let tweet = await Tweet.findOne({ where: { tweet_id } });
+      if (!tweet) return { error: "Tweet not found", tweet: null };
       let like = await Like.findOne({
         where: { tweet_id, user_id: req.session.userId },
       });
@@ -143,70 +151,61 @@ export class PostsResolver {
   }
 
   @Query(() => GetFeedTweets)
+  @UseMiddleware(Time)
+  @UseMiddleware(Auth)
   async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetFeedTweets> {
-    if (!req.session.userId) {
-      return { error: "User is unauthorized", tweets: [], num: 0 };
-    }
-
     try {
       const follow = await Follow.find({
         where: { userId: req.session.userId },
       });
 
       const followingIds = [];
-
       for (let i = 0; i < follow.length; i++) {
         followingIds.push(follow[i].following);
       }
 
-      const tweets: Array<Tweet> = await getConnection()
-        .createQueryBuilder()
-        .select("*")
-        .from(Tweet, "tweet")
-        .where("tweet.userId IN (:...ids)", {
-          ids: [...followingIds, req.session.userId],
-        })
-        .limit(10)
-        .orderBy("tweet.created_At", "DESC")
-        .execute();
+      const tweets = await getFeedTweets(followingIds, req.session.userId);
+      const numberOfTweetsInFeed = await getNumberOfTweetsInFeed(
+        followingIds,
+        req.session.userId
+      );
 
-      const tw: Array<Tweet> = await getConnection()
-        .createQueryBuilder()
-        .select("*")
-        .from(Tweet, "tweet")
-        .where("tweet.userId IN (:...ids)", {
-          ids: [...followingIds, req.session.userId],
-        })
-        .execute();
-
-      const finalTweets = [];
-
-      let like = await Like.find({ where: { user_id: req.session.userId } });
+      const tweetsWithLikedStatus: Array<TweetWithLikedStatus> = [];
 
       for (let i = 0; i < tweets.length; i++) {
         let currID = tweets[i].tweet_id;
-        let oo = { ...tweets[i], liked: false };
-        for (let j = 0; j < like.length; j++) {
-          if (like[j].tweet_id === currID) {
-            oo.liked = true;
-          }
+        let tweetWithLikedStatus = { ...tweets[i], liked: false };
+
+        const numberOfLikes = await Like.count({
+          where: { user_id: req.session.userId, tweet_id: currID },
+        });
+
+        if (numberOfLikes === 1) {
+          tweetWithLikedStatus.liked = true;
         }
-        finalTweets.push(oo);
+        tweetsWithLikedStatus.push(tweetWithLikedStatus);
       }
 
       const f = [];
 
-      for (let i = 0; i < finalTweets.length; i++) {
-        const ii = finalTweets[i].rel_acc;
+      for (let i = 0; i < tweetsWithLikedStatus.length; i++) {
+        const ii = tweetsWithLikedStatus[i].rel_acc;
         const user = await User.findOne({ where: { id: ii } });
         const img_url = await Images.findOne({
           where: { user, type: "profile" },
         });
 
-        f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
+        f.push({
+          ...tweetsWithLikedStatus[i],
+          profile_img: img_url ? img_url.url : "",
+        });
       }
 
-      const __data__: GetFeedTweets = { error: "", tweets: f, num: tw.length };
+      const __data__: GetFeedTweets = {
+        error: "",
+        tweets: f,
+        num: numberOfTweetsInFeed,
+      };
       return dataOnSteroids(__data__);
     } catch (error) {
       return { error: error.message, tweets: [], num: 0 };
