@@ -33,17 +33,19 @@ const Profile_1 = require("../entities/Profile");
 const Images_1 = require("../entities/Images");
 const user_1 = require("./user");
 const dataOnSteroids_1 = require("../helpers/dataOnSteroids");
+const Auth_1 = require("../middlewares/Auth");
+const Time_1 = require("../middlewares/Time");
+const getFeedTweets_1 = require("../helpers/getFeedTweets");
 const userResolvers = new user_1.UserResolver();
 let PostsResolver = class PostsResolver {
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             let { tweet_content, rel_acc, img } = options;
-            if (!req.session.userId) {
-                return { error: "User is unauthorized" };
-            }
             let post;
             try {
                 const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                if (!user)
+                    return { error: "user not found", uploaded: "" };
                 let tweetType = "tweet";
                 if (rel_acc) {
                     tweetType = "retweet";
@@ -51,8 +53,6 @@ let PostsResolver = class PostsResolver {
                 else {
                     rel_acc = req.session.userId;
                 }
-                if (!user)
-                    return { error: "user not found", uploaded: "" };
                 const result = yield typeorm_1.getConnection()
                     .createQueryBuilder()
                     .insert()
@@ -93,11 +93,10 @@ let PostsResolver = class PostsResolver {
     getTweetById(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { tweet_id } = options;
-            if (!req.session.userId) {
-                return { error: "User is unauthorized", tweet: null };
-            }
             try {
                 let tweet = yield Tweets_1.Tweet.findOne({ where: { tweet_id } });
+                if (!tweet)
+                    return { error: "Tweet not found", tweet: null };
                 let like = yield Tweets_1.Like.findOne({
                     where: { tweet_id, user_id: req.session.userId },
                 });
@@ -121,9 +120,6 @@ let PostsResolver = class PostsResolver {
     }
     getTweetsByUser({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!req.session.userId) {
-                return { error: "User is unauthorized", tweets: [], num: 0 };
-            }
             try {
                 const follow = yield Follow_1.Follow.find({
                     where: { userId: req.session.userId },
@@ -132,46 +128,34 @@ let PostsResolver = class PostsResolver {
                 for (let i = 0; i < follow.length; i++) {
                     followingIds.push(follow[i].following);
                 }
-                const tweets = yield typeorm_1.getConnection()
-                    .createQueryBuilder()
-                    .select("*")
-                    .from(Tweets_1.Tweet, "tweet")
-                    .where("tweet.userId IN (:...ids)", {
-                    ids: [...followingIds, req.session.userId],
-                })
-                    .limit(10)
-                    .orderBy("tweet.created_At", "DESC")
-                    .execute();
-                const tw = yield typeorm_1.getConnection()
-                    .createQueryBuilder()
-                    .select("*")
-                    .from(Tweets_1.Tweet, "tweet")
-                    .where("tweet.userId IN (:...ids)", {
-                    ids: [...followingIds, req.session.userId],
-                })
-                    .execute();
-                const finalTweets = [];
-                let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
+                const tweets = yield getFeedTweets_1.getFeedTweets(followingIds, req.session.userId);
+                const numberOfTweetsInFeed = yield getFeedTweets_1.getNumberOfTweetsInFeed(followingIds, req.session.userId);
+                const tweetsWithLikedStatus = [];
                 for (let i = 0; i < tweets.length; i++) {
                     let currID = tweets[i].tweet_id;
-                    let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
-                    for (let j = 0; j < like.length; j++) {
-                        if (like[j].tweet_id === currID) {
-                            oo.liked = true;
-                        }
+                    let tweetWithLikedStatus = Object.assign(Object.assign({}, tweets[i]), { liked: false });
+                    const numberOfLikes = yield Tweets_1.Like.count({
+                        where: { user_id: req.session.userId, tweet_id: currID },
+                    });
+                    if (numberOfLikes === 1) {
+                        tweetWithLikedStatus.liked = true;
                     }
-                    finalTweets.push(oo);
+                    tweetsWithLikedStatus.push(tweetWithLikedStatus);
                 }
                 const f = [];
-                for (let i = 0; i < finalTweets.length; i++) {
-                    const ii = finalTweets[i].rel_acc;
+                for (let i = 0; i < tweetsWithLikedStatus.length; i++) {
+                    const ii = tweetsWithLikedStatus[i].rel_acc;
                     const user = yield User_1.User.findOne({ where: { id: ii } });
                     const img_url = yield Images_1.Images.findOne({
                         where: { user, type: "profile" },
                     });
-                    f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
+                    f.push(Object.assign(Object.assign({}, tweetsWithLikedStatus[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
-                const __data__ = { error: "", tweets: f, num: tw.length };
+                const __data__ = {
+                    error: "",
+                    tweets: f,
+                    num: numberOfTweetsInFeed,
+                };
                 return dataOnSteroids_1.dataOnSteroids(__data__);
             }
             catch (error) {
@@ -508,6 +492,8 @@ let PostsResolver = class PostsResolver {
 };
 __decorate([
     type_graphql_1.Mutation(() => constants_1.PostCreatedResponse),
+    type_graphql_1.UseMiddleware(Time_1.Time),
+    type_graphql_1.UseMiddleware(Auth_1.Auth),
     __param(0, type_graphql_1.Arg("options")),
     __param(1, type_graphql_1.Ctx()),
     __param(2, type_graphql_1.PubSub()),
@@ -517,6 +503,7 @@ __decorate([
 ], PostsResolver.prototype, "createPost", null);
 __decorate([
     type_graphql_1.Query(() => constants_1.GetTweetResponse),
+    type_graphql_1.UseMiddleware(Auth_1.Auth),
     __param(0, type_graphql_1.Arg("options")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
@@ -525,6 +512,8 @@ __decorate([
 ], PostsResolver.prototype, "getTweetById", null);
 __decorate([
     type_graphql_1.Query(() => constants_1.GetFeedTweets),
+    type_graphql_1.UseMiddleware(Time_1.Time),
+    type_graphql_1.UseMiddleware(Auth_1.Auth),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
