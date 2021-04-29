@@ -1,7 +1,7 @@
-import { ObjectType, InputType, Field } from "type-graphql";
-import { User } from "./entities/User";
+import { Field, InputType, ObjectType } from "type-graphql";
 import * as Yup from "yup";
 import { Like } from "./entities/Tweets";
+import { User } from "./entities/User";
 
 export const __prod__ = process.env.NODE_ENV === "production";
 

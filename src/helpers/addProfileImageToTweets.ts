@@ -1,5 +1,5 @@
-import { User } from "../entities/User";
 import { Images } from "../entities/Images";
+import { User } from "../entities/User";
 import { TweetWithLikedStatus, TweetWithProfileImage } from "../interfaces";
 
 export const addProfileImageToTweets = async (

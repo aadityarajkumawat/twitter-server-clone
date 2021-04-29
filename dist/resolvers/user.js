@@ -25,15 +25,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolver = void 0;
-const User_1 = require("../entities/User");
-const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
-const constants_1 = require("../constants");
+const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
-const Profile_1 = require("../entities/Profile");
-const Images_1 = require("../entities/Images");
-const Follow_1 = require("../entities/Follow");
-const Tweets_1 = require("../entities/Tweets");
+const constants_1 = require("../constants");
+const entities_1 = require("../entities");
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -41,10 +37,10 @@ let UserResolver = class UserResolver {
                 return { error: "User not authenticated", user: null };
             }
             try {
-                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                const user = yield entities_1.User.findOne({ where: { id: req.session.userId } });
                 if (!user)
                     return { error: "No user", user: null };
-                const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+                const img = yield entities_1.Images.findOne({ where: { user, type: "profile" } });
                 const { id, email, createdAt, updatedAt, username, phone, name } = user;
                 return {
                     error: "",
@@ -76,26 +72,26 @@ let UserResolver = class UserResolver {
                 .catch((err) => {
                 return { isCorrect: false, validationError: err.message };
             });
-            if (!(yield optValid).isCorrect) {
+            if ((yield optValid).isCorrect) {
                 const hashedPossword = yield argon2_1.default.hash(password);
                 let user;
                 try {
                     let result = yield typeorm_1.getConnection()
                         .createQueryBuilder()
                         .insert()
-                        .into(User_1.User)
+                        .into(entities_1.User)
                         .values({ email, password: hashedPossword, phone, username, name })
                         .returning("*")
                         .execute();
                     user = result.raw[0];
-                    const profile = new Profile_1.Profile();
+                    const profile = new entities_1.Profile();
                     profile.bio = "";
                     profile.link = "";
                     profile.user = user;
-                    const profileImage = new Images_1.Images();
+                    const profileImage = new entities_1.Images();
                     profileImage.url = "https://i.ibb.co/8MyWxs6/plca.jpg";
                     profileImage.type = "profile";
-                    const coverImage = new Images_1.Images();
+                    const coverImage = new entities_1.Images();
                     coverImage.url = "https://i.ibb.co/VqQKHsL/Grey-thumb.png";
                     coverImage.type = "cover";
                     yield profile.save();
@@ -159,7 +155,7 @@ let UserResolver = class UserResolver {
                 return { isCorrect: false, validationError: err.message };
             });
             if ((yield optValid).isCorrect) {
-                const user = yield User_1.User.findOne({ where: { email } });
+                const user = yield entities_1.User.findOne({ where: { email } });
                 if (!user) {
                     return {
                         errors: [{ field: "email", message: "email does not exist" }],
@@ -192,33 +188,33 @@ let UserResolver = class UserResolver {
                 return { error: "user not authenticated", profile: null };
             }
             try {
-                const user = yield User_1.User.findOne({ where: { id } });
-                const profile_img = yield Images_1.Images.findOne({
+                const user = yield entities_1.User.findOne({ where: { id } });
+                const profile_img = yield entities_1.Images.findOne({
                     where: { user, type: "profile" },
                 });
-                const cover_img = yield Images_1.Images.findOne({
+                const cover_img = yield entities_1.Images.findOne({
                     where: { user, type: "cover" },
                 });
-                const follow = yield Follow_1.Follow.findOne({
+                const follow = yield entities_1.Follow.findOne({
                     where: { userId: req.session.userId, following: id },
                 });
-                const profile = yield Profile_1.Profile.findOne({ where: { user } });
+                const profile = yield entities_1.Profile.findOne({ where: { user } });
                 const following = yield typeorm_1.getConnection()
                     .createQueryBuilder()
                     .select("COUNT(*)")
-                    .from(Follow_1.Follow, "follow")
+                    .from(entities_1.Follow, "follow")
                     .where("follow.userId = :id", { id })
                     .execute();
                 const followers = yield typeorm_1.getConnection()
                     .createQueryBuilder()
                     .select("COUNT(*)")
-                    .from(Follow_1.Follow, "follow")
+                    .from(entities_1.Follow, "follow")
                     .where("follow.following = :id", { id })
                     .execute();
                 const n = yield typeorm_1.getConnection()
                     .createQueryBuilder()
                     .select("COUNT(*)")
-                    .from(Tweets_1.Tweet, "tweet")
+                    .from(entities_1.Tweet, "tweet")
                     .where("tweet.rel_acc = :id", { id })
                     .execute();
                 if (user && profile && following && followers) {
@@ -252,10 +248,10 @@ let UserResolver = class UserResolver {
     }
     getUserByUsername(username) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield User_1.User.findOne({ where: { username } });
+            const user = yield entities_1.User.findOne({ where: { username } });
             if (!user)
                 return { error: "No user", user: null };
-            const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+            const img = yield entities_1.Images.findOne({ where: { user, type: "profile" } });
             if (!img)
                 return { error: "No image", user: null };
             const { id, name } = user;

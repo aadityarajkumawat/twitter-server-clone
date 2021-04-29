@@ -10,8 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addProfileImageToTweets = void 0;
-const User_1 = require("../entities/User");
 const Images_1 = require("../entities/Images");
+const User_1 = require("../entities/User");
 const addProfileImageToTweets = (tweetsWithLikedStatus) => __awaiter(void 0, void 0, void 0, function* () {
     const tweetsWithProfileImage = [];
     for (let i = 0; i < tweetsWithLikedStatus.length; i++) {

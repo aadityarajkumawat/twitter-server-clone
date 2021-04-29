@@ -1,22 +1,18 @@
-import { User } from "../entities/User";
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
-import { MyContext } from "src/types";
+import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import { getConnection } from "typeorm";
 import {
-  UserResponse,
-  UserRegisterInput,
-  validSchemaRegister,
-  UserLoginInput,
-  validSchemaLogin,
-  ProfileStuff,
   MeResponse,
   NUserResponse,
+  ProfileStuff,
+  UserLoginInput,
+  UserRegisterInput,
+  UserResponse,
+  validSchemaLogin,
+  validSchemaRegister,
 } from "../constants";
-import { getConnection } from "typeorm";
-import { Profile } from "../entities/Profile";
-import { Images } from "../entities/Images";
-import { Follow } from "../entities/Follow";
-import { Tweet } from "../entities/Tweets";
+import { Follow, Images, Profile, Tweet, User } from "../entities";
+import { MyContext } from "../types";
 
 @Resolver()
 export class UserResolver {
@@ -67,7 +63,7 @@ export class UserResolver {
         return { isCorrect: false, validationError: err.message };
       });
 
-    if (!(await optValid).isCorrect) {
+    if ((await optValid).isCorrect) {
       const hashedPossword = await argon2.hash(password);
       let user;
 

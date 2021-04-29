@@ -1,5 +1,5 @@
-import { TweetWithLikedStatus } from "../interfaces";
 import { Like, Tweet } from "../entities/Tweets";
+import { TweetWithLikedStatus } from "../interfaces";
 
 export const addLikedStatusToTweets = async (
   tweets: Array<Tweet>,

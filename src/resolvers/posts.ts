@@ -1,4 +1,17 @@
 import {
+  Arg,
+  Ctx,
+  Mutation,
+  PubSub,
+  PubSubEngine,
+  Query,
+  Resolver,
+  Root,
+  Subscription,
+  UseMiddleware,
+} from "type-graphql";
+import { getConnection } from "typeorm";
+import {
   EditProfile,
   GetFeedTweets,
   GetOneTweet,
@@ -15,39 +28,25 @@ import {
   PostTweetInput,
   ProfileStuffAndUserTweets,
   TweetInfo,
-  __prod__,
 } from "../constants";
-import { MyContext } from "../types";
-import {
-  Arg,
-  Ctx,
-  Mutation,
-  PubSub,
-  PubSubEngine,
-  Query,
-  Resolver,
-  Root,
-  Subscription,
-  UseMiddleware,
-} from "type-graphql";
-import { Tweet, Like } from "../entities/Tweets";
-import { getConnection } from "typeorm";
-import { User } from "../entities/User";
 import { Follow } from "../entities/Follow";
-import { TWEET } from "../triggers";
-import { Profile } from "../entities/Profile";
 import { Images } from "../entities/Images";
-
-import { UserResolver } from "./user";
+import { Profile } from "../entities/Profile";
+import { Like, Tweet } from "../entities/Tweets";
+import { User } from "../entities/User";
+import { addLikedStatusToTweets } from "../helpers/addLikedStatusToTweets";
+import { addProfileImageToTweets } from "../helpers/addProfileImageToTweets";
 import { dataOnSteroids } from "../helpers/dataOnSteroids";
-import { Auth } from "../middlewares/Auth";
-import { Time } from "../middlewares/Time";
 import {
   getFeedTweets,
   getNumberOfTweetsInFeed,
 } from "../helpers/getFeedTweets";
-import { addLikedStatusToTweets } from "../helpers/addLikedStatusToTweets";
-import { addProfileImageToTweets } from "../helpers/addProfileImageToTweets";
+import { Auth } from "../middlewares/Auth";
+import { Time } from "../middlewares/Time";
+import { TWEET } from "../triggers";
+import { MyContext } from "../types";
+import { UserResolver } from "./user";
+
 const userResolvers = new UserResolver();
 
 @Resolver()
