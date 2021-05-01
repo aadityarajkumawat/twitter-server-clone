@@ -372,7 +372,7 @@ export class PostsResolver {
     return { liked: `liked${like?.like_id}`, error: "" };
   }
 
-  @Mutation(() => Boolean)
+  @Query(() => Boolean)
   async triggerUserTweetsSubscriptions(
     @Arg("id") id: number,
     @PubSub() pubsub: PubSubEngine
@@ -442,7 +442,7 @@ export class PostsResolver {
 
       return { error: undefined, num, tweets };
     } catch (error) {
-      return { error: error.message, num: undefined, tweets: undefined };
+      return { error: error.message, num: undefined, tweets: [] };
     }
   }
 

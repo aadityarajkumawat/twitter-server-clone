@@ -321,7 +321,7 @@ let PostsResolver = class PostsResolver {
                 return { error: undefined, num, tweets };
             }
             catch (error) {
-                return { error: error.message, num: undefined, tweets: undefined };
+                return { error: error.message, num: undefined, tweets: [] };
             }
         });
     }
@@ -582,7 +582,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "likeTweet", null);
 __decorate([
-    type_graphql_1.Mutation(() => Boolean),
+    type_graphql_1.Query(() => Boolean),
     __param(0, type_graphql_1.Arg("id")),
     __param(1, type_graphql_1.PubSub()),
     __metadata("design:type", Function),
