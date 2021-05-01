@@ -12,30 +12,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require("reflect-metadata");
+const apollo_server_express_1 = require("apollo-server-express");
+const connect_redis_1 = __importDefault(require("connect-redis"));
+const cors_1 = __importDefault(require("cors"));
 require("dotenv-safe/config");
 const express_1 = __importDefault(require("express"));
-const apollo_server_express_1 = require("apollo-server-express");
-const type_graphql_1 = require("type-graphql");
-const hello_1 = require("./resolvers/hello");
 const express_session_1 = __importDefault(require("express-session"));
-const constants_1 = require("./constants");
-const connect_redis_1 = __importDefault(require("connect-redis"));
-const redis_1 = __importDefault(require("redis"));
-const cors_1 = __importDefault(require("cors"));
-const typeorm_1 = require("typeorm");
-const path_1 = __importDefault(require("path"));
-const User_1 = require("./entities/User");
-const Tweets_1 = require("./entities/Tweets");
-const user_1 = require("./resolvers/user");
-const posts_1 = require("./resolvers/posts");
-const Follow_1 = require("./entities/Follow");
-const follow_1 = require("./resolvers/follow");
 const http_1 = __importDefault(require("http"));
+const path_1 = __importDefault(require("path"));
+const redis_1 = __importDefault(require("redis"));
+require("reflect-metadata");
+const type_graphql_1 = require("type-graphql");
+const typeorm_1 = require("typeorm");
+const constants_1 = require("./constants");
+const Follow_1 = require("./entities/Follow");
 const Images_1 = require("./entities/Images");
 const Profile_1 = require("./entities/Profile");
-const search_1 = require("./resolvers/search");
+const Tweets_1 = require("./entities/Tweets");
+const User_1 = require("./entities/User");
+const follow_1 = require("./resolvers/follow");
+const hello_1 = require("./resolvers/hello");
 const images_1 = require("./resolvers/images");
+const posts_1 = require("./resolvers/posts");
+const search_1 = require("./resolvers/search");
+const user_1 = require("./resolvers/user");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",

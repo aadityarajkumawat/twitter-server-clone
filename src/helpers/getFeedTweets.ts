@@ -12,7 +12,7 @@ export const getFeedTweets = async (
     .where("tweet.userId IN (:...ids)", {
       ids: [...followingIds, userId],
     })
-    .limit(10)
+    .limit(15)
     .orderBy("tweet.created_At", "DESC")
     .execute();
 };

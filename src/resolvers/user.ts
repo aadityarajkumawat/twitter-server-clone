@@ -86,10 +86,12 @@ export class UserResolver {
         const profileImage = new Images();
         profileImage.url = "https://i.ibb.co/8MyWxs6/plca.jpg";
         profileImage.type = "profile";
+        profileImage.user = user;
 
         const coverImage = new Images();
         coverImage.url = "https://i.ibb.co/VqQKHsL/Grey-thumb.png";
         coverImage.type = "cover";
+        coverImage.user = user;
 
         await profile.save();
         await profileImage.save();

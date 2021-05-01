@@ -91,9 +91,11 @@ let UserResolver = class UserResolver {
                     const profileImage = new entities_1.Images();
                     profileImage.url = "https://i.ibb.co/8MyWxs6/plca.jpg";
                     profileImage.type = "profile";
+                    profileImage.user = user;
                     const coverImage = new entities_1.Images();
                     coverImage.url = "https://i.ibb.co/VqQKHsL/Grey-thumb.png";
                     coverImage.type = "cover";
+                    coverImage.user = user;
                     yield profile.save();
                     yield profileImage.save();
                     yield coverImage.save();

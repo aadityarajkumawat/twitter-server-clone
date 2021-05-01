@@ -40,6 +40,9 @@ const triggers_1 = require("../triggers");
 const user_1 = require("./user");
 const userResolvers = new user_1.UserResolver();
 let PostsResolver = class PostsResolver {
+    constructor() {
+        this.userTweets = [];
+    }
     createPost(options, { req }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             let { tweet_content, rel_acc, img } = options;
@@ -78,9 +81,11 @@ let PostsResolver = class PostsResolver {
                     return { error: "images not found", uploaded: "" };
                 const payload = {
                     error: "",
-                    tweet: Object.assign(Object.assign({}, post), { liked: false, profile_img: profileI === null || profileI === void 0 ? void 0 : profileI.url }),
+                    tweet: Object.assign(Object.assign({}, post), { liked: false, profile_img: profileI.url }),
                 };
                 yield pubsub.publish(triggers_1.TWEET, payload);
+                this.userTweets = [payload, ...this.userTweets];
+                yield pubsub.publish("USER_TWEETS", this.userTweets);
                 const __data__ = {
                     error: "",
                     uploaded: `uploaded${post.tweet_id}`,
@@ -262,6 +267,63 @@ let PostsResolver = class PostsResolver {
             return { liked: `liked${like === null || like === void 0 ? void 0 : like.like_id}`, error: "" };
         });
     }
+    listenUserTweets(userTweet, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const tweets = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("*")
+                    .from(Tweets_1.Tweet, "tweet")
+                    .where("tweet.rel_acc = :id", {
+                    id,
+                })
+                    .limit(15)
+                    .orderBy("tweet.created_At", "DESC")
+                    .execute();
+                const allTweets = yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .select("*")
+                    .from(Tweets_1.Tweet, "tweet")
+                    .where("tweet.rel_acc = :id", {
+                    id,
+                })
+                    .orderBy("tweet.created_At", "DESC")
+                    .execute();
+                const finalTweets = [];
+                let like = yield Tweets_1.Like.find({ where: { user_id: id } });
+                for (let i = 0; i < tweets.length; i++) {
+                    let currID = tweets[i].tweet_id;
+                    let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
+                    for (let j = 0; j < like.length; j++) {
+                        if (like[j].tweet_id === currID) {
+                            oo.liked = true;
+                        }
+                    }
+                    finalTweets.push(oo);
+                }
+                const f = [];
+                for (let i = 0; i < finalTweets.length; i++) {
+                    const ii = finalTweets[i].rel_acc;
+                    const user = yield User_1.User.findOne({ where: { id: ii } });
+                    const img_url = yield Images_1.Images.findOne({
+                        where: { user, type: "profile" },
+                    });
+                    f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
+                }
+                const __data__ = {
+                    error: "",
+                    tweets: f,
+                    num: allTweets.length,
+                };
+                console.log([...userTweet, ...f]);
+                return [...userTweet, ...f];
+            }
+            catch (error) {
+                console.log(error.message);
+                return [{ error: error.message, tweet: null }];
+            }
+        });
+    }
     listenTweets(tweet) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
@@ -289,7 +351,7 @@ let PostsResolver = class PostsResolver {
                     .where("tweet.rel_acc = :id", {
                     id,
                 })
-                    .limit(5)
+                    .limit(15)
                     .orderBy("tweet.created_At", "DESC")
                     .execute();
                 const allTweets = yield typeorm_1.getConnection()
@@ -518,6 +580,14 @@ __decorate([
     __metadata("design:paramtypes", [constants_1.TweetInfo, Object, type_graphql_1.PubSubEngine]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "likeTweet", null);
+__decorate([
+    type_graphql_1.Subscription(() => [constants_1.GetTweetResponse], { topics: "USER_TWEETS" }),
+    __param(0, type_graphql_1.Root()),
+    __param(1, type_graphql_1.Arg("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Array, Number]),
+    __metadata("design:returntype", Promise)
+], PostsResolver.prototype, "listenUserTweets", null);
 __decorate([
     type_graphql_1.Subscription(() => constants_1.GetTweetResponse, {
         topics: triggers_1.TWEET,

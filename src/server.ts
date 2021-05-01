@@ -1,27 +1,27 @@
-import "reflect-metadata";
+import { ApolloServer, PubSub } from "apollo-server-express";
+import connectRedis from "connect-redis";
+import cors from "cors";
 import "dotenv-safe/config";
 import express from "express";
-import { ApolloServer, PubSub } from "apollo-server-express";
-import { buildSchema } from "type-graphql";
-import { HelloResolver } from "./resolvers/hello";
 import session from "express-session";
-import { __prod__ } from "./constants";
-import connectRedis from "connect-redis";
-import redis from "redis";
-import cors from "cors";
-import { createConnection } from "typeorm";
-import path from "path";
-import { User } from "./entities/User";
-import { Comment, Like, Tweet } from "./entities/Tweets";
-import { UserResolver } from "./resolvers/user";
-import { PostsResolver } from "./resolvers/posts";
-import { Follow } from "./entities/Follow";
-import { FollowResolver } from "./resolvers/follow";
 import http from "http";
+import path from "path";
+import redis from "redis";
+import "reflect-metadata";
+import { buildSchema } from "type-graphql";
+import { createConnection } from "typeorm";
+import { __prod__ } from "./constants";
+import { Follow } from "./entities/Follow";
 import { Images } from "./entities/Images";
 import { Profile } from "./entities/Profile";
-import { SearchResolver } from "./resolvers/search";
+import { Comment, Like, Tweet } from "./entities/Tweets";
+import { User } from "./entities/User";
+import { FollowResolver } from "./resolvers/follow";
+import { HelloResolver } from "./resolvers/hello";
 import { ImgResolver } from "./resolvers/images";
+import { PostsResolver } from "./resolvers/posts";
+import { SearchResolver } from "./resolvers/search";
+import { UserResolver } from "./resolvers/user";
 
 const main = async () => {
   const conn = await createConnection({

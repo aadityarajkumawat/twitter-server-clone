@@ -51,6 +51,8 @@ const userResolvers = new UserResolver();
 
 @Resolver()
 export class PostsResolver {
+  userTweets: Array<GetTweetResponse> = [];
+
   @Mutation(() => PostCreatedResponse)
   @UseMiddleware(Time)
   @UseMiddleware(Auth)
@@ -98,9 +100,11 @@ export class PostsResolver {
 
       const payload: GetTweetResponse = {
         error: "",
-        tweet: { ...post, liked: false, profile_img: profileI?.url },
+        tweet: { ...post, liked: false, profile_img: profileI.url },
       };
       await pubsub.publish(TWEET, payload);
+      this.userTweets = [payload, ...this.userTweets];
+      await pubsub.publish("USER_TWEETS", this.userTweets);
 
       const __data__: PostCreatedResponse = {
         error: "",
@@ -358,6 +362,78 @@ export class PostsResolver {
     return { liked: `liked${like?.like_id}`, error: "" };
   }
 
+  @Subscription(() => [GetTweetResponse], { topics: "USER_TWEETS" })
+  // @UseMiddleware(Auth)
+  async listenUserTweets(
+    @Root() userTweet: GetTweetResponse[],
+    @Arg("id") id: number
+  ): Promise<Array<any>> {
+    try {
+      const tweets: Array<Tweet> = await getConnection()
+        .createQueryBuilder()
+        .select("*")
+        .from(Tweet, "tweet")
+        .where("tweet.rel_acc = :id", {
+          id,
+        })
+        .limit(15)
+        .orderBy("tweet.created_At", "DESC")
+        .execute();
+
+      const allTweets: Array<Tweet> = await getConnection()
+        .createQueryBuilder()
+        .select("*")
+        .from(Tweet, "tweet")
+        .where("tweet.rel_acc = :id", {
+          id,
+        })
+        .orderBy("tweet.created_At", "DESC")
+        .execute();
+
+      const finalTweets = [];
+
+      let like = await Like.find({ where: { user_id: id } });
+
+      for (let i = 0; i < tweets.length; i++) {
+        let currID = tweets[i].tweet_id;
+        let oo = { ...tweets[i], liked: false };
+        for (let j = 0; j < like.length; j++) {
+          if (like[j].tweet_id === currID) {
+            oo.liked = true;
+          }
+        }
+        finalTweets.push(oo);
+      }
+
+      const f = [];
+
+      for (let i = 0; i < finalTweets.length; i++) {
+        const ii = finalTweets[i].rel_acc;
+        const user = await User.findOne({ where: { id: ii } });
+        const img_url = await Images.findOne({
+          where: { user, type: "profile" },
+        });
+
+        f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
+      }
+
+      const __data__: GetUserTweets = {
+        error: "",
+        tweets: f,
+        num: allTweets.length,
+      };
+
+      console.log([...userTweet, ...f]);
+
+      return [...userTweet, ...f];
+
+      // return dataOnSteroids(__data__);
+    } catch (error) {
+      console.log(error.message);
+      return [{ error: error.message, tweet: null }];
+    }
+  }
+
   @Subscription(() => GetTweetResponse, {
     topics: TWEET,
   })
@@ -392,7 +468,7 @@ export class PostsResolver {
         .where("tweet.rel_acc = :id", {
           id,
         })
-        .limit(5)
+        .limit(15)
         .orderBy("tweet.created_At", "DESC")
         .execute();
 
