@@ -17,3 +17,5 @@ export interface TweetWithLikedStatus extends BetterTweet {
 export interface TweetWithProfileImage extends TweetWithLikedStatus {
   profile_img: string;
 }
+
+export type ReturnCount = [{ count: number }];

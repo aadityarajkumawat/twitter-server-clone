@@ -27,6 +27,7 @@ import {
   PostCreatedResponse,
   PostTweetInput,
   ProfileStuffAndUserTweets,
+  SubUserTweets,
   TweetInfo,
 } from "../constants";
 import { Follow } from "../entities/Follow";
@@ -43,7 +44,7 @@ import {
 } from "../helpers/getFeedTweets";
 import { Auth } from "../middlewares/Auth";
 import { Time } from "../middlewares/Time";
-import { TWEET } from "../triggers";
+import { TWEET, USER_TWEETS } from "../triggers";
 import { MyContext } from "../types";
 import { UserResolver } from "./user";
 
@@ -51,7 +52,7 @@ const userResolvers = new UserResolver();
 
 @Resolver()
 export class PostsResolver {
-  userTweets: Array<GetTweetResponse> = [];
+  private userTweets: Array<GetOneTweet> = [];
 
   @Mutation(() => PostCreatedResponse)
   @UseMiddleware(Time)
@@ -98,13 +99,21 @@ export class PostsResolver {
       const profileI = await Images.findOne({ where: { user } });
       if (!profileI) return { error: "images not found", uploaded: "" };
 
-      const payload: GetTweetResponse = {
+      /**
+       * Publishing tweet to home feed
+       */
+      const payload: Required<GetTweetResponse> = {
         error: "",
         tweet: { ...post, liked: false, profile_img: profileI.url },
       };
+
       await pubsub.publish(TWEET, payload);
-      this.userTweets = [payload, ...this.userTweets];
-      await pubsub.publish("USER_TWEETS", this.userTweets);
+
+      /**
+       * pushing tweet to global user tweets list
+       */
+      this.userTweets = [payload.tweet, ...this.userTweets];
+      await pubsub.publish(USER_TWEETS, [payload.tweet]);
 
       const __data__: PostCreatedResponse = {
         error: "",
@@ -127,7 +136,7 @@ export class PostsResolver {
 
     try {
       let tweet = await Tweet.findOne({ where: { tweet_id } });
-      if (!tweet) return { error: "Tweet not found", tweet: null };
+      if (!tweet) return { error: "Tweet not found", tweet: undefined };
       let like = await Like.findOne({
         where: { tweet_id, user_id: req.session.userId },
       });
@@ -136,7 +145,7 @@ export class PostsResolver {
         const user = await User.findOne({ where: { id: tweet.rel_acc } });
         img = await Images.findOne({ where: { user, type: "profile" } });
       }
-      if (!tweet) return { error: "tweet not found", tweet: null };
+      if (!tweet) return { error: "tweet not found", tweet: undefined };
 
       const __data__: GetTweetResponse = {
         error: "",
@@ -150,7 +159,7 @@ export class PostsResolver {
 
       return dataOnSteroids(__data__);
     } catch (error) {
-      return { error: error.message, tweet: null };
+      return { error: error.message, tweet: undefined };
     }
   }
 
@@ -297,6 +306,7 @@ export class PostsResolver {
     let like = await Like.findOne({
       where: { user_id: req.session.userId, tweet },
     });
+
     let img;
     if (tweet) {
       const user = await User.findOne({ where: { id: tweet.rel_acc } });
@@ -304,6 +314,8 @@ export class PostsResolver {
     }
 
     const tweetAfterLike = await Tweet.findOne({ where: { tweet_id } });
+    if (!tweetAfterLike)
+      return { error: "tweet not found", liked: "__no_status__" };
 
     if (like) {
       await like.remove();
@@ -356,18 +368,15 @@ export class PostsResolver {
         },
       };
       await pubsub.publish(TWEET, payload);
-    } catch (err) {
-      // console.log(err);
-    }
+    } catch (err) {}
     return { liked: `liked${like?.like_id}`, error: "" };
   }
 
-  @Subscription(() => [GetTweetResponse], { topics: "USER_TWEETS" })
-  // @UseMiddleware(Auth)
-  async listenUserTweets(
-    @Root() userTweet: GetTweetResponse[],
-    @Arg("id") id: number
-  ): Promise<Array<any>> {
+  @Mutation(() => Boolean)
+  async triggerUserTweetsSubscriptions(
+    @Arg("id") id: number,
+    @PubSub() pubsub: PubSubEngine
+  ) {
     try {
       const tweets: Array<Tweet> = await getConnection()
         .createQueryBuilder()
@@ -377,16 +386,6 @@ export class PostsResolver {
           id,
         })
         .limit(15)
-        .orderBy("tweet.created_At", "DESC")
-        .execute();
-
-      const allTweets: Array<Tweet> = await getConnection()
-        .createQueryBuilder()
-        .select("*")
-        .from(Tweet, "tweet")
-        .where("tweet.rel_acc = :id", {
-          id,
-        })
         .orderBy("tweet.created_At", "DESC")
         .execute();
 
@@ -405,7 +404,7 @@ export class PostsResolver {
         finalTweets.push(oo);
       }
 
-      const f = [];
+      const userTweets = [];
 
       for (let i = 0; i < finalTweets.length; i++) {
         const ii = finalTweets[i].rel_acc;
@@ -414,23 +413,36 @@ export class PostsResolver {
           where: { user, type: "profile" },
         });
 
-        f.push({ ...finalTweets[i], profile_img: img_url ? img_url.url : "" });
+        userTweets.push({
+          ...finalTweets[i],
+          profile_img: img_url ? img_url.url : "",
+        });
       }
 
-      const __data__: GetUserTweets = {
-        error: "",
-        tweets: f,
-        num: allTweets.length,
-      };
+      this.userTweets = userTweets;
+      await pubsub.publish(USER_TWEETS, userTweets);
 
-      console.log([...userTweet, ...f]);
-
-      return [...userTweet, ...f];
-
-      // return dataOnSteroids(__data__);
+      return true;
     } catch (error) {
       console.log(error.message);
-      return [{ error: error.message, tweet: null }];
+      return false;
+    }
+  }
+
+  @Subscription(() => SubUserTweets, { topics: USER_TWEETS })
+  async listenUserTweets(
+    @Ctx() { conn: connection }: MyContext,
+    @Arg("id") id: number
+  ): Promise<SubUserTweets> {
+    try {
+      const tweetRepository = connection.getRepository(Tweet);
+      const num = await tweetRepository.count({ where: { rel_acc: id } });
+
+      const tweets = this.userTweets;
+
+      return { error: undefined, num, tweets };
+    } catch (error) {
+      return { error: error.message, num: undefined, tweets: undefined };
     }
   }
 

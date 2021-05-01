@@ -84,8 +84,8 @@ let PostsResolver = class PostsResolver {
                     tweet: Object.assign(Object.assign({}, post), { liked: false, profile_img: profileI.url }),
                 };
                 yield pubsub.publish(triggers_1.TWEET, payload);
-                this.userTweets = [payload, ...this.userTweets];
-                yield pubsub.publish("USER_TWEETS", this.userTweets);
+                this.userTweets = [payload.tweet, ...this.userTweets];
+                yield pubsub.publish(triggers_1.USER_TWEETS, [payload.tweet]);
                 const __data__ = {
                     error: "",
                     uploaded: `uploaded${post.tweet_id}`,
@@ -103,7 +103,7 @@ let PostsResolver = class PostsResolver {
             try {
                 let tweet = yield Tweets_1.Tweet.findOne({ where: { tweet_id } });
                 if (!tweet)
-                    return { error: "Tweet not found", tweet: null };
+                    return { error: "Tweet not found", tweet: undefined };
                 let like = yield Tweets_1.Like.findOne({
                     where: { tweet_id, user_id: req.session.userId },
                 });
@@ -113,7 +113,7 @@ let PostsResolver = class PostsResolver {
                     img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
                 }
                 if (!tweet)
-                    return { error: "tweet not found", tweet: null };
+                    return { error: "tweet not found", tweet: undefined };
                 const __data__ = {
                     error: "",
                     tweet: Object.assign(Object.assign({}, tweet), { liked: like ? true : false, profile_img: img ? img.url : "", img: tweet.img }),
@@ -121,7 +121,7 @@ let PostsResolver = class PostsResolver {
                 return dataOnSteroids_1.dataOnSteroids(__data__);
             }
             catch (error) {
-                return { error: error.message, tweet: null };
+                return { error: error.message, tweet: undefined };
             }
         });
     }
@@ -226,6 +226,8 @@ let PostsResolver = class PostsResolver {
                 img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
             }
             const tweetAfterLike = yield Tweets_1.Tweet.findOne({ where: { tweet_id } });
+            if (!tweetAfterLike)
+                return { error: "tweet not found", liked: "__no_status__" };
             if (like) {
                 yield like.remove();
                 let newLikes = 0;
@@ -262,12 +264,11 @@ let PostsResolver = class PostsResolver {
                 };
                 yield pubsub.publish(triggers_1.TWEET, payload);
             }
-            catch (err) {
-            }
+            catch (err) { }
             return { liked: `liked${like === null || like === void 0 ? void 0 : like.like_id}`, error: "" };
         });
     }
-    listenUserTweets(userTweet, id) {
+    triggerUserTweetsSubscriptions(id, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const tweets = yield typeorm_1.getConnection()
@@ -278,15 +279,6 @@ let PostsResolver = class PostsResolver {
                     id,
                 })
                     .limit(15)
-                    .orderBy("tweet.created_At", "DESC")
-                    .execute();
-                const allTweets = yield typeorm_1.getConnection()
-                    .createQueryBuilder()
-                    .select("*")
-                    .from(Tweets_1.Tweet, "tweet")
-                    .where("tweet.rel_acc = :id", {
-                    id,
-                })
                     .orderBy("tweet.created_At", "DESC")
                     .execute();
                 const finalTweets = [];
@@ -301,26 +293,35 @@ let PostsResolver = class PostsResolver {
                     }
                     finalTweets.push(oo);
                 }
-                const f = [];
+                const userTweets = [];
                 for (let i = 0; i < finalTweets.length; i++) {
                     const ii = finalTweets[i].rel_acc;
                     const user = yield User_1.User.findOne({ where: { id: ii } });
                     const img_url = yield Images_1.Images.findOne({
                         where: { user, type: "profile" },
                     });
-                    f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
+                    userTweets.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
-                const __data__ = {
-                    error: "",
-                    tweets: f,
-                    num: allTweets.length,
-                };
-                console.log([...userTweet, ...f]);
-                return [...userTweet, ...f];
+                this.userTweets = userTweets;
+                yield pubsub.publish(triggers_1.USER_TWEETS, userTweets);
+                return true;
             }
             catch (error) {
                 console.log(error.message);
-                return [{ error: error.message, tweet: null }];
+                return false;
+            }
+        });
+    }
+    listenUserTweets({ conn: connection }, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const tweetRepository = connection.getRepository(Tweets_1.Tweet);
+                const num = yield tweetRepository.count({ where: { rel_acc: id } });
+                const tweets = this.userTweets;
+                return { error: undefined, num, tweets };
+            }
+            catch (error) {
+                return { error: error.message, num: undefined, tweets: undefined };
             }
         });
     }
@@ -581,11 +582,19 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "likeTweet", null);
 __decorate([
-    type_graphql_1.Subscription(() => [constants_1.GetTweetResponse], { topics: "USER_TWEETS" }),
-    __param(0, type_graphql_1.Root()),
+    type_graphql_1.Mutation(() => Boolean),
+    __param(0, type_graphql_1.Arg("id")),
+    __param(1, type_graphql_1.PubSub()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, type_graphql_1.PubSubEngine]),
+    __metadata("design:returntype", Promise)
+], PostsResolver.prototype, "triggerUserTweetsSubscriptions", null);
+__decorate([
+    type_graphql_1.Subscription(() => constants_1.SubUserTweets, { topics: triggers_1.USER_TWEETS }),
+    __param(0, type_graphql_1.Ctx()),
     __param(1, type_graphql_1.Arg("id")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Array, Number]),
+    __metadata("design:paramtypes", [Object, Number]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "listenUserTweets", null);
 __decorate([

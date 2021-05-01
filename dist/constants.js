@@ -28,7 +28,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NUser = exports.NUserResponse = exports.ProfileStuffAndUserTweets = exports.MeResponse = exports.MeUser = exports.validSchemaLogin = exports.validSchemaRegister = exports.ProfileStuff = exports.ProfileItems = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingUserParams = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetPaginatedUserTweets = exports.GetUserTweets = exports.GetPaginatedFeedTweets = exports.GetFeedTweets = exports.GetTweetById = exports.GetOneTweet = exports.GetTweetResponse = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
+exports.SubUserTweets = exports.NUser = exports.NUserResponse = exports.ProfileStuffAndUserTweets = exports.MeResponse = exports.MeUser = exports.validSchemaLogin = exports.validSchemaRegister = exports.ProfileStuff = exports.ProfileItems = exports.ImageParams = exports.Searched = exports.DisplayProfile = exports.DisplayProfiles = exports.EditProfile = exports.GetProfile = exports.Profile = exports.PaginatingUserParams = exports.PaginatingParams = exports.GetLikes = exports.UserToFollow = exports.FollowedAUser = exports.GetPaginatedUserTweets = exports.GetUserTweets = exports.GetPaginatedFeedTweets = exports.GetFeedTweets = exports.GetTweetById = exports.GetTweetResponse = exports.GetOneTweet = exports.TweetInfo = exports.LikedTweet = exports.PostTweetInput = exports.PostCreatedResponse = exports.UserLoginInput = exports.UserRegisterInput = exports.FieldError = exports.UserResponse = exports.__prod__ = void 0;
 const type_graphql_1 = require("type-graphql");
 const Yup = __importStar(require("yup"));
 const Tweets_1 = require("./entities/Tweets");
@@ -158,20 +158,6 @@ TweetInfo = __decorate([
     type_graphql_1.InputType()
 ], TweetInfo);
 exports.TweetInfo = TweetInfo;
-let GetTweetResponse = class GetTweetResponse {
-};
-__decorate([
-    type_graphql_1.Field(() => GetOneTweet),
-    __metadata("design:type", Object)
-], GetTweetResponse.prototype, "tweet", void 0);
-__decorate([
-    type_graphql_1.Field({ nullable: true }),
-    __metadata("design:type", String)
-], GetTweetResponse.prototype, "error", void 0);
-GetTweetResponse = __decorate([
-    type_graphql_1.ObjectType()
-], GetTweetResponse);
-exports.GetTweetResponse = GetTweetResponse;
 let GetOneTweet = class GetOneTweet {
 };
 __decorate([
@@ -183,7 +169,7 @@ __decorate([
     __metadata("design:type", String)
 ], GetOneTweet.prototype, "tweet_content", void 0);
 __decorate([
-    type_graphql_1.Field(() => String),
+    type_graphql_1.Field(),
     __metadata("design:type", String)
 ], GetOneTweet.prototype, "created_At", void 0);
 __decorate([
@@ -226,6 +212,20 @@ GetOneTweet = __decorate([
     type_graphql_1.ObjectType()
 ], GetOneTweet);
 exports.GetOneTweet = GetOneTweet;
+let GetTweetResponse = class GetTweetResponse {
+};
+__decorate([
+    type_graphql_1.Field(() => GetOneTweet, { nullable: true }),
+    __metadata("design:type", GetOneTweet)
+], GetTweetResponse.prototype, "tweet", void 0);
+__decorate([
+    type_graphql_1.Field({ nullable: true }),
+    __metadata("design:type", String)
+], GetTweetResponse.prototype, "error", void 0);
+GetTweetResponse = __decorate([
+    type_graphql_1.ObjectType()
+], GetTweetResponse);
+exports.GetTweetResponse = GetTweetResponse;
 let GetTweetById = class GetTweetById {
 };
 __decorate([
@@ -660,4 +660,22 @@ NUser = __decorate([
     type_graphql_1.ObjectType()
 ], NUser);
 exports.NUser = NUser;
+let SubUserTweets = class SubUserTweets {
+};
+__decorate([
+    type_graphql_1.Field(() => [GetOneTweet], { nullable: true }),
+    __metadata("design:type", Array)
+], SubUserTweets.prototype, "tweets", void 0);
+__decorate([
+    type_graphql_1.Field({ nullable: true }),
+    __metadata("design:type", Number)
+], SubUserTweets.prototype, "num", void 0);
+__decorate([
+    type_graphql_1.Field({ nullable: true }),
+    __metadata("design:type", String)
+], SubUserTweets.prototype, "error", void 0);
+SubUserTweets = __decorate([
+    type_graphql_1.ObjectType()
+], SubUserTweets);
+exports.SubUserTweets = SubUserTweets;
 //# sourceMappingURL=constants.js.map

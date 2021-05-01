@@ -43,7 +43,6 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
         entities: [User_1.User, Tweets_1.Tweet, Tweets_1.Like, Tweets_1.Comment, Follow_1.Follow, Images_1.Images, Profile_1.Profile],
     });
-    yield conn.runMigrations();
     const app = express_1.default();
     const pubsub = new apollo_server_express_1.PubSub();
     const RedisStore = connect_redis_1.default(express_session_1.default);
@@ -84,7 +83,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             validate: false,
             pubSub: pubsub,
         }),
-        context: ({ req, res }) => ({ req, res }),
+        context: ({ req, res }) => ({ req, res, conn }),
         subscriptions: {
             onConnect() { },
             onDisconnect() { },

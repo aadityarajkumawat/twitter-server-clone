@@ -78,41 +78,43 @@ export class TweetInfo {
 }
 
 // Fetch a tweet
-@ObjectType()
-export class GetTweetResponse {
-  @Field(() => GetOneTweet)
-  tweet: GetOneTweet | null;
-  @Field({ nullable: true })
-  error: string;
-}
 
 @ObjectType()
 export class GetOneTweet {
   @Field()
-  tweet_id?: number;
+  tweet_id!: number;
   @Field()
-  tweet_content?: string;
-  @Field(() => String)
-  created_At?: string;
+  tweet_content: string;
   @Field()
-  _type?: string;
+  created_At: string;
   @Field()
-  rel_acc?: number;
+  _type: string;
   @Field()
-  username?: string;
+  rel_acc: number;
   @Field()
-  name?: string;
+  username: string;
   @Field()
-  likes?: number;
+  name: string;
   @Field()
-  comments?: number;
+  likes: number;
   @Field()
-  liked?: boolean;
+  comments: number;
+  @Field()
+  liked: boolean;
   @Field()
   profile_img: string;
   @Field()
   img: string;
 }
+
+@ObjectType()
+export class GetTweetResponse {
+  @Field(() => GetOneTweet, { nullable: true })
+  tweet?: GetOneTweet;
+  @Field({ nullable: true })
+  error?: string;
+}
+
 @InputType()
 export class GetTweetById {
   @Field()
@@ -363,4 +365,14 @@ export class NUser {
   name!: string;
   @Field(() => String)
   img!: string;
+}
+
+@ObjectType()
+export class SubUserTweets {
+  @Field(() => [GetOneTweet], { nullable: true })
+  tweets?: GetOneTweet[];
+  @Field({ nullable: true })
+  num?: number;
+  @Field({ nullable: true })
+  error?: string;
 }

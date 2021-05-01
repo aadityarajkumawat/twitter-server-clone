@@ -33,7 +33,7 @@ const main = async () => {
     entities: [User, Tweet, Like, Comment, Follow, Images, Profile],
   });
 
-  await conn.runMigrations();
+  // await conn.runMigrations();
 
   const app = express();
   const pubsub = new PubSub();
@@ -85,7 +85,7 @@ const main = async () => {
       validate: false,
       pubSub: pubsub,
     }),
-    context: ({ req, res }) => ({ req, res }),
+    context: ({ req, res }) => ({ req, res, conn }),
     subscriptions: {
       onConnect() {},
       onDisconnect() {},
