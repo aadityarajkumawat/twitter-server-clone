@@ -19,6 +19,7 @@ import { User } from "./entities/User";
 import { FollowResolver } from "./resolvers/follow";
 import { HelloResolver } from "./resolvers/hello";
 import { ImgResolver } from "./resolvers/images";
+import { PostActionResolver } from "./resolvers/postActions";
 import { PostsResolver } from "./resolvers/posts";
 import { SearchResolver } from "./resolvers/search";
 import { UserResolver } from "./resolvers/user";
@@ -81,6 +82,7 @@ const main = async () => {
         FollowResolver,
         SearchResolver,
         ImgResolver,
+        PostActionResolver,
       ],
       validate: false,
       pubSub: pubsub,

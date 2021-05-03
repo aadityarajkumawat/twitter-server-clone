@@ -121,9 +121,8 @@ Like = __decorate([
     typeorm_1.Entity()
 ], Like);
 exports.Like = Like;
-let Comment = class Comment extends typeorm_1.BaseEntity {
+let Comment = class Comment {
     constructor() {
-        super(...arguments);
         this.created_At = new Date();
     }
 };

@@ -1,12 +1,12 @@
 import { Field, ObjectType } from "type-graphql";
 import {
-  PrimaryGeneratedColumn,
-  Entity,
+  BaseEntity,
   Column,
   CreateDateColumn,
+  Entity,
   ManyToOne,
   OneToMany,
-  BaseEntity,
+  PrimaryGeneratedColumn,
 } from "typeorm";
 import { User } from "./User";
 
@@ -92,7 +92,7 @@ export class Like extends BaseEntity {
 
 @ObjectType()
 @Entity()
-export class Comment extends BaseEntity {
+export class Comment {
   @Field()
   @PrimaryGeneratedColumn()
   comment_id!: number;

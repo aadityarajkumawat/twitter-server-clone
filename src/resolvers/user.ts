@@ -12,6 +12,7 @@ import {
   validSchemaRegister,
 } from "../constants";
 import { Follow, Images, Profile, Tweet, User } from "../entities";
+import { dataOnSteroids } from "../helpers/dataOnSteroids";
 import { MyContext } from "../types";
 
 @Resolver()
@@ -226,7 +227,7 @@ export class UserResolver {
         .execute();
 
       if (user && profile && following && followers) {
-        return {
+        const __data__ = {
           error: "",
           profile: {
             bio: profile.bio,
@@ -241,6 +242,8 @@ export class UserResolver {
             isFollowed: follow ? true : false,
           },
         };
+
+        return dataOnSteroids(__data__);
       } else {
         return {
           error: "",
@@ -264,7 +267,7 @@ export class UserResolver {
 
     const { id, name } = user;
 
-    return {
+    const __data__ = {
       error: "",
       user: {
         id,
@@ -273,5 +276,7 @@ export class UserResolver {
         img: img.url,
       },
     };
+
+    return dataOnSteroids(__data__);
   }
 }

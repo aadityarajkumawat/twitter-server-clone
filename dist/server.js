@@ -33,6 +33,7 @@ const User_1 = require("./entities/User");
 const follow_1 = require("./resolvers/follow");
 const hello_1 = require("./resolvers/hello");
 const images_1 = require("./resolvers/images");
+const postActions_1 = require("./resolvers/postActions");
 const posts_1 = require("./resolvers/posts");
 const search_1 = require("./resolvers/search");
 const user_1 = require("./resolvers/user");
@@ -79,6 +80,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
                 follow_1.FollowResolver,
                 search_1.SearchResolver,
                 images_1.ImgResolver,
+                postActions_1.PostActionResolver,
             ],
             validate: false,
             pubSub: pubsub,

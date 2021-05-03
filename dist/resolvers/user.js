@@ -30,6 +30,7 @@ const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const constants_1 = require("../constants");
 const entities_1 = require("../entities");
+const dataOnSteroids_1 = require("../helpers/dataOnSteroids");
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -220,7 +221,7 @@ let UserResolver = class UserResolver {
                     .where("tweet.rel_acc = :id", { id })
                     .execute();
                 if (user && profile && following && followers) {
-                    return {
+                    const __data__ = {
                         error: "",
                         profile: {
                             bio: profile.bio,
@@ -235,6 +236,7 @@ let UserResolver = class UserResolver {
                             isFollowed: follow ? true : false,
                         },
                     };
+                    return dataOnSteroids_1.dataOnSteroids(__data__);
                 }
                 else {
                     return {
@@ -257,7 +259,7 @@ let UserResolver = class UserResolver {
             if (!img)
                 return { error: "No image", user: null };
             const { id, name } = user;
-            return {
+            const __data__ = {
                 error: "",
                 user: {
                     id,
@@ -266,6 +268,7 @@ let UserResolver = class UserResolver {
                     img: img.url,
                 },
             };
+            return dataOnSteroids_1.dataOnSteroids(__data__);
         });
     }
 };
