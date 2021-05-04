@@ -25,9 +25,8 @@ exports.PostsResolver = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const constants_1 = require("../constants");
-const Follow_1 = require("../entities/Follow");
+const entities_1 = require("../entities");
 const Images_1 = require("../entities/Images");
-const Profile_1 = require("../entities/Profile");
 const Tweets_1 = require("../entities/Tweets");
 const User_1 = require("../entities/User");
 const addLikedStatusToTweets_1 = require("../helpers/addLikedStatusToTweets");
@@ -43,39 +42,26 @@ let PostsResolver = class PostsResolver {
     constructor() {
         this.userTweets = [];
     }
-    createPost(options, { req }, pubsub) {
+    createPost(options, { req, conn }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
-            let { tweet_content, rel_acc, img } = options;
+            let { tweet_content, img } = options;
             let post;
             try {
                 const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
                 if (!user)
                     return { error: "user not found", uploaded: "" };
-                let tweetType = "tweet";
-                if (rel_acc) {
-                    tweetType = "retweet";
-                }
-                else {
-                    rel_acc = req.session.userId;
-                }
-                const result = yield typeorm_1.getConnection()
-                    .createQueryBuilder()
-                    .insert()
-                    .into(Tweets_1.Tweet)
-                    .values({
-                    user,
-                    tweet_content,
-                    _type: tweetType,
-                    rel_acc,
-                    username: user.username,
-                    name: user.name,
-                    likes: 0,
+                const tweetRepo = conn.getRepository(Tweets_1.Tweet);
+                const newTweet = tweetRepo.create({
+                    _type: "tweet",
                     comments: 0,
                     img: img ? img : "",
-                })
-                    .returning("*")
-                    .execute();
-                post = result.raw[0];
+                    likes: 0,
+                    name: user.name,
+                    tweet_content,
+                    user,
+                    username: user.name,
+                });
+                const post = yield tweetRepo.manager.save(newTweet);
                 const profileI = yield Images_1.Images.findOne({ where: { user } });
                 if (!profileI)
                     return { error: "images not found", uploaded: "" };
@@ -109,7 +95,7 @@ let PostsResolver = class PostsResolver {
                 });
                 let img;
                 if (tweet) {
-                    const user = yield User_1.User.findOne({ where: { id: tweet.rel_acc } });
+                    const user = yield User_1.User.findOne({ where: { id: tweet.user.id } });
                     img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
                 }
                 if (!tweet)
@@ -129,7 +115,7 @@ let PostsResolver = class PostsResolver {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.session.userId;
-                const follow = yield Follow_1.Follow.find({ where: { userId } });
+                const follow = yield entities_1.Follow.find({ where: { userId } });
                 const followingIds = [];
                 for (let i = 0; i < follow.length; i++) {
                     followingIds.push(follow[i].following);
@@ -157,7 +143,7 @@ let PostsResolver = class PostsResolver {
             }
             const { limit, offset } = options;
             try {
-                const follow = yield Follow_1.Follow.find({
+                const follow = yield entities_1.Follow.find({
                     where: { userId: req.session.userId },
                 });
                 const followingIds = [];
@@ -189,7 +175,7 @@ let PostsResolver = class PostsResolver {
                 }
                 const tweetsResponse = [];
                 for (let i = 0; i < finalTweets.length; i++) {
-                    const ii = finalTweets[i].rel_acc;
+                    const ii = finalTweets[i].user.id;
                     const user = yield User_1.User.findOne({ where: { id: ii } });
                     const img_url = yield Images_1.Images.findOne({
                         where: { user, type: "profile" },
@@ -222,7 +208,7 @@ let PostsResolver = class PostsResolver {
             });
             let img;
             if (tweet) {
-                const user = yield User_1.User.findOne({ where: { id: tweet.rel_acc } });
+                const user = yield User_1.User.findOne({ where: { id: tweet.user.id } });
                 img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
             }
             const tweetAfterLike = yield Tweets_1.Tweet.findOne({ where: { tweet_id } });
@@ -275,7 +261,7 @@ let PostsResolver = class PostsResolver {
                     .createQueryBuilder()
                     .select("*")
                     .from(Tweets_1.Tweet, "tweet")
-                    .where("tweet.rel_acc = :id", {
+                    .where("tweet.userId = :id", {
                     id,
                 })
                     .limit(15)
@@ -295,7 +281,7 @@ let PostsResolver = class PostsResolver {
                 }
                 const userTweets = [];
                 for (let i = 0; i < finalTweets.length; i++) {
-                    const ii = finalTweets[i].rel_acc;
+                    const ii = finalTweets[i].user.id;
                     const user = yield User_1.User.findOne({ where: { id: ii } });
                     const img_url = yield Images_1.Images.findOne({
                         where: { user, type: "profile" },
@@ -316,7 +302,9 @@ let PostsResolver = class PostsResolver {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const tweetRepository = connection.getRepository(Tweets_1.Tweet);
-                const num = yield tweetRepository.count({ where: { rel_acc: id } });
+                const userRepository = connection.getRepository(User_1.User);
+                const user = yield userRepository.findOne({ where: { id } });
+                const num = yield tweetRepository.count({ where: { user } });
                 const tweets = this.userTweets;
                 return { error: undefined, num, tweets };
             }
@@ -328,7 +316,12 @@ let PostsResolver = class PostsResolver {
     listenTweets(tweet) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield User_1.User.findOne({ where: { id: (_a = tweet.tweet) === null || _a === void 0 ? void 0 : _a.rel_acc } });
+            const thatTweetThough = yield Tweets_1.Tweet.findOne({
+                where: { tweet_id: (_a = tweet.tweet) === null || _a === void 0 ? void 0 : _a.tweet_id },
+            });
+            if (!thatTweetThough)
+                return { error: "tweet not posted", tweet: undefined };
+            const user = yield User_1.User.findOne({ where: { id: thatTweetThough.user.id } });
             const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
             if (img && tweet.tweet) {
                 tweet.tweet.profile_img = img.url;
@@ -349,7 +342,7 @@ let PostsResolver = class PostsResolver {
                     .createQueryBuilder()
                     .select("*")
                     .from(Tweets_1.Tweet, "tweet")
-                    .where("tweet.rel_acc = :id", {
+                    .where("tweet.userId = :id", {
                     id,
                 })
                     .limit(15)
@@ -359,7 +352,7 @@ let PostsResolver = class PostsResolver {
                     .createQueryBuilder()
                     .select("*")
                     .from(Tweets_1.Tweet, "tweet")
-                    .where("tweet.rel_acc = :id", {
+                    .where("tweet.userId = :id", {
                     id,
                 })
                     .orderBy("tweet.created_At", "DESC")
@@ -378,7 +371,7 @@ let PostsResolver = class PostsResolver {
                 }
                 const f = [];
                 for (let i = 0; i < finalTweets.length; i++) {
-                    const ii = finalTweets[i].rel_acc;
+                    const ii = finalTweets[i].user.id;
                     const user = yield User_1.User.findOne({ where: { id: ii } });
                     const img_url = yield Images_1.Images.findOne({
                         where: { user, type: "profile" },
@@ -429,7 +422,7 @@ let PostsResolver = class PostsResolver {
                 }
                 const f = [];
                 for (let i = 0; i < finalTweets.length; i++) {
-                    const ii = finalTweets[i].rel_acc;
+                    const ii = finalTweets[i].user.id;
                     const user = yield User_1.User.findOne({ where: { id: ii } });
                     const img_url = yield Images_1.Images.findOne({
                         where: { user, type: "profile" },
@@ -456,24 +449,24 @@ let PostsResolver = class PostsResolver {
                 const following = yield typeorm_1.getConnection()
                     .createQueryBuilder()
                     .select("COUNT(*)")
-                    .from(Follow_1.Follow, "follow")
+                    .from(entities_1.Follow, "follow")
                     .where("follow.userId = :id", { id: req.session.userId })
                     .execute();
                 const followers = yield typeorm_1.getConnection()
                     .createQueryBuilder()
                     .select("COUNT(*)")
-                    .from(Follow_1.Follow, "follow")
+                    .from(entities_1.Follow, "follow")
                     .where("follow.following = :id", { id: req.session.userId })
                     .execute();
                 const n = yield typeorm_1.getConnection()
                     .createQueryBuilder()
                     .select("COUNT(*)")
                     .from(Tweets_1.Tweet, "tweet")
-                    .where("tweet.rel_acc = :id", { id: req.session.userId })
+                    .where("tweet.userId = :id", { id: req.session.userId })
                     .execute();
                 const num = n[0].count;
                 const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
-                const profile = yield Profile_1.Profile.findOne({ where: { user } });
+                const profile = yield entities_1.Profile.findOne({ where: { user } });
                 if (!profile)
                     return { error: "profile not found", profile: null };
                 const { link, bio } = profile;
@@ -503,7 +496,7 @@ let PostsResolver = class PostsResolver {
             let result = false;
             try {
                 const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
-                const currentProfile = yield Profile_1.Profile.findOne({ where: { user } });
+                const currentProfile = yield entities_1.Profile.findOne({ where: { user } });
                 if (currentProfile) {
                     currentProfile.bio = bio;
                     currentProfile.link = link;
@@ -524,14 +517,20 @@ let PostsResolver = class PostsResolver {
     profileStuffAndUserTweets(ctx, id) {
         return __awaiter(this, void 0, void 0, function* () {
             const getProfileStuff = userResolvers.getProfileStuff;
-            const profileStuff = yield getProfileStuff(ctx, id);
-            const userTweets = yield this.getTweetsByUserF(ctx, id);
-            const __data__ = {
-                error: "",
-                profile: profileStuff.profile,
-                tweets: userTweets.tweets,
-            };
-            return dataOnSteroids_1.dataOnSteroids(__data__);
+            try {
+                const profileStuff = yield getProfileStuff(ctx, id);
+                const userTweets = yield this.getTweetsByUserF(ctx, id);
+                const __data__ = {
+                    error: "",
+                    profile: profileStuff.profile,
+                    tweets: userTweets.tweets,
+                };
+                return dataOnSteroids_1.dataOnSteroids(__data__);
+            }
+            catch (error) {
+                console.log(error.message);
+                return { error: error.message, profile: null, tweets: null };
+            }
         });
     }
 };

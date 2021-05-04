@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Comment = exports.Like = exports.Tweet = void 0;
+exports.Like = exports.Tweet = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const User_1 = require("./User");
@@ -36,11 +36,6 @@ __decorate([
     __metadata("design:type", String)
 ], Tweet.prototype, "_type", void 0);
 __decorate([
-    type_graphql_1.Field({ nullable: true }),
-    typeorm_1.Column(),
-    __metadata("design:type", Number)
-], Tweet.prototype, "rel_acc", void 0);
-__decorate([
     type_graphql_1.Field(),
     typeorm_1.Column(),
     __metadata("design:type", String)
@@ -50,10 +45,6 @@ __decorate([
     typeorm_1.Column(),
     __metadata("design:type", String)
 ], Tweet.prototype, "name", void 0);
-__decorate([
-    typeorm_1.ManyToOne(() => User_1.User, (user) => user.tweets),
-    __metadata("design:type", User_1.User)
-], Tweet.prototype, "user", void 0);
 __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column(),
@@ -70,17 +61,15 @@ __decorate([
     __metadata("design:type", String)
 ], Tweet.prototype, "img", void 0);
 __decorate([
+    typeorm_1.ManyToOne(() => User_1.User, (user) => user.tweets),
+    __metadata("design:type", User_1.User)
+], Tweet.prototype, "user", void 0);
+__decorate([
     typeorm_1.OneToMany(() => Like, (like) => like.tweet, {
         cascade: ["insert", "remove", "update"],
     }),
     __metadata("design:type", Array)
 ], Tweet.prototype, "like", void 0);
-__decorate([
-    typeorm_1.OneToMany(() => Comment, (comment) => comment.tweet, {
-        cascade: ["insert", "remove", "update"],
-    }),
-    __metadata("design:type", Array)
-], Tweet.prototype, "comment", void 0);
 Tweet = __decorate([
     type_graphql_1.ObjectType(),
     typeorm_1.Entity()
@@ -121,33 +110,4 @@ Like = __decorate([
     typeorm_1.Entity()
 ], Like);
 exports.Like = Like;
-let Comment = class Comment {
-    constructor() {
-        this.created_At = new Date();
-    }
-};
-__decorate([
-    type_graphql_1.Field(),
-    typeorm_1.PrimaryGeneratedColumn(),
-    __metadata("design:type", Number)
-], Comment.prototype, "comment_id", void 0);
-__decorate([
-    type_graphql_1.Field(() => String),
-    typeorm_1.CreateDateColumn(),
-    __metadata("design:type", Object)
-], Comment.prototype, "created_At", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    typeorm_1.Column(),
-    __metadata("design:type", String)
-], Comment.prototype, "comment", void 0);
-__decorate([
-    typeorm_1.ManyToOne(() => Tweet, (tweet) => tweet.comment),
-    __metadata("design:type", Tweet)
-], Comment.prototype, "tweet", void 0);
-Comment = __decorate([
-    type_graphql_1.ObjectType(),
-    typeorm_1.Entity()
-], Comment);
-exports.Comment = Comment;
 //# sourceMappingURL=Tweets.js.map

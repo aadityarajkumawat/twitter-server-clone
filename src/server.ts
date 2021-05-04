@@ -14,7 +14,7 @@ import { __prod__ } from "./constants";
 import { Follow } from "./entities/Follow";
 import { Images } from "./entities/Images";
 import { Profile } from "./entities/Profile";
-import { Comment, Like, Tweet } from "./entities/Tweets";
+import { Like, Tweet } from "./entities/Tweets";
 import { User } from "./entities/User";
 import { FollowResolver } from "./resolvers/follow";
 import { HelloResolver } from "./resolvers/hello";
@@ -31,7 +31,7 @@ const main = async () => {
     // logging: true,
     // synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User, Tweet, Like, Comment, Follow, Images, Profile],
+    entities: [User, Tweet, Like, Follow, Images, Profile],
   });
 
   // await conn.runMigrations();

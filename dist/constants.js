@@ -124,10 +124,6 @@ __decorate([
 ], PostTweetInput.prototype, "tweet_content", void 0);
 __decorate([
     type_graphql_1.Field({ nullable: true }),
-    __metadata("design:type", Number)
-], PostTweetInput.prototype, "rel_acc", void 0);
-__decorate([
-    type_graphql_1.Field({ nullable: true }),
     __metadata("design:type", String)
 ], PostTweetInput.prototype, "img", void 0);
 PostTweetInput = __decorate([
@@ -176,10 +172,6 @@ __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
 ], GetOneTweet.prototype, "_type", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", Number)
-], GetOneTweet.prototype, "rel_acc", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)

@@ -218,7 +218,7 @@ let UserResolver = class UserResolver {
                     .createQueryBuilder()
                     .select("COUNT(*)")
                     .from(entities_1.Tweet, "tweet")
-                    .where("tweet.rel_acc = :id", { id })
+                    .where("tweet.userId = :id", { id })
                     .execute();
                 if (user && profile && following && followers) {
                     const __data__ = {

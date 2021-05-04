@@ -57,8 +57,6 @@ export class PostTweetInput {
   @Field()
   tweet_content: string;
   @Field({ nullable: true })
-  rel_acc?: number;
-  @Field({ nullable: true })
   img?: string;
 }
 
@@ -89,8 +87,6 @@ export class GetOneTweet {
   created_At: string;
   @Field()
   _type: string;
-  @Field()
-  rel_acc: number;
   @Field()
   username: string;
   @Field()

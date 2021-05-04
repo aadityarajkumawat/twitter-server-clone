@@ -1,3 +1,4 @@
+import { Tweet } from "../entities";
 import { Images } from "../entities/Images";
 import { User } from "../entities/User";
 import { TweetWithLikedStatus, TweetWithProfileImage } from "../interfaces";
@@ -8,9 +9,13 @@ export const addProfileImageToTweets = async (
   const tweetsWithProfileImage: Array<TweetWithProfileImage> = [];
 
   for (let i = 0; i < tweetsWithLikedStatus.length; i++) {
-    const tweetRelAcc = tweetsWithLikedStatus[i].rel_acc;
+    const tweetId = tweetsWithLikedStatus[i].tweet_id;
+    const tweet = await Tweet.findOne({ where: { tweet_id: tweetId } });
+    if (!tweet) return [];
 
-    const user = await User.findOne({ where: { id: tweetRelAcc } });
+    console.log(tweet.user);
+
+    const user = await User.findOne({ where: { id: tweet.user.id } });
     const img_url = await Images.findOne({
       where: { user, type: "profile" },
     });

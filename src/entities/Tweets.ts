@@ -29,10 +29,6 @@ export class Tweet extends BaseEntity {
   @Column()
   _type!: string;
 
-  @Field({ nullable: true })
-  @Column()
-  rel_acc: number;
-
   @Field()
   @Column()
   username: string;
@@ -40,9 +36,6 @@ export class Tweet extends BaseEntity {
   @Field()
   @Column()
   name: string;
-
-  @ManyToOne(() => User, (user) => user.tweets)
-  user: User;
 
   @Field()
   @Column()
@@ -56,15 +49,14 @@ export class Tweet extends BaseEntity {
   @Column()
   img: string;
 
+  // Relations
+  @ManyToOne(() => User, (user) => user.tweets)
+  user: User;
+
   @OneToMany(() => Like, (like) => like.tweet, {
     cascade: ["insert", "remove", "update"],
   })
   like: Like[];
-
-  @OneToMany(() => Comment, (comment) => comment.tweet, {
-    cascade: ["insert", "remove", "update"],
-  })
-  comment: Comment[];
 }
 
 @ObjectType()
@@ -87,24 +79,5 @@ export class Like extends BaseEntity {
   tweet_id: number;
 
   @ManyToOne(() => Tweet, (tweet) => tweet.like)
-  tweet: Tweet;
-}
-
-@ObjectType()
-@Entity()
-export class Comment {
-  @Field()
-  @PrimaryGeneratedColumn()
-  comment_id!: number;
-
-  @Field(() => String)
-  @CreateDateColumn()
-  created_At = new Date();
-
-  @Field()
-  @Column()
-  comment: string;
-
-  @ManyToOne(() => Tweet, (tweet) => tweet.comment)
   tweet: Tweet;
 }

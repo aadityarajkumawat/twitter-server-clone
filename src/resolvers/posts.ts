@@ -30,9 +30,8 @@ import {
   SubUserTweets,
   TweetInfo,
 } from "../constants";
-import { Follow } from "../entities/Follow";
+import { Follow, Profile } from "../entities";
 import { Images } from "../entities/Images";
-import { Profile } from "../entities/Profile";
 import { Like, Tweet } from "../entities/Tweets";
 import { User } from "../entities/User";
 import { addLikedStatusToTweets } from "../helpers/addLikedStatusToTweets";
@@ -59,42 +58,48 @@ export class PostsResolver {
   @UseMiddleware(Auth)
   async createPost(
     @Arg("options") options: PostTweetInput,
-    @Ctx() { req }: MyContext,
+    @Ctx() { req, conn }: MyContext,
     @PubSub() pubsub: PubSubEngine
   ): Promise<PostCreatedResponse> {
-    let { tweet_content, rel_acc, img } = options;
+    let { tweet_content, img } = options;
     let post: Tweet;
 
     try {
       const user = await User.findOne({ where: { id: req.session.userId } });
       if (!user) return { error: "user not found", uploaded: "" };
 
-      let tweetType = "tweet";
-      if (rel_acc) {
-        tweetType = "retweet";
-      } else {
-        rel_acc = req.session.userId;
-      }
+      // const result = await getConnection()
+      //   .createQueryBuilder()
+      //   .insert()
+      //   .into(Tweet)
+      //   .values({
+      //     user,
+      //     tweet_content,
+      //     _type: "tweet",
+      //     username: user.username,
+      //     name: user.name,
+      //     likes: 0,
+      //     comments: 0,
+      //     img: img ? img : "",
+      //   })
+      //   .returning("*")
+      //   .execute();
 
-      const result = await getConnection()
-        .createQueryBuilder()
-        .insert()
-        .into(Tweet)
-        .values({
-          user,
-          tweet_content,
-          _type: tweetType,
-          rel_acc,
-          username: user.username,
-          name: user.name,
-          likes: 0,
-          comments: 0,
-          img: img ? img : "",
-        })
-        .returning("*")
-        .execute();
+      // post = result.raw[0];
 
-      post = result.raw[0];
+      const tweetRepo = conn.getRepository(Tweet);
+      const newTweet = tweetRepo.create({
+        _type: "tweet",
+        comments: 0,
+        img: img ? img : "",
+        likes: 0,
+        name: user.name,
+        tweet_content,
+        user,
+        username: user.name,
+      });
+
+      const post = await tweetRepo.manager.save(newTweet);
 
       const profileI = await Images.findOne({ where: { user } });
       if (!profileI) return { error: "images not found", uploaded: "" };
@@ -142,7 +147,7 @@ export class PostsResolver {
       });
       let img;
       if (tweet) {
-        const user = await User.findOne({ where: { id: tweet.rel_acc } });
+        const user = await User.findOne({ where: { id: tweet.user.id } });
         img = await Images.findOne({ where: { user, type: "profile" } });
       }
       if (!tweet) return { error: "tweet not found", tweet: undefined };
@@ -265,7 +270,7 @@ export class PostsResolver {
       const tweetsResponse: GetOneTweet[] = [];
 
       for (let i = 0; i < finalTweets.length; i++) {
-        const ii = finalTweets[i].rel_acc;
+        const ii = finalTweets[i].user.id;
         const user = await User.findOne({ where: { id: ii } });
         const img_url = await Images.findOne({
           where: { user, type: "profile" },
@@ -309,7 +314,7 @@ export class PostsResolver {
 
     let img;
     if (tweet) {
-      const user = await User.findOne({ where: { id: tweet.rel_acc } });
+      const user = await User.findOne({ where: { id: tweet.user.id } });
       img = await Images.findOne({ where: { user, type: "profile" } });
     }
 
@@ -382,7 +387,7 @@ export class PostsResolver {
         .createQueryBuilder()
         .select("*")
         .from(Tweet, "tweet")
-        .where("tweet.rel_acc = :id", {
+        .where("tweet.userId = :id", {
           id,
         })
         .limit(15)
@@ -407,7 +412,7 @@ export class PostsResolver {
       const userTweets = [];
 
       for (let i = 0; i < finalTweets.length; i++) {
-        const ii = finalTweets[i].rel_acc;
+        const ii = finalTweets[i].user.id;
         const user = await User.findOne({ where: { id: ii } });
         const img_url = await Images.findOne({
           where: { user, type: "profile" },
@@ -436,7 +441,10 @@ export class PostsResolver {
   ): Promise<SubUserTweets> {
     try {
       const tweetRepository = connection.getRepository(Tweet);
-      const num = await tweetRepository.count({ where: { rel_acc: id } });
+      const userRepository = connection.getRepository(User);
+
+      const user = await userRepository.findOne({ where: { id } });
+      const num = await tweetRepository.count({ where: { user } });
 
       const tweets = this.userTweets;
 
@@ -452,7 +460,12 @@ export class PostsResolver {
   async listenTweets(
     @Root() tweet: GetTweetResponse
   ): Promise<GetTweetResponse> {
-    const user = await User.findOne({ where: { id: tweet.tweet?.rel_acc } });
+    const thatTweetThough = await Tweet.findOne({
+      where: { tweet_id: tweet.tweet?.tweet_id },
+    });
+    if (!thatTweetThough)
+      return { error: "tweet not posted", tweet: undefined };
+    const user = await User.findOne({ where: { id: thatTweetThough.user.id } });
     const img = await Images.findOne({ where: { user, type: "profile" } });
     if (img && tweet.tweet) {
       tweet.tweet.profile_img = img.url;
@@ -477,7 +490,7 @@ export class PostsResolver {
         .createQueryBuilder()
         .select("*")
         .from(Tweet, "tweet")
-        .where("tweet.rel_acc = :id", {
+        .where("tweet.userId = :id", {
           id,
         })
         .limit(15)
@@ -488,7 +501,7 @@ export class PostsResolver {
         .createQueryBuilder()
         .select("*")
         .from(Tweet, "tweet")
-        .where("tweet.rel_acc = :id", {
+        .where("tweet.userId = :id", {
           id,
         })
         .orderBy("tweet.created_At", "DESC")
@@ -512,7 +525,7 @@ export class PostsResolver {
       const f = [];
 
       for (let i = 0; i < finalTweets.length; i++) {
-        const ii = finalTweets[i].rel_acc;
+        const ii = finalTweets[i].user.id;
         const user = await User.findOne({ where: { id: ii } });
         const img_url = await Images.findOne({
           where: { user, type: "profile" },
@@ -574,7 +587,7 @@ export class PostsResolver {
       const f: GetOneTweet[] = [];
 
       for (let i = 0; i < finalTweets.length; i++) {
-        const ii = finalTweets[i].rel_acc;
+        const ii = finalTweets[i].user.id;
         const user = await User.findOne({ where: { id: ii } });
         const img_url = await Images.findOne({
           where: { user, type: "profile" },
@@ -618,7 +631,7 @@ export class PostsResolver {
         .createQueryBuilder()
         .select("COUNT(*)")
         .from(Tweet, "tweet")
-        .where("tweet.rel_acc = :id", { id: req.session.userId })
+        .where("tweet.userId = :id", { id: req.session.userId })
         .execute();
 
       const num = n[0].count;
@@ -683,15 +696,20 @@ export class PostsResolver {
   ): Promise<ProfileStuffAndUserTweets> {
     const getProfileStuff = userResolvers.getProfileStuff;
 
-    const profileStuff = await getProfileStuff(ctx, id);
-    const userTweets = await this.getTweetsByUserF(ctx, id);
+    try {
+      const profileStuff = await getProfileStuff(ctx, id);
+      const userTweets = await this.getTweetsByUserF(ctx, id);
 
-    const __data__: ProfileStuffAndUserTweets = {
-      error: "",
-      profile: profileStuff.profile,
-      tweets: userTweets.tweets,
-    };
+      const __data__: ProfileStuffAndUserTweets = {
+        error: "",
+        profile: profileStuff.profile,
+        tweets: userTweets.tweets,
+      };
 
-    return dataOnSteroids(__data__);
+      return dataOnSteroids(__data__);
+    } catch (error) {
+      console.log(error.message);
+      return { error: error.message, profile: null, tweets: null };
+    }
   }
 }

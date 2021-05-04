@@ -42,7 +42,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         type: "postgres",
         url: process.env.DATABASE_URL,
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
-        entities: [User_1.User, Tweets_1.Tweet, Tweets_1.Like, Tweets_1.Comment, Follow_1.Follow, Images_1.Images, Profile_1.Profile],
+        entities: [User_1.User, Tweets_1.Tweet, Tweets_1.Like, Follow_1.Follow, Images_1.Images, Profile_1.Profile],
     });
     const app = express_1.default();
     const pubsub = new apollo_server_express_1.PubSub();

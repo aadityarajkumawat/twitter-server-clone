@@ -10,13 +10,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addProfileImageToTweets = void 0;
+const entities_1 = require("../entities");
 const Images_1 = require("../entities/Images");
 const User_1 = require("../entities/User");
 const addProfileImageToTweets = (tweetsWithLikedStatus) => __awaiter(void 0, void 0, void 0, function* () {
     const tweetsWithProfileImage = [];
     for (let i = 0; i < tweetsWithLikedStatus.length; i++) {
-        const tweetRelAcc = tweetsWithLikedStatus[i].rel_acc;
-        const user = yield User_1.User.findOne({ where: { id: tweetRelAcc } });
+        const tweetId = tweetsWithLikedStatus[i].tweet_id;
+        const tweet = yield entities_1.Tweet.findOne({ where: { tweet_id: tweetId } });
+        if (!tweet)
+            return [];
+        console.log(tweet.user);
+        const user = yield User_1.User.findOne({ where: { id: tweet.user.id } });
         const img_url = yield Images_1.Images.findOne({
             where: { user, type: "profile" },
         });
