@@ -35,11 +35,15 @@ let PostActionResolver = class PostActionResolver {
             const commentRepository = conn.getRepository(entities_1.Comment);
             try {
                 const tweet = yield tweetRepository.findOne({ where: { tweet_id } });
+                if (!tweet)
+                    return { error: "Error!, tweet not found", commented: false };
                 const newComment = commentRepository.create({
                     comment: commentMsg,
                     tweet,
                 });
+                tweet.comments = tweet.comments + 1;
                 yield commentRepository.manager.save(newComment);
+                yield tweetRepository.manager.save(tweet);
                 return { error: null, commented: true };
             }
             catch (error) {

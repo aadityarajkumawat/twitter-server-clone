@@ -24,12 +24,16 @@ export class PostActionResolver {
 
     try {
       const tweet = await tweetRepository.findOne({ where: { tweet_id } });
+      if (!tweet) return { error: "Error!, tweet not found", commented: false };
+
       const newComment = commentRepository.create({
         comment: commentMsg,
         tweet,
       });
 
+      tweet.comments = tweet.comments + 1;
       await commentRepository.manager.save(newComment);
+      await tweetRepository.manager.save(tweet);
       return { error: null, commented: true };
     } catch (error) {
       console.log(error.message);
