@@ -19,3 +19,41 @@ export class CommentInput {
     @Field()
     img: string;
 }
+
+@ObjectType()
+export class CommentRespose {
+    @Field()
+    comment_id!: number;
+    @Field()
+    profileImg!: string;
+    @Field()
+    name!: string;
+    @Field()
+    username!: string;
+    @Field()
+    commentMsg!: string;
+    @Field()
+    comments!: number;
+    @Field()
+    likes!: number;
+    @Field()
+    img!: string;
+    @Field()
+    liked!: boolean;
+}
+
+@ObjectType()
+export class GetCommentsResponse {
+    @Field(() => [CommentRespose], { nullable: true })
+    comments!: CommentRespose[];
+    @Field(() => String, { nullable: true })
+    error: string | null;
+}
+
+@InputType()
+export class GetCommentsInput {
+    @Field()
+    fetchFrom!: "tweet" | "comment";
+    @Field()
+    postId!: number;
+}

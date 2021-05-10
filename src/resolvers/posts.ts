@@ -51,6 +51,9 @@ import { Time } from "../middlewares/Time";
 import {
     CommentInput,
     CommentPostedReponse,
+    CommentRespose,
+    GetCommentsInput,
+    GetCommentsResponse,
 } from "../object-types/postActionTypes";
 import { TWEET, USER_TWEETS } from "../triggers";
 import { MyContext } from "../types";
@@ -777,6 +780,7 @@ export class PostsResolver {
     }
 
     @Mutation(() => CommentPostedReponse)
+    @UseMiddleware(Auth)
     async postComment(
         @Arg("args") args: CommentInput,
         @Ctx() ctx: MyContext
@@ -828,6 +832,50 @@ export class PostsResolver {
             return { commented: true, error: null };
         } catch (error) {
             return { commented: false, error: error.message };
+        }
+    }
+
+    @Query(() => GetCommentsResponse)
+    @UseMiddleware(Auth)
+    async getComments(
+        @Arg("args") args: GetCommentsInput,
+        @Ctx() { conn }: MyContext
+    ): Promise<GetCommentsResponse> {
+        const { fetchFrom, postId } = args;
+        const commentRepo = conn.getRepository(Comment);
+
+        try {
+            if (fetchFrom === "tweet") {
+                const comments = await commentRepo.find();
+                const commentsWithLikedStatus: Array<CommentRespose> = [];
+
+                for (let comment of comments) {
+                    const commentWithLikedStatus: CommentRespose = {
+                        commentMsg: comment.commentMsg,
+                        comment_id: comment.comment_id,
+                        comments: comment.comments,
+                        img: comment.img,
+                        liked: false,
+                        likes: comment.likes,
+                        name: comment.name,
+                        profileImg: comment.profileImg,
+                        username: comment.username,
+                    };
+
+                    // @TODO: Add liked status
+                    // -> here
+
+                    commentsWithLikedStatus.push(commentWithLikedStatus);
+                }
+
+                return { comments: commentsWithLikedStatus, error: null };
+            } else if (fetchFrom == "comment") {
+                return { comments: [], error: null };
+            } else {
+                return { comments: [], error: null };
+            }
+        } catch (error) {
+            return { comments: [], error: error.message };
         }
     }
 }

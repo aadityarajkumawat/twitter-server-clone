@@ -617,6 +617,42 @@ let PostsResolver = class PostsResolver {
             }
         });
     }
+    getComments(args, { conn }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { fetchFrom, postId } = args;
+            const commentRepo = conn.getRepository(entities_1.Comment);
+            try {
+                if (fetchFrom === "tweet") {
+                    const comments = yield commentRepo.find();
+                    const commentsWithLikedStatus = [];
+                    for (let comment of comments) {
+                        const commentWithLikedStatus = {
+                            commentMsg: comment.commentMsg,
+                            comment_id: comment.comment_id,
+                            comments: comment.comments,
+                            img: comment.img,
+                            liked: false,
+                            likes: comment.likes,
+                            name: comment.name,
+                            profileImg: comment.profileImg,
+                            username: comment.username,
+                        };
+                        commentsWithLikedStatus.push(commentWithLikedStatus);
+                    }
+                    return { comments: commentsWithLikedStatus, error: null };
+                }
+                else if (fetchFrom == "comment") {
+                    return { comments: [], error: null };
+                }
+                else {
+                    return { comments: [], error: null };
+                }
+            }
+            catch (error) {
+                return { comments: [], error: error.message };
+            }
+        });
+    }
 };
 __decorate([
     type_graphql_1.Mutation(() => constants_1.PostCreatedResponse),
@@ -730,12 +766,22 @@ __decorate([
 ], PostsResolver.prototype, "profileStuffAndUserTweets", null);
 __decorate([
     type_graphql_1.Mutation(() => postActionTypes_1.CommentPostedReponse),
+    type_graphql_1.UseMiddleware(Auth_1.Auth),
     __param(0, type_graphql_1.Arg("args")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [postActionTypes_1.CommentInput, Object]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "postComment", null);
+__decorate([
+    type_graphql_1.Query(() => postActionTypes_1.GetCommentsResponse),
+    type_graphql_1.UseMiddleware(Auth_1.Auth),
+    __param(0, type_graphql_1.Arg("args")),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [postActionTypes_1.GetCommentsInput, Object]),
+    __metadata("design:returntype", Promise)
+], PostsResolver.prototype, "getComments", null);
 PostsResolver = __decorate([
     type_graphql_1.Resolver()
 ], PostsResolver);
