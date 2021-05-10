@@ -270,8 +270,9 @@ export class PostsResolver {
             const tweetsResponse: GetOneTweet[] = [];
 
             for (let i = 0; i < finalTweets.length; i++) {
-                const ii = finalTweets[i].user.id;
-                const user = await User.findOne({ where: { id: ii } });
+                const user = userResolvers.getUserByUsername(
+                    finalTweets[i].username
+                );
                 const img_url = await Images.findOne({
                     where: { user, type: "profile" },
                 });
@@ -460,14 +461,15 @@ export class PostsResolver {
     async listenTweets(
         @Root() tweet: GetTweetResponse
     ): Promise<GetTweetResponse> {
+        if (!tweet.tweet) return { error: "no tweet found", tweet: undefined };
         const thatTweetThough = await Tweet.findOne({
             where: { tweet_id: tweet.tweet?.tweet_id },
         });
         if (!thatTweetThough)
             return { error: "tweet not posted", tweet: undefined };
-        const user = await User.findOne({
-            where: { id: thatTweetThough.user.id },
-        });
+
+        const user = userResolvers.getUserByUsername(tweet.tweet.username);
+
         const img = await Images.findOne({ where: { user, type: "profile" } });
         if (img && tweet.tweet) {
             tweet.tweet.profile_img = img.url;
@@ -527,8 +529,10 @@ export class PostsResolver {
             const f = [];
 
             for (let i = 0; i < finalTweets.length; i++) {
-                const ii = finalTweets[i].user.id;
-                const user = await User.findOne({ where: { id: ii } });
+                const user = userResolvers.getUserByUsername(
+                    finalTweets[i].username
+                );
+
                 const img_url = await Images.findOne({
                     where: { user, type: "profile" },
                 });

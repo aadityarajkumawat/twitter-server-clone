@@ -1,5 +1,5 @@
 import { Connection } from "typeorm";
-import { Images, Tweet } from "../entities";
+import { Images, Tweet, User } from "../entities";
 import { TweetWithLikedStatus, TweetWithProfileImage } from "../interfaces";
 import { UserResolver } from "../resolvers/user";
 
@@ -20,8 +20,11 @@ export const addProfileImageToTweets = async (
         if (!tweet) return [];
 
         const user = await userResolvers.getUserByUsername(tweet.username);
+        if (!user.user) return [];
+        const realUser = await User.findOne({ where: { id: user.user.id } });
+
         const img_url = await Images.findOne({
-            where: { user, type: "profile" },
+            where: { user: realUser, type: "profile" },
         });
 
         tweetsWithProfileImage.push({

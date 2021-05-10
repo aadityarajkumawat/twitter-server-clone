@@ -22,8 +22,11 @@ const addProfileImageToTweets = (tweetsWithLikedStatus, conn) => __awaiter(void 
         if (!tweet)
             return [];
         const user = yield userResolvers.getUserByUsername(tweet.username);
+        if (!user.user)
+            return [];
+        const realUser = yield entities_1.User.findOne({ where: { id: user.user.id } });
         const img_url = yield entities_1.Images.findOne({
-            where: { user, type: "profile" },
+            where: { user: realUser, type: "profile" },
         });
         tweetsWithProfileImage.push(Object.assign(Object.assign({}, tweetsWithLikedStatus[i]), { profile_img: img_url ? img_url.url : "" }));
     }

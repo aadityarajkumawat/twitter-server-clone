@@ -180,8 +180,7 @@ let PostsResolver = class PostsResolver {
                 }
                 const tweetsResponse = [];
                 for (let i = 0; i < finalTweets.length; i++) {
-                    const ii = finalTweets[i].user.id;
-                    const user = yield entities_1.User.findOne({ where: { id: ii } });
+                    const user = userResolvers.getUserByUsername(finalTweets[i].username);
                     const img_url = yield entities_1.Images.findOne({
                         where: { user, type: "profile" },
                     });
@@ -321,14 +320,14 @@ let PostsResolver = class PostsResolver {
     listenTweets(tweet) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            if (!tweet.tweet)
+                return { error: "no tweet found", tweet: undefined };
             const thatTweetThough = yield entities_1.Tweet.findOne({
                 where: { tweet_id: (_a = tweet.tweet) === null || _a === void 0 ? void 0 : _a.tweet_id },
             });
             if (!thatTweetThough)
                 return { error: "tweet not posted", tweet: undefined };
-            const user = yield entities_1.User.findOne({
-                where: { id: thatTweetThough.user.id },
-            });
+            const user = userResolvers.getUserByUsername(tweet.tweet.username);
             const img = yield entities_1.Images.findOne({ where: { user, type: "profile" } });
             if (img && tweet.tweet) {
                 tweet.tweet.profile_img = img.url;
@@ -378,8 +377,7 @@ let PostsResolver = class PostsResolver {
                 }
                 const f = [];
                 for (let i = 0; i < finalTweets.length; i++) {
-                    const ii = finalTweets[i].user.id;
-                    const user = yield entities_1.User.findOne({ where: { id: ii } });
+                    const user = userResolvers.getUserByUsername(finalTweets[i].username);
                     const img_url = yield entities_1.Images.findOne({
                         where: { user, type: "profile" },
                     });
