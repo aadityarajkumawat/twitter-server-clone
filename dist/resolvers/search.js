@@ -22,11 +22,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SearchResolver = void 0;
-const constants_1 = require("../constants");
-const User_1 = require("../entities/User");
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
+const constants_1 = require("../constants");
 const Images_1 = require("../entities/Images");
+const User_1 = require("../entities/User");
 let SearchResolver = class SearchResolver {
     getSearchResults({ req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -43,7 +43,9 @@ let SearchResolver = class SearchResolver {
             for (let i = 0; i < profiles.length; i++) {
                 const ii = profiles[i].id;
                 const user = yield User_1.User.findOne({ where: { id: ii } });
-                const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+                const img = yield Images_1.Images.findOne({
+                    where: { user, type: "profile" },
+                });
                 f.push(Object.assign(Object.assign({}, profiles[i]), { img: img ? img.url : "" }));
             }
             return { error: null, profiles: f };

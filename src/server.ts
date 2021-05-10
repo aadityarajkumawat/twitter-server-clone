@@ -11,11 +11,15 @@ import "reflect-metadata";
 import { buildSchema } from "type-graphql";
 import { createConnection } from "typeorm";
 import { __prod__ } from "./constants";
-import { Follow } from "./entities/Follow";
-import { Images } from "./entities/Images";
-import { Profile } from "./entities/Profile";
-import { Like, Tweet } from "./entities/Tweets";
-import { User } from "./entities/User";
+import {
+    Comment,
+    Follow,
+    Images,
+    Like,
+    Profile,
+    Tweet,
+    User,
+} from "./entities";
 import { FollowResolver } from "./resolvers/follow";
 import { HelloResolver } from "./resolvers/hello";
 import { ImgResolver } from "./resolvers/images";
@@ -27,13 +31,13 @@ const main = async () => {
     const conn = await createConnection({
         type: "postgres",
         url: process.env.DATABASE_URL,
-        // logging: true,
-        // synchronize: true,
+        logging: true,
+        synchronize: true,
         migrations: [path.join(__dirname, "./migrations/*")],
-        entities: [User, Tweet, Like, Follow, Images, Profile],
+        entities: [User, Tweet, Like, Follow, Images, Profile, Comment],
     });
 
-    // await conn.runMigrations();
+    await conn.runMigrations();
 
     const app = express();
     const pubsub = new PubSub();

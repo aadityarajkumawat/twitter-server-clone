@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Like = exports.Tweet = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
+const Comment_1 = require("./Comment");
 const User_1 = require("./User");
 let Tweet = class Tweet extends typeorm_1.BaseEntity {
 };
@@ -70,6 +71,12 @@ __decorate([
     }),
     __metadata("design:type", Array)
 ], Tweet.prototype, "like", void 0);
+__decorate([
+    typeorm_1.OneToMany(() => Comment_1.Comment, (comment) => comment.tweet, {
+        cascade: ["insert", "remove", "update"],
+    }),
+    __metadata("design:type", Array)
+], Tweet.prototype, "comment", void 0);
 Tweet = __decorate([
     type_graphql_1.ObjectType(),
     typeorm_1.Entity()

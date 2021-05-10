@@ -8,6 +8,7 @@ import {
     OneToMany,
     PrimaryGeneratedColumn,
 } from "typeorm";
+import { Comment } from "./Comment";
 import { User } from "./User";
 
 @ObjectType()
@@ -57,6 +58,11 @@ export class Tweet extends BaseEntity {
         cascade: ["insert", "remove", "update"],
     })
     like: Like[];
+
+    @OneToMany(() => Comment, (comment) => comment.tweet, {
+        cascade: ["insert", "remove", "update"],
+    })
+    comment: Comment[];
 }
 
 @ObjectType()

@@ -22,10 +22,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ImgResolver = void 0;
-const constants_1 = require("../constants");
-const User_1 = require("../entities/User");
 const type_graphql_1 = require("type-graphql");
+const constants_1 = require("../constants");
 const Images_1 = require("../entities/Images");
+const User_1 = require("../entities/User");
 let ImgResolver = class ImgResolver {
     saveImage({ req }, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -34,7 +34,9 @@ let ImgResolver = class ImgResolver {
             }
             const { type, url } = options;
             try {
-                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                const user = yield User_1.User.findOne({
+                    where: { id: req.session.userId },
+                });
                 const img = yield Images_1.Images.findOne({ where: { user, type } });
                 if (img) {
                     img.url = url;
@@ -58,7 +60,9 @@ let ImgResolver = class ImgResolver {
             }
             try {
                 const user = yield User_1.User.findOne({ where: { id } });
-                const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+                const img = yield Images_1.Images.findOne({
+                    where: { user, type: "profile" },
+                });
                 if (img) {
                     return img.url;
                 }
@@ -76,7 +80,9 @@ let ImgResolver = class ImgResolver {
             }
             try {
                 const user = yield User_1.User.findOne({ where: { id } });
-                const img = yield Images_1.Images.findOne({ where: { user, type: "cover" } });
+                const img = yield Images_1.Images.findOne({
+                    where: { user, type: "cover" },
+                });
                 if (img) {
                     return img.url;
                 }

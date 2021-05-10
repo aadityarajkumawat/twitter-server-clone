@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Initial1619119623329 = void 0;
 class Initial1619119623329 {
     constructor() {
-        this.name = 'Initial1619119623329';
+        this.name = "Initial1619119623329";
     }
     up(queryRunner) {
         return __awaiter(this, void 0, void 0, function* () {

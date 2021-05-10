@@ -25,15 +25,10 @@ require("reflect-metadata");
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const constants_1 = require("./constants");
-const Follow_1 = require("./entities/Follow");
-const Images_1 = require("./entities/Images");
-const Profile_1 = require("./entities/Profile");
-const Tweets_1 = require("./entities/Tweets");
-const User_1 = require("./entities/User");
+const entities_1 = require("./entities");
 const follow_1 = require("./resolvers/follow");
 const hello_1 = require("./resolvers/hello");
 const images_1 = require("./resolvers/images");
-const postActions_1 = require("./resolvers/postActions");
 const posts_1 = require("./resolvers/posts");
 const search_1 = require("./resolvers/search");
 const user_1 = require("./resolvers/user");
@@ -41,9 +36,12 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
         url: process.env.DATABASE_URL,
+        logging: true,
+        synchronize: true,
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
-        entities: [User_1.User, Tweets_1.Tweet, Tweets_1.Like, Follow_1.Follow, Images_1.Images, Profile_1.Profile],
+        entities: [entities_1.User, entities_1.Tweet, entities_1.Like, entities_1.Follow, entities_1.Images, entities_1.Profile, entities_1.Comment],
     });
+    yield conn.runMigrations();
     const app = express_1.default();
     const pubsub = new apollo_server_express_1.PubSub();
     const RedisStore = connect_redis_1.default(express_session_1.default);
@@ -80,7 +78,6 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
                 follow_1.FollowResolver,
                 search_1.SearchResolver,
                 images_1.ImgResolver,
-                postActions_1.PostActionResolver,
             ],
             validate: false,
             pubSub: pubsub,

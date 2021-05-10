@@ -10,8 +10,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Follow = void 0;
-const typeorm_1 = require("typeorm");
 const type_graphql_1 = require("type-graphql");
+const typeorm_1 = require("typeorm");
 let Follow = class Follow extends typeorm_1.BaseEntity {
 };
 __decorate([

@@ -62,32 +62,12 @@ export class PostsResolver {
         @PubSub() pubsub: PubSubEngine
     ): Promise<PostCreatedResponse> {
         let { tweet_content, img } = options;
-        let post: Tweet;
 
         try {
             const user = await User.findOne({
                 where: { id: req.session.userId },
             });
             if (!user) return { error: "user not found", uploaded: "" };
-
-            // const result = await getConnection()
-            //   .createQueryBuilder()
-            //   .insert()
-            //   .into(Tweet)
-            //   .values({
-            //     user,
-            //     tweet_content,
-            //     _type: "tweet",
-            //     username: user.username,
-            //     name: user.name,
-            //     likes: 0,
-            //     comments: 0,
-            //     img: img ? img : "",
-            //   })
-            //   .returning("*")
-            //   .execute();
-
-            // post = result.raw[0];
 
             const tweetRepo = conn.getRepository(Tweet);
             const newTweet = tweetRepo.create({
@@ -732,4 +712,12 @@ export class PostsResolver {
             return { error: error.message, profile: null, tweets: null };
         }
     }
+
+    // @Mutation(() => CommentPostedReponse)
+    // async postComment(
+    //     @Arg("args") args: CommentInput
+    // ): Promise<CommentPostedReponse> {
+    //     const { commentMsg, tweet_id, img } = args;
+    //     const attatchedImage = img ? img : "";
+    // }
 }

@@ -35,6 +35,10 @@ __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", Number)
 ], CommentInput.prototype, "tweet_id", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], CommentInput.prototype, "img", void 0);
 CommentInput = __decorate([
     type_graphql_1.InputType()
 ], CommentInput);

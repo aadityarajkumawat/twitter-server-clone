@@ -38,11 +38,15 @@ let UserResolver = class UserResolver {
                 return { error: "User not authenticated", user: null };
             }
             try {
-                const user = yield entities_1.User.findOne({ where: { id: req.session.userId } });
+                const user = yield entities_1.User.findOne({
+                    where: { id: req.session.userId },
+                });
                 if (!user)
                     return { error: "No user", user: null };
-                const img = yield entities_1.Images.findOne({ where: { user, type: "profile" } });
-                const { id, email, createdAt, updatedAt, username, phone, name } = user;
+                const img = yield entities_1.Images.findOne({
+                    where: { user, type: "profile" },
+                });
+                const { id, email, createdAt, updatedAt, username, phone, name, } = user;
                 return {
                     error: "",
                     user: {
@@ -81,7 +85,13 @@ let UserResolver = class UserResolver {
                         .createQueryBuilder()
                         .insert()
                         .into(entities_1.User)
-                        .values({ email, password: hashedPossword, phone, username, name })
+                        .values({
+                        email,
+                        password: hashedPossword,
+                        phone,
+                        username,
+                        name,
+                    })
                         .returning("*")
                         .execute();
                     user = result.raw[0];
@@ -104,12 +114,16 @@ let UserResolver = class UserResolver {
                 catch (err) {
                     if (err.detail.includes("email")) {
                         return {
-                            errors: [{ field: "email", message: "email already exist" }],
+                            errors: [
+                                { field: "email", message: "email already exist" },
+                            ],
                         };
                     }
                     else if (err.detail.includes("phone")) {
                         return {
-                            errors: [{ field: "phone", message: "phone already exist" }],
+                            errors: [
+                                { field: "phone", message: "phone already exist" },
+                            ],
                         };
                     }
                 }
@@ -118,10 +132,14 @@ let UserResolver = class UserResolver {
             }
             else {
                 if ((yield optValid).validationError.includes("email")) {
-                    return { errors: [{ field: "email", message: "email is incorrect" }] };
+                    return {
+                        errors: [{ field: "email", message: "email is incorrect" }],
+                    };
                 }
                 else if ((yield optValid).validationError.includes("phone")) {
-                    return { errors: [{ field: "phone", message: "phone is incorrect" }] };
+                    return {
+                        errors: [{ field: "phone", message: "phone is incorrect" }],
+                    };
                 }
                 else if ((yield optValid).validationError.includes("password")) {
                     return {
@@ -161,13 +179,17 @@ let UserResolver = class UserResolver {
                 const user = yield entities_1.User.findOne({ where: { email } });
                 if (!user) {
                     return {
-                        errors: [{ field: "email", message: "email does not exist" }],
+                        errors: [
+                            { field: "email", message: "email does not exist" },
+                        ],
                     };
                 }
                 const valid = yield argon2_1.default.verify(user.password, password);
                 if (!valid) {
                     return {
-                        errors: [{ field: "password", message: "incorrect password" }],
+                        errors: [
+                            { field: "password", message: "incorrect password" },
+                        ],
                     };
                 }
                 req.session.userId = user.id;
@@ -175,11 +197,15 @@ let UserResolver = class UserResolver {
             }
             else {
                 if ((yield optValid).validationError.includes("email")) {
-                    return { errors: [{ field: "email", message: "email is incorrect" }] };
+                    return {
+                        errors: [{ field: "email", message: "email is incorrect" }],
+                    };
                 }
                 else {
                     return {
-                        errors: [{ field: "password", message: "password is incorrect" }],
+                        errors: [
+                            { field: "password", message: "password is incorrect" },
+                        ],
                     };
                 }
             }

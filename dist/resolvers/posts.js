@@ -45,9 +45,10 @@ let PostsResolver = class PostsResolver {
     createPost(options, { req, conn }, pubsub) {
         return __awaiter(this, void 0, void 0, function* () {
             let { tweet_content, img } = options;
-            let post;
             try {
-                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                const user = yield User_1.User.findOne({
+                    where: { id: req.session.userId },
+                });
                 if (!user)
                     return { error: "user not found", uploaded: "" };
                 const tweetRepo = conn.getRepository(Tweets_1.Tweet);
@@ -95,8 +96,12 @@ let PostsResolver = class PostsResolver {
                 });
                 let img;
                 if (tweet) {
-                    const user = yield User_1.User.findOne({ where: { id: tweet.user.id } });
-                    img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
+                    const user = yield User_1.User.findOne({
+                        where: { id: tweet.user.id },
+                    });
+                    img = yield Images_1.Images.findOne({
+                        where: { user, type: "profile" },
+                    });
                 }
                 if (!tweet)
                     return { error: "tweet not found", tweet: undefined };
@@ -162,7 +167,9 @@ let PostsResolver = class PostsResolver {
                     .orderBy("tweet.created_At", "DESC")
                     .execute();
                 const finalTweets = [];
-                let like = yield Tweets_1.Like.find({ where: { user_id: req.session.userId } });
+                let like = yield Tweets_1.Like.find({
+                    where: { user_id: req.session.userId },
+                });
                 for (let i = 0; i < tweets.length; i++) {
                     let currID = tweets[i].tweet_id;
                     let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
@@ -321,7 +328,9 @@ let PostsResolver = class PostsResolver {
             });
             if (!thatTweetThough)
                 return { error: "tweet not posted", tweet: undefined };
-            const user = yield User_1.User.findOne({ where: { id: thatTweetThough.user.id } });
+            const user = yield User_1.User.findOne({
+                where: { id: thatTweetThough.user.id },
+            });
             const img = yield Images_1.Images.findOne({ where: { user, type: "profile" } });
             if (img && tweet.tweet) {
                 tweet.tweet.profile_img = img.url;
@@ -465,7 +474,9 @@ let PostsResolver = class PostsResolver {
                     .where("tweet.userId = :id", { id: req.session.userId })
                     .execute();
                 const num = n[0].count;
-                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                const user = yield User_1.User.findOne({
+                    where: { id: req.session.userId },
+                });
                 const profile = yield entities_1.Profile.findOne({ where: { user } });
                 if (!profile)
                     return { error: "profile not found", profile: null };
@@ -495,7 +506,9 @@ let PostsResolver = class PostsResolver {
             const { link, bio } = options;
             let result = false;
             try {
-                const user = yield User_1.User.findOne({ where: { id: req.session.userId } });
+                const user = yield User_1.User.findOne({
+                    where: { id: req.session.userId },
+                });
                 const currentProfile = yield entities_1.Profile.findOne({ where: { user } });
                 if (currentProfile) {
                     currentProfile.bio = bio;
