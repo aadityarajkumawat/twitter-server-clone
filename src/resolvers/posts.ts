@@ -138,11 +138,19 @@ export class PostsResolver {
             });
             let img;
             if (tweet) {
-                const user = await User.findOne({
-                    where: { id: tweet.user.id },
+                const user = await userResolvers.getUserByUsername(
+                    tweet.username
+                );
+
+                if (!user.user)
+                    return { error: "user not found", tweet: undefined };
+
+                const realUser = await User.findOne({
+                    where: { id: user.user.id },
                 });
+
                 img = await Images.findOne({
-                    where: { user, type: "profile" },
+                    where: { user: realUser, type: "profile" },
                 });
             }
             if (!tweet) return { error: "tweet not found", tweet: undefined };
@@ -321,8 +329,17 @@ export class PostsResolver {
 
         let img;
         if (tweet) {
-            const user = await User.findOne({ where: { id: tweet.user.id } });
-            img = await Images.findOne({ where: { user, type: "profile" } });
+            const user = await userResolvers.getUserByUsername(tweet.username);
+            if (!user.user)
+                return { error: "no user found", liked: "__no_status__" };
+
+            const realUser = await User.findOne({
+                where: { id: user.user.id },
+            });
+
+            img = await Images.findOne({
+                where: { user: realUser, type: "profile" },
+            });
         }
 
         const tweetAfterLike = await Tweet.findOne({ where: { tweet_id } });

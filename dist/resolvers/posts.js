@@ -94,11 +94,14 @@ let PostsResolver = class PostsResolver {
                 });
                 let img;
                 if (tweet) {
-                    const user = yield entities_1.User.findOne({
-                        where: { id: tweet.user.id },
+                    const user = yield userResolvers.getUserByUsername(tweet.username);
+                    if (!user.user)
+                        return { error: "user not found", tweet: undefined };
+                    const realUser = yield entities_1.User.findOne({
+                        where: { id: user.user.id },
                     });
                     img = yield entities_1.Images.findOne({
-                        where: { user, type: "profile" },
+                        where: { user: realUser, type: "profile" },
                     });
                 }
                 if (!tweet)
@@ -217,8 +220,15 @@ let PostsResolver = class PostsResolver {
             });
             let img;
             if (tweet) {
-                const user = yield entities_1.User.findOne({ where: { id: tweet.user.id } });
-                img = yield entities_1.Images.findOne({ where: { user, type: "profile" } });
+                const user = yield userResolvers.getUserByUsername(tweet.username);
+                if (!user.user)
+                    return { error: "no user found", liked: "__no_status__" };
+                const realUser = yield entities_1.User.findOne({
+                    where: { id: user.user.id },
+                });
+                img = yield entities_1.Images.findOne({
+                    where: { user: realUser, type: "profile" },
+                });
             }
             const tweetAfterLike = yield entities_1.Tweet.findOne({ where: { tweet_id } });
             if (!tweetAfterLike)
