@@ -30,10 +30,15 @@ import {
     SubUserTweets,
     TweetInfo,
 } from "../constants";
-import { Follow, Profile } from "../entities";
-import { Images } from "../entities/Images";
-import { Like, Tweet } from "../entities/Tweets";
-import { User } from "../entities/User";
+import {
+    Comment,
+    Follow,
+    Images,
+    Like,
+    Profile,
+    Tweet,
+    User,
+} from "../entities";
 import { addLikedStatusToTweets } from "../helpers/addLikedStatusToTweets";
 import { addProfileImageToTweets } from "../helpers/addProfileImageToTweets";
 import { dataOnSteroids } from "../helpers/dataOnSteroids";
@@ -43,6 +48,10 @@ import {
 } from "../helpers/getFeedTweets";
 import { Auth } from "../middlewares/Auth";
 import { Time } from "../middlewares/Time";
+import {
+    CommentInput,
+    CommentPostedReponse,
+} from "../object-types/postActionTypes";
 import { TWEET, USER_TWEETS } from "../triggers";
 import { MyContext } from "../types";
 import { UserResolver } from "./user";
@@ -713,11 +722,58 @@ export class PostsResolver {
         }
     }
 
-    // @Mutation(() => CommentPostedReponse)
-    // async postComment(
-    //     @Arg("args") args: CommentInput
-    // ): Promise<CommentPostedReponse> {
-    //     const { commentMsg, tweet_id, img } = args;
-    //     const attatchedImage = img ? img : "";
-    // }
+    @Mutation(() => CommentPostedReponse)
+    async postComment(
+        @Arg("args") args: CommentInput,
+        @Ctx() ctx: MyContext
+    ): Promise<CommentPostedReponse> {
+        const { commentMsg, comment_on_id, img, comment_on } = args;
+        const { conn } = ctx;
+        const attatchedImage = img ? img : "";
+
+        const commentsRepo = conn.getRepository(Comment);
+        const tweetRepo = conn.getRepository(Tweet);
+        const imagesRepo = conn.getRepository(Images);
+
+        let tweet: Tweet | undefined = undefined;
+
+        try {
+            const me = await userResolvers.me(ctx);
+            if (!me.user)
+                return { commented: false, error: "You are not logeed in " };
+
+            if (comment_on === "tweet") {
+                tweet = await tweetRepo.findOne({
+                    where: { tweet_id: comment_on_id },
+                });
+            }
+
+            const profileImg = await imagesRepo.findOne({
+                where: { user: me.user, type: "profile" },
+            });
+
+            if (!profileImg)
+                return { commented: false, error: "profile_img not found" };
+
+            const newComment = commentsRepo.create({
+                commentMsg,
+                comment_on_id,
+                comment_on,
+                comment_by: me.user.id,
+                username: me.user.username,
+                name: me.user.name,
+                profileImg: profileImg.url,
+                likes: 0,
+                comments: 0,
+                img: attatchedImage,
+                tweet,
+            });
+
+            await commentsRepo.manager.save(newComment);
+
+            return { commented: true, error: null };
+        } catch (error) {
+            return { commented: false, error: error.message };
+        }
+    }
 }

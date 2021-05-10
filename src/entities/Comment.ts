@@ -17,11 +17,19 @@ export class Comment {
 
     @Field()
     @Column({ unique: true })
-    comment_on_id: number;
+    comment_on_id!: number;
 
     @Field()
     @Column()
-    commentMsg!: number;
+    comment_on!: string;
+
+    @Field()
+    @Column()
+    comment_by!: number;
+
+    @Field()
+    @Column()
+    commentMsg!: string;
 
     @Field(() => String)
     @CreateDateColumn()
@@ -29,19 +37,23 @@ export class Comment {
 
     @Field()
     @Column()
-    username: string;
+    username!: string;
 
     @Field()
     @Column()
-    name: string;
+    name!: string;
 
     @Field()
     @Column()
-    likes: number;
+    profileImg!: string;
 
     @Field()
     @Column()
-    comments: number;
+    likes!: number;
+
+    @Field()
+    @Column()
+    comments!: number;
 
     @Field()
     @Column()

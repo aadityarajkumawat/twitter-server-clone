@@ -28,7 +28,17 @@ __decorate([
 __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column(),
+    __metadata("design:type", String)
+], Comment.prototype, "comment_on", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    typeorm_1.Column(),
     __metadata("design:type", Number)
+], Comment.prototype, "comment_by", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    typeorm_1.Column(),
+    __metadata("design:type", String)
 ], Comment.prototype, "commentMsg", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
@@ -45,6 +55,11 @@ __decorate([
     typeorm_1.Column(),
     __metadata("design:type", String)
 ], Comment.prototype, "name", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    typeorm_1.Column(),
+    __metadata("design:type", String)
+], Comment.prototype, "profileImg", void 0);
 __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column(),

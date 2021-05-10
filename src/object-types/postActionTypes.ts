@@ -13,7 +13,9 @@ export class CommentInput {
     @Field()
     commentMsg!: string;
     @Field()
-    tweet_id!: number;
+    comment_on_id!: number;
     @Field()
-    img?: string;
+    comment_on!: string;
+    @Field()
+    img: string;
 }

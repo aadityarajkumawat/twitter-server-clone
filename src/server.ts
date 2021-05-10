@@ -31,13 +31,13 @@ const main = async () => {
     const conn = await createConnection({
         type: "postgres",
         url: process.env.DATABASE_URL,
-        logging: true,
-        synchronize: true,
+        // logging: true,
+        // synchronize: true,
         migrations: [path.join(__dirname, "./migrations/*")],
         entities: [User, Tweet, Like, Follow, Images, Profile, Comment],
     });
 
-    await conn.runMigrations();
+    // await conn.runMigrations();
 
     const app = express();
     const pubsub = new PubSub();
