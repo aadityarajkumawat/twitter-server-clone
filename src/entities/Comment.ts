@@ -16,7 +16,7 @@ export class Comment {
     comment_id!: number;
 
     @Field()
-    @Column({ unique: true })
+    @Column()
     comment_on_id!: number;
 
     @Field()

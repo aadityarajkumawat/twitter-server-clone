@@ -22,7 +22,7 @@ __decorate([
 ], Comment.prototype, "comment_id", void 0);
 __decorate([
     type_graphql_1.Field(),
-    typeorm_1.Column({ unique: true }),
+    typeorm_1.Column(),
     __metadata("design:type", Number)
 ], Comment.prototype, "comment_on_id", void 0);
 __decorate([

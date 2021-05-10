@@ -846,7 +846,9 @@ export class PostsResolver {
 
         try {
             if (fetchFrom === "tweet") {
-                const comments = await commentRepo.find();
+                const comments = await commentRepo.find({
+                    where: { comment_on_id: postId },
+                });
                 const commentsWithLikedStatus: Array<CommentRespose> = [];
 
                 for (let comment of comments) {

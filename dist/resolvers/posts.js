@@ -623,7 +623,9 @@ let PostsResolver = class PostsResolver {
             const commentRepo = conn.getRepository(entities_1.Comment);
             try {
                 if (fetchFrom === "tweet") {
-                    const comments = yield commentRepo.find();
+                    const comments = yield commentRepo.find({
+                        where: { comment_on_id: postId },
+                    });
                     const commentsWithLikedStatus = [];
                     for (let comment of comments) {
                         const commentWithLikedStatus = {

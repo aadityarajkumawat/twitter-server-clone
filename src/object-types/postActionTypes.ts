@@ -44,7 +44,7 @@ export class CommentRespose {
 
 @ObjectType()
 export class GetCommentsResponse {
-    @Field(() => [CommentRespose], { nullable: true })
+    @Field(() => [CommentRespose])
     comments!: CommentRespose[];
     @Field(() => String, { nullable: true })
     error: string | null;

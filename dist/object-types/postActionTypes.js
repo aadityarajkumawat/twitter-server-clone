@@ -92,7 +92,7 @@ exports.CommentRespose = CommentRespose;
 let GetCommentsResponse = class GetCommentsResponse {
 };
 __decorate([
-    type_graphql_1.Field(() => [CommentRespose], { nullable: true }),
+    type_graphql_1.Field(() => [CommentRespose]),
     __metadata("design:type", Array)
 ], GetCommentsResponse.prototype, "comments", void 0);
 __decorate([

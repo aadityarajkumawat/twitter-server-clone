@@ -36,9 +36,12 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
         url: process.env.DATABASE_URL,
+        logging: true,
+        synchronize: true,
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
         entities: [entities_1.User, entities_1.Tweet, entities_1.Like, entities_1.Follow, entities_1.Images, entities_1.Profile, entities_1.Comment],
     });
+    yield conn.runMigrations();
     const app = express_1.default();
     const pubsub = new apollo_server_express_1.PubSub();
     const RedisStore = connect_redis_1.default(express_session_1.default);
