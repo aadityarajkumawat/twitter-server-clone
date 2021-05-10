@@ -58,7 +58,7 @@ let PostsResolver = class PostsResolver {
                     name: user.name,
                     tweet_content,
                     user,
-                    username: user.name,
+                    username: user.username,
                 });
                 const post = yield tweetRepo.manager.save(newTweet);
                 const profileI = yield entities_1.Images.findOne({ where: { user } });
@@ -114,7 +114,7 @@ let PostsResolver = class PostsResolver {
             }
         });
     }
-    getTweetsByUser({ req }) {
+    getTweetsByUser({ req, conn }) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.session.userId;
@@ -126,7 +126,7 @@ let PostsResolver = class PostsResolver {
                 const tweets = yield getFeedTweets_1.getFeedTweets(followingIds, userId);
                 const numberOfTweetsInFeed = yield getFeedTweets_1.getNumberOfTweetsInFeed(followingIds, userId);
                 const tweetsWithLikedStatus = yield addLikedStatusToTweets_1.addLikedStatusToTweets(tweets, userId);
-                const tweetsWithProfileImage = yield addProfileImageToTweets_1.addProfileImageToTweets(tweetsWithLikedStatus);
+                const tweetsWithProfileImage = yield addProfileImageToTweets_1.addProfileImageToTweets(tweetsWithLikedStatus, conn);
                 const __data__ = {
                     error: undefined,
                     tweets: tweetsWithProfileImage,

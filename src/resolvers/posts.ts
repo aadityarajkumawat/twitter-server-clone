@@ -87,7 +87,7 @@ export class PostsResolver {
                 name: user.name,
                 tweet_content,
                 user,
-                username: user.name,
+                username: user.username,
             });
 
             const post = await tweetRepo.manager.save(newTweet);
@@ -166,7 +166,9 @@ export class PostsResolver {
     @Query(() => GetFeedTweets)
     @UseMiddleware(Time)
     @UseMiddleware(Auth)
-    async getTweetsByUser(@Ctx() { req }: MyContext): Promise<GetFeedTweets> {
+    async getTweetsByUser(
+        @Ctx() { req, conn }: MyContext
+    ): Promise<GetFeedTweets> {
         try {
             const userId = req.session.userId;
             const follow = await Follow.find({ where: { userId } });
@@ -198,7 +200,8 @@ export class PostsResolver {
             );
 
             const tweetsWithProfileImage = await addProfileImageToTweets(
-                tweetsWithLikedStatus
+                tweetsWithLikedStatus,
+                conn
             );
 
             const __data__: GetFeedTweets = {
