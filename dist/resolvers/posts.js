@@ -180,9 +180,14 @@ let PostsResolver = class PostsResolver {
                 }
                 const tweetsResponse = [];
                 for (let i = 0; i < finalTweets.length; i++) {
-                    const user = userResolvers.getUserByUsername(finalTweets[i].username);
+                    const user = yield userResolvers.getUserByUsername(finalTweets[i].username);
+                    if (!user.user)
+                        return { error: "no user found", tweets: [] };
+                    const realUser = yield entities_1.User.findOne({
+                        where: { id: user.user.id },
+                    });
                     const img_url = yield entities_1.Images.findOne({
-                        where: { user, type: "profile" },
+                        where: { user: realUser, type: "profile" },
                     });
                     tweetsResponse.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
@@ -327,8 +332,15 @@ let PostsResolver = class PostsResolver {
             });
             if (!thatTweetThough)
                 return { error: "tweet not posted", tweet: undefined };
-            const user = userResolvers.getUserByUsername(tweet.tweet.username);
-            const img = yield entities_1.Images.findOne({ where: { user, type: "profile" } });
+            const user = yield userResolvers.getUserByUsername(tweet.tweet.username);
+            if (!user.user)
+                return { error: "user not found", tweet: undefined };
+            const realUser = yield entities_1.User.findOne({
+                where: { id: user.user.id },
+            });
+            const img = yield entities_1.Images.findOne({
+                where: { user: realUser, type: "profile" },
+            });
             if (img && tweet.tweet) {
                 tweet.tweet.profile_img = img.url;
             }
@@ -377,9 +389,14 @@ let PostsResolver = class PostsResolver {
                 }
                 const f = [];
                 for (let i = 0; i < finalTweets.length; i++) {
-                    const user = userResolvers.getUserByUsername(finalTweets[i].username);
+                    const user = yield userResolvers.getUserByUsername(finalTweets[i].username);
+                    if (!user.user)
+                        return { error: "user not found", num: -1, tweets: [] };
+                    const realUser = yield entities_1.User.findOne({
+                        where: { id: user.user.id },
+                    });
                     const img_url = yield entities_1.Images.findOne({
-                        where: { user, type: "profile" },
+                        where: { user: realUser, type: "profile" },
                     });
                     f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }
@@ -427,10 +444,14 @@ let PostsResolver = class PostsResolver {
                 }
                 const f = [];
                 for (let i = 0; i < finalTweets.length; i++) {
-                    const ii = finalTweets[i].user.id;
-                    const user = yield entities_1.User.findOne({ where: { id: ii } });
+                    const user = yield userResolvers.getUserByUsername(finalTweets[i].username);
+                    if (!user.user)
+                        return { error: "user not found", tweets: [] };
+                    const realUser = yield entities_1.User.findOne({
+                        where: { id: user.user.id },
+                    });
                     const img_url = yield entities_1.Images.findOne({
-                        where: { user, type: "profile" },
+                        where: { user: realUser, type: "profile" },
                     });
                     f.push(Object.assign(Object.assign({}, finalTweets[i]), { profile_img: img_url ? img_url.url : "" }));
                 }

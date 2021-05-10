@@ -270,11 +270,17 @@ export class PostsResolver {
             const tweetsResponse: GetOneTweet[] = [];
 
             for (let i = 0; i < finalTweets.length; i++) {
-                const user = userResolvers.getUserByUsername(
+                const user = await userResolvers.getUserByUsername(
                     finalTweets[i].username
                 );
+
+                if (!user.user) return { error: "no user found", tweets: [] };
+
+                const realUser = await User.findOne({
+                    where: { id: user.user.id },
+                });
                 const img_url = await Images.findOne({
-                    where: { user, type: "profile" },
+                    where: { user: realUser, type: "profile" },
                 });
 
                 tweetsResponse.push({
@@ -468,9 +474,18 @@ export class PostsResolver {
         if (!thatTweetThough)
             return { error: "tweet not posted", tweet: undefined };
 
-        const user = userResolvers.getUserByUsername(tweet.tweet.username);
+        const user = await userResolvers.getUserByUsername(
+            tweet.tweet.username
+        );
+        if (!user.user) return { error: "user not found", tweet: undefined };
 
-        const img = await Images.findOne({ where: { user, type: "profile" } });
+        const realUser = await User.findOne({
+            where: { id: user.user.id },
+        });
+
+        const img = await Images.findOne({
+            where: { user: realUser, type: "profile" },
+        });
         if (img && tweet.tweet) {
             tweet.tweet.profile_img = img.url;
         } else if (tweet.tweet) {
@@ -529,12 +544,19 @@ export class PostsResolver {
             const f = [];
 
             for (let i = 0; i < finalTweets.length; i++) {
-                const user = userResolvers.getUserByUsername(
+                const user = await userResolvers.getUserByUsername(
                     finalTweets[i].username
                 );
 
+                if (!user.user)
+                    return { error: "user not found", num: -1, tweets: [] };
+
+                const realUser = await User.findOne({
+                    where: { id: user.user.id },
+                });
+
                 const img_url = await Images.findOne({
-                    where: { user, type: "profile" },
+                    where: { user: realUser, type: "profile" },
                 });
 
                 f.push({
@@ -596,10 +618,18 @@ export class PostsResolver {
             const f: GetOneTweet[] = [];
 
             for (let i = 0; i < finalTweets.length; i++) {
-                const ii = finalTweets[i].user.id;
-                const user = await User.findOne({ where: { id: ii } });
+                const user = await userResolvers.getUserByUsername(
+                    finalTweets[i].username
+                );
+
+                if (!user.user) return { error: "user not found", tweets: [] };
+
+                const realUser = await User.findOne({
+                    where: { id: user.user.id },
+                });
+
                 const img_url = await Images.findOne({
-                    where: { user, type: "profile" },
+                    where: { user: realUser, type: "profile" },
                 });
 
                 f.push({

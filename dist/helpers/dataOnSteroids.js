@@ -8,7 +8,7 @@ function dataOnSteroids(data) {
         return data;
     }
     else {
-        const delayedData = delay_1.delay(300, data);
+        const delayedData = delay_1.delay(30, data);
         return delayedData;
     }
 }
