@@ -804,6 +804,12 @@ export class PostsResolver {
                 tweet = await tweetRepo.findOne({
                     where: { tweet_id: comment_on_id },
                 });
+
+                if (!tweet)
+                    return { commented: false, error: "tweet not found" };
+
+                tweet.comments++;
+                await tweetRepo.manager.save(tweet);
             }
 
             const profileImg = await imagesRepo.findOne({

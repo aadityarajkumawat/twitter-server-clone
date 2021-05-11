@@ -590,6 +590,10 @@ let PostsResolver = class PostsResolver {
                     tweet = yield tweetRepo.findOne({
                         where: { tweet_id: comment_on_id },
                     });
+                    if (!tweet)
+                        return { commented: false, error: "tweet not found" };
+                    tweet.comments++;
+                    yield tweetRepo.manager.save(tweet);
                 }
                 const profileImg = yield imagesRepo.findOne({
                     where: { user: me.user, type: "profile" },
