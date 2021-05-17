@@ -1,6 +1,6 @@
 Twitter Backend
 
-Current Version: 4.0.0
+Current Version: 4.0.4
 
 Tech used:
 Node + Typescript

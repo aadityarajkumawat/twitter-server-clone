@@ -1,62 +1,62 @@
 {
-  "name": "twitter-graphql-server",
-  "version": "4.0.2",
-  "description": "GraphQL server for twitter",
-  "main": "server.js",
-  "scripts": {
-    "watch": "tsc -w",
-    "start": "nodemon dist/server.js",
-    "create:migration": "mikro-orm migration:create",
-    "build": "tsc",
-    "gen-env": "npx gen-env-types .env -o src/env.d.ts -e ."
-  },
-  "author": "Edy Dee",
-  "license": "MIT",
-  "dependencies": {
-    "@mikro-orm/cli": "^4.3.1",
-    "@mikro-orm/core": "^4.3.1",
-    "@mikro-orm/migrations": "^4.3.1",
-    "@mikro-orm/postgresql": "^4.3.1",
-    "apollo-server-express": "^2.19.0",
-    "argon2": "^0.27.0",
-    "class-validator": "^0.12.2",
-    "cloudinary": "^1.23.0",
-    "connect-redis": "^5.0.0",
-    "cors": "^2.8.5",
-    "dotenv-safe": "^8.2.0",
-    "express": "^4.17.1",
-    "express-session": "^1.17.1",
-    "graphql": "^15.4.0",
-    "graphql-subscriptions": "^1.1.0",
-    "graphql-upload": "^11.0.0",
-    "multer": "^1.4.2",
-    "pg": "^8.5.1",
-    "redis": "^3.0.2",
-    "reflect-metadata": "^0.1.13",
-    "subscriptions-transport-ws": "^0.9.18",
-    "ts-node": "^9.0.0",
-    "type-graphql": "^1.1.1",
-    "typeorm": "^0.2.29",
-    "yup": "^0.30.0"
-  },
-  "devDependencies": {
-    "@types/argon2": "^0.15.0",
-    "@types/connect-redis": "^0.0.15",
-    "@types/cors": "^2.8.8",
-    "@types/express": "^4.17.9",
-    "@types/express-session": "^1.17.3",
-    "@types/multer": "^1.4.5",
-    "@types/node": "^14.14.9",
-    "@types/redis": "^2.8.28",
-    "@types/yup": "^0.29.9",
-    "nodemon": "^2.0.6",
-    "typescript": "^4.1.2"
-  },
-  "mikro-orm": {
-    "useTsNode": true,
-    "configPaths": [
-      "./src/mikro-orm.config.ts",
-      "./dist/mikro-orm.config.js"
-    ]
-  }
+    "name": "twitter-graphql-server",
+    "version": "4.0.4",
+    "description": "GraphQL server for twitter",
+    "main": "server.js",
+    "scripts": {
+        "watch": "tsc -w",
+        "start": "nodemon dist/server.js",
+        "create:migration": "mikro-orm migration:create",
+        "build": "tsc",
+        "gen-env": "npx gen-env-types .env -o src/env.d.ts -e ."
+    },
+    "author": "Edy Dee",
+    "license": "MIT",
+    "dependencies": {
+        "@mikro-orm/cli": "^4.3.1",
+        "@mikro-orm/core": "^4.3.1",
+        "@mikro-orm/migrations": "^4.3.1",
+        "@mikro-orm/postgresql": "^4.3.1",
+        "apollo-server-express": "^2.19.0",
+        "argon2": "^0.27.0",
+        "class-validator": "^0.12.2",
+        "cloudinary": "^1.23.0",
+        "connect-redis": "^5.0.0",
+        "cors": "^2.8.5",
+        "dotenv-safe": "^8.2.0",
+        "express": "^4.17.1",
+        "express-session": "^1.17.1",
+        "graphql": "^15.4.0",
+        "graphql-subscriptions": "^1.1.0",
+        "graphql-upload": "^11.0.0",
+        "multer": "^1.4.2",
+        "pg": "^8.5.1",
+        "redis": "^3.0.2",
+        "reflect-metadata": "^0.1.13",
+        "subscriptions-transport-ws": "^0.9.18",
+        "ts-node": "^9.0.0",
+        "type-graphql": "^1.1.1",
+        "typeorm": "^0.2.29",
+        "yup": "^0.30.0"
+    },
+    "devDependencies": {
+        "@types/argon2": "^0.15.0",
+        "@types/connect-redis": "^0.0.15",
+        "@types/cors": "^2.8.8",
+        "@types/express": "^4.17.9",
+        "@types/express-session": "^1.17.3",
+        "@types/multer": "^1.4.5",
+        "@types/node": "^14.14.9",
+        "@types/redis": "^2.8.28",
+        "@types/yup": "^0.29.9",
+        "nodemon": "^2.0.6",
+        "typescript": "^4.1.2"
+    },
+    "mikro-orm": {
+        "useTsNode": true,
+        "configPaths": [
+            "./src/mikro-orm.config.ts",
+            "./dist/mikro-orm.config.js"
+        ]
+    }
 }

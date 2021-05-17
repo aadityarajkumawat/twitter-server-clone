@@ -37,7 +37,7 @@ const main = async () => {
         entities: [User, Tweet, Like, Follow, Images, Profile, Comment],
     });
 
-    // await conn.runMigrations();
+    await conn.runMigrations();
 
     const app = express();
     const pubsub = new PubSub();
