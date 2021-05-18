@@ -57,3 +57,17 @@ export class GetCommentsInput {
     @Field()
     postId!: number;
 }
+
+@InputType()
+export class LikeCommentInput {
+    @Field()
+    comment_id!: number;
+}
+
+@ObjectType()
+export class LikeCommentResponse {
+    @Field(() => Boolean)
+    liked!: boolean;
+    @Field(() => String)
+    error: string | null;
+}

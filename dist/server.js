@@ -26,6 +26,7 @@ const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
 const constants_1 = require("./constants");
 const entities_1 = require("./entities");
+const comment_1 = require("./resolvers/comment");
 const follow_1 = require("./resolvers/follow");
 const hello_1 = require("./resolvers/hello");
 const images_1 = require("./resolvers/images");
@@ -75,6 +76,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
                 follow_1.FollowResolver,
                 search_1.SearchResolver,
                 images_1.ImgResolver,
+                comment_1.CommentResolver,
             ],
             validate: false,
             pubSub: pubsub,

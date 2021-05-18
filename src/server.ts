@@ -20,6 +20,7 @@ import {
     Tweet,
     User,
 } from "./entities";
+import { CommentResolver } from "./resolvers/comment";
 import { FollowResolver } from "./resolvers/follow";
 import { HelloResolver } from "./resolvers/hello";
 import { ImgResolver } from "./resolvers/images";
@@ -85,6 +86,7 @@ const main = async () => {
                 FollowResolver,
                 SearchResolver,
                 ImgResolver,
+                CommentResolver,
             ],
             validate: false,
             pubSub: pubsub,
