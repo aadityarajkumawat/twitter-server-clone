@@ -4,6 +4,6 @@
     "port": 5432,
     "username": "postgres",
     "password": "postgres",
-    "database": "twitter68",
+    "database": "twitter67",
     "entities": ["dist/entities/*.js"]
 }
