@@ -82,7 +82,11 @@ export class Like extends BaseEntity {
 
     @Field()
     @Column()
-    tweet_id: number;
+    like_on_id!: number;
+
+    @Field()
+    @Column()
+    like_on!: string;
 
     @ManyToOne(() => Tweet, (tweet) => tweet.like)
     tweet: Tweet;

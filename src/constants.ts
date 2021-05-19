@@ -72,7 +72,9 @@ export class LikedTweet {
 @InputType()
 export class TweetInfo {
     @Field()
-    tweet_id!: number;
+    like_on_id!: number;
+    @Field()
+    like_on!: string;
 }
 
 // Fetch a tweet

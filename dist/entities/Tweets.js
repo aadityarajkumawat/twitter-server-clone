@@ -107,7 +107,12 @@ __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column(),
     __metadata("design:type", Number)
-], Like.prototype, "tweet_id", void 0);
+], Like.prototype, "like_on_id", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    typeorm_1.Column(),
+    __metadata("design:type", String)
+], Like.prototype, "like_on", void 0);
 __decorate([
     typeorm_1.ManyToOne(() => Tweet, (tweet) => tweet.like),
     __metadata("design:type", Tweet)

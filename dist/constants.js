@@ -149,7 +149,11 @@ let TweetInfo = class TweetInfo {
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", Number)
-], TweetInfo.prototype, "tweet_id", void 0);
+], TweetInfo.prototype, "like_on_id", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], TweetInfo.prototype, "like_on", void 0);
 TweetInfo = __decorate([
     type_graphql_1.InputType()
 ], TweetInfo);

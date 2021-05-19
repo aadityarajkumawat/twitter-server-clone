@@ -122,7 +122,7 @@ export class PostsResolver {
             let tweet = await Tweet.findOne({ where: { tweet_id } });
             if (!tweet) return { error: "Tweet not found", tweet: undefined };
             let like = await Like.findOne({
-                where: { tweet_id, user_id: req.session.userId },
+                where: { like_on_id: tweet_id, user_id: req.session.userId },
             });
             let img;
             if (tweet) {
@@ -256,7 +256,7 @@ export class PostsResolver {
                 let currID = tweets[i].tweet_id;
                 let oo = { ...tweets[i], liked: false };
                 for (let j = 0; j < like.length; j++) {
-                    if (like[j].tweet_id === currID) {
+                    if (like[j].like_on_id === currID) {
                         oo.liked = true;
                     }
                 }
@@ -300,93 +300,55 @@ export class PostsResolver {
     }
 
     @Mutation(() => LikedTweet)
+    @UseMiddleware(Auth)
     async likeTweet(
         @Arg("options") options: TweetInfo,
-        @Ctx() { req }: MyContext,
-        @PubSub() pubsub: PubSubEngine
+        @Ctx() { req, conn }: MyContext
     ): Promise<LikedTweet> {
-        const { tweet_id } = options;
-        if (!req.session.userId) {
-            return { error: "User is unauthorized", liked: "" };
-        }
-
-        let tweet = await Tweet.findOne({ where: { tweet_id } });
-        let like = await Like.findOne({
-            where: { user_id: req.session.userId, tweet },
-        });
-
-        let img;
-        if (tweet) {
-            const user = await userResolvers.getUserByUsername(tweet.username);
-            if (!user.user)
-                return { error: "no user found", liked: "__no_status__" };
-
-            const realUser = await User.findOne({
-                where: { id: user.user.id },
-            });
-
-            img = await Images.findOne({
-                where: { user: realUser, type: "profile" },
-            });
-        }
-
-        const tweetAfterLike = await Tweet.findOne({ where: { tweet_id } });
-        if (!tweetAfterLike)
-            return { error: "tweet not found", liked: "__no_status__" };
-
-        if (like) {
-            await like.remove();
-            let newLikes = 0;
-            if (tweet) {
-                tweet.likes = tweet.likes - 1;
-                newLikes = tweet.likes;
-                await tweet.save();
-            }
-
-            const payload: GetTweetResponse = {
-                error: "",
-                tweet: {
-                    ...tweetAfterLike,
-                    liked: false,
-                    likes: newLikes,
-                    profile_img: img ? img.url : "",
-                    img: tweetAfterLike ? tweetAfterLike.img : "",
-                },
-            };
-            await pubsub.publish(TWEET, payload);
-            return { liked: "unliked", error: "" };
-        }
+        const { like_on_id, like_on } = options;
+        const likeRepo = conn.getRepository(Like);
 
         try {
-            const result = await getConnection()
-                .createQueryBuilder()
-                .insert()
-                .into(Like)
-                .values({ tweet, user_id: req.session.userId, tweet_id })
-                .returning("*")
-                .execute();
+            let tweet = await Tweet.findOne({
+                where: { tweet_id: like_on_id },
+            });
 
-            let newLikes = 0;
-            if (tweet) {
-                tweet.likes = tweet.likes + 1;
-                newLikes = tweet.likes;
+            if (!tweet)
+                return { error: "Tweet not found", liked: `Can't be liked!` };
+
+            let like = await Like.findOne({
+                where: {
+                    user_id: req.session.userId,
+                    tweet,
+                    like_on_id,
+                    like_on,
+                },
+            });
+
+            if (!like) {
+                const newLike = likeRepo.create({
+                    like_on_id,
+                    like_on: "tweet",
+                    tweet,
+                    user_id: req.session.userId,
+                });
+
+                tweet.likes += 1;
+
+                await likeRepo.manager.save(newLike);
+                await tweet.save();
+            } else {
+                tweet.likes -= 1;
+
+                await like.remove();
                 await tweet.save();
             }
 
-            like = result.raw[0];
-            const payload: GetTweetResponse = {
-                error: "",
-                tweet: {
-                    ...tweetAfterLike,
-                    liked: true,
-                    likes: newLikes,
-                    profile_img: img ? img.url : "",
-                    img: tweetAfterLike ? tweetAfterLike.img : "",
-                },
-            };
-            await pubsub.publish(TWEET, payload);
-        } catch (err) {}
-        return { liked: `liked${like?.like_id}`, error: "" };
+            return { liked: "liked", error: "" };
+        } catch (err) {
+            console.log(err.message);
+            return { error: err.message, liked: `nope` };
+        }
     }
 
     @Query(() => Boolean)
@@ -414,7 +376,7 @@ export class PostsResolver {
                 let currID = tweets[i].tweet_id;
                 let oo = { ...tweets[i], liked: false };
                 for (let j = 0; j < like.length; j++) {
-                    if (like[j].tweet_id === currID) {
+                    if (like[j].like_on_id === currID) {
                         oo.liked = true;
                     }
                 }
@@ -539,7 +501,7 @@ export class PostsResolver {
                 let currID = tweets[i].tweet_id;
                 let oo = { ...tweets[i], liked: false };
                 for (let j = 0; j < like.length; j++) {
-                    if (like[j].tweet_id === currID) {
+                    if (like[j].like_on_id === currID) {
                         oo.liked = true;
                     }
                 }
@@ -613,7 +575,7 @@ export class PostsResolver {
                 let currID = tweets[i].tweet_id;
                 let oo = { ...tweets[i], liked: false };
                 for (let j = 0; j < like.length; j++) {
-                    if (like[j].tweet_id === currID) {
+                    if (like[j].like_on_id === currID) {
                         oo.liked = true;
                     }
                 }

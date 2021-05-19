@@ -89,7 +89,7 @@ let PostsResolver = class PostsResolver {
                 if (!tweet)
                     return { error: "Tweet not found", tweet: undefined };
                 let like = yield entities_1.Like.findOne({
-                    where: { tweet_id, user_id: req.session.userId },
+                    where: { like_on_id: tweet_id, user_id: req.session.userId },
                 });
                 let img;
                 if (tweet) {
@@ -174,7 +174,7 @@ let PostsResolver = class PostsResolver {
                     let currID = tweets[i].tweet_id;
                     let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
                     for (let j = 0; j < like.length; j++) {
-                        if (like[j].tweet_id === currID) {
+                        if (like[j].like_on_id === currID) {
                             oo.liked = true;
                         }
                     }
@@ -207,69 +207,46 @@ let PostsResolver = class PostsResolver {
             }
         });
     }
-    likeTweet(options, { req }, pubsub) {
+    likeTweet(options, { req, conn }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { tweet_id } = options;
-            if (!req.session.userId) {
-                return { error: "User is unauthorized", liked: "" };
-            }
-            let tweet = yield entities_1.Tweet.findOne({ where: { tweet_id } });
-            let like = yield entities_1.Like.findOne({
-                where: { user_id: req.session.userId, tweet },
-            });
-            let img;
-            if (tweet) {
-                const user = yield userResolvers.getUserByUsername(tweet.username);
-                if (!user.user)
-                    return { error: "no user found", liked: "__no_status__" };
-                const realUser = yield entities_1.User.findOne({
-                    where: { id: user.user.id },
-                });
-                img = yield entities_1.Images.findOne({
-                    where: { user: realUser, type: "profile" },
-                });
-            }
-            const tweetAfterLike = yield entities_1.Tweet.findOne({ where: { tweet_id } });
-            if (!tweetAfterLike)
-                return { error: "tweet not found", liked: "__no_status__" };
-            if (like) {
-                yield like.remove();
-                let newLikes = 0;
-                if (tweet) {
-                    tweet.likes = tweet.likes - 1;
-                    newLikes = tweet.likes;
-                    yield tweet.save();
-                }
-                const payload = {
-                    error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: false, likes: newLikes, profile_img: img ? img.url : "", img: tweetAfterLike ? tweetAfterLike.img : "" }),
-                };
-                yield pubsub.publish(triggers_1.TWEET, payload);
-                return { liked: "unliked", error: "" };
-            }
+            const { like_on_id, like_on } = options;
+            const likeRepo = conn.getRepository(entities_1.Like);
             try {
-                const result = yield typeorm_1.getConnection()
-                    .createQueryBuilder()
-                    .insert()
-                    .into(entities_1.Like)
-                    .values({ tweet, user_id: req.session.userId, tweet_id })
-                    .returning("*")
-                    .execute();
-                let newLikes = 0;
-                if (tweet) {
-                    tweet.likes = tweet.likes + 1;
-                    newLikes = tweet.likes;
+                let tweet = yield entities_1.Tweet.findOne({
+                    where: { tweet_id: like_on_id },
+                });
+                if (!tweet)
+                    return { error: "Tweet not found", liked: `Can't be liked!` };
+                let like = yield entities_1.Like.findOne({
+                    where: {
+                        user_id: req.session.userId,
+                        tweet,
+                        like_on_id,
+                        like_on,
+                    },
+                });
+                if (!like) {
+                    const newLike = likeRepo.create({
+                        like_on_id,
+                        like_on: "tweet",
+                        tweet,
+                        user_id: req.session.userId,
+                    });
+                    tweet.likes += 1;
+                    yield likeRepo.manager.save(newLike);
                     yield tweet.save();
                 }
-                like = result.raw[0];
-                const payload = {
-                    error: "",
-                    tweet: Object.assign(Object.assign({}, tweetAfterLike), { liked: true, likes: newLikes, profile_img: img ? img.url : "", img: tweetAfterLike ? tweetAfterLike.img : "" }),
-                };
-                yield pubsub.publish(triggers_1.TWEET, payload);
+                else {
+                    tweet.likes -= 1;
+                    yield like.remove();
+                    yield tweet.save();
+                }
+                return { liked: "liked", error: "" };
             }
-            catch (err) { }
-            return { liked: `liked${like === null || like === void 0 ? void 0 : like.like_id}`, error: "" };
+            catch (err) {
+                console.log(err.message);
+                return { error: err.message, liked: `nope` };
+            }
         });
     }
     triggerUserTweetsSubscriptions(id, pubsub) {
@@ -291,7 +268,7 @@ let PostsResolver = class PostsResolver {
                     let currID = tweets[i].tweet_id;
                     let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
                     for (let j = 0; j < like.length; j++) {
-                        if (like[j].tweet_id === currID) {
+                        if (like[j].like_on_id === currID) {
                             oo.liked = true;
                         }
                     }
@@ -390,7 +367,7 @@ let PostsResolver = class PostsResolver {
                     let currID = tweets[i].tweet_id;
                     let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
                     for (let j = 0; j < like.length; j++) {
-                        if (like[j].tweet_id === currID) {
+                        if (like[j].like_on_id === currID) {
                             oo.liked = true;
                         }
                     }
@@ -445,7 +422,7 @@ let PostsResolver = class PostsResolver {
                     let currID = tweets[i].tweet_id;
                     let oo = Object.assign(Object.assign({}, tweets[i]), { liked: false });
                     for (let j = 0; j < like.length; j++) {
-                        if (like[j].tweet_id === currID) {
+                        if (like[j].like_on_id === currID) {
                             oo.liked = true;
                         }
                     }
@@ -612,11 +589,11 @@ __decorate([
 ], PostsResolver.prototype, "getPaginatedPosts", null);
 __decorate([
     type_graphql_1.Mutation(() => constants_1.LikedTweet),
+    type_graphql_1.UseMiddleware(Auth_1.Auth),
     __param(0, type_graphql_1.Arg("options")),
     __param(1, type_graphql_1.Ctx()),
-    __param(2, type_graphql_1.PubSub()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [constants_1.TweetInfo, Object, type_graphql_1.PubSubEngine]),
+    __metadata("design:paramtypes", [constants_1.TweetInfo, Object]),
     __metadata("design:returntype", Promise)
 ], PostsResolver.prototype, "likeTweet", null);
 __decorate([

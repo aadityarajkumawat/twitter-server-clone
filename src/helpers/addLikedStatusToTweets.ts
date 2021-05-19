@@ -12,7 +12,7 @@ export const addLikedStatusToTweets = async (
         let tweetWithLikedStatus = { ...tweets[i], liked: false };
 
         const numberOfLikes = await Like.count({
-            where: { user_id, tweet_id: currID },
+            where: { user_id, like_on_id: currID },
         });
 
         if (numberOfLikes === 1) {

@@ -17,7 +17,7 @@ const addLikedStatusToTweets = (tweets, user_id) => __awaiter(void 0, void 0, vo
         let currID = tweets[i].tweet_id;
         let tweetWithLikedStatus = Object.assign(Object.assign({}, tweets[i]), { liked: false });
         const numberOfLikes = yield Tweets_1.Like.count({
-            where: { user_id, tweet_id: currID },
+            where: { user_id, like_on_id: currID },
         });
         if (numberOfLikes === 1) {
             tweetWithLikedStatus.liked = true;
