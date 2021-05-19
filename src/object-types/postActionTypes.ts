@@ -43,6 +43,22 @@ export class CommentRespose {
 }
 
 @ObjectType()
+export class GetCommentResponse {
+    @Field(() => CommentRespose, { nullable: true })
+    comment!: CommentRespose | null;
+    @Field(() => String, { nullable: true })
+    error: string | null;
+}
+
+@InputType()
+export class GetCommentInput {
+    @Field()
+    fetchFrom!: "tweet" | "comment";
+    @Field()
+    comment_id!: number;
+}
+
+@ObjectType()
 export class GetCommentsResponse {
     @Field(() => [CommentRespose])
     comments!: CommentRespose[];

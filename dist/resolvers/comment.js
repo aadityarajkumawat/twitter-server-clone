@@ -77,6 +77,68 @@ let CommentResolver = class CommentResolver {
             }
         });
     }
+    likeComment(args, ctx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { comment_id } = args;
+            const { conn, req } = ctx;
+            const commentRepo = conn.getRepository(entities_1.Comment);
+            const likeRepo = conn.getRepository(entities_1.Like);
+            try {
+                const comment = yield commentRepo.findOne({
+                    where: { comment_id },
+                });
+                if (!comment)
+                    return { liked: false, error: "Comment not found" };
+                const like = yield likeRepo.findOne({
+                    where: {
+                        like_on: "comment",
+                        like_on_id: comment_id,
+                        user_id: req.session.userId,
+                        tweet: null,
+                    },
+                });
+                if (!like) {
+                    const newLike = likeRepo.create({
+                        like_on: "comment",
+                        like_on_id: comment_id,
+                        user_id: req.session.userId,
+                        tweet: undefined,
+                    });
+                    comment.likes += 1;
+                    yield likeRepo.manager.save(newLike);
+                    yield commentRepo.manager.save(comment);
+                }
+                else {
+                    comment.likes -= 1;
+                    yield like.remove();
+                    yield commentRepo.manager.save(comment);
+                }
+                return { error: null, liked: true };
+            }
+            catch (error) {
+                console.log(error.message);
+                return { error: error.message, liked: false };
+            }
+        });
+    }
+    getOneComment({ conn }, args) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { comment_id, fetchFrom } = args;
+            const commentRepo = conn.getRepository(entities_1.Comment);
+            try {
+                const comment = yield commentRepo.findOne({
+                    where: { comment_id, comment_on: fetchFrom },
+                });
+                if (!comment)
+                    return { comment: null, error: "Comment not found" };
+                return { error: null, comment: Object.assign(Object.assign({}, comment), { liked: false }) };
+            }
+            catch (error) {
+                console.log(error.message);
+                return { error: error.message, comment: null };
+            }
+        });
+    }
     getComments(args, { conn }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { fetchFrom, postId } = args;
@@ -99,6 +161,7 @@ let CommentResolver = class CommentResolver {
                             profileImg: comment.profileImg,
                             username: comment.username,
                         };
+                        console.log(commentWithLikedStatus);
                         commentsWithLikedStatus.push(commentWithLikedStatus);
                     }
                     return { comments: commentsWithLikedStatus, error: null };
@@ -125,6 +188,24 @@ __decorate([
     __metadata("design:paramtypes", [postActionTypes_1.CommentInput, Object]),
     __metadata("design:returntype", Promise)
 ], CommentResolver.prototype, "postComment", null);
+__decorate([
+    type_graphql_1.Mutation(() => postActionTypes_1.LikeCommentResponse),
+    type_graphql_1.UseMiddleware(Auth_1.Auth),
+    __param(0, type_graphql_1.Arg("args")),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [postActionTypes_1.LikeCommentInput, Object]),
+    __metadata("design:returntype", Promise)
+], CommentResolver.prototype, "likeComment", null);
+__decorate([
+    type_graphql_1.Query(() => postActionTypes_1.GetCommentResponse),
+    type_graphql_1.UseMiddleware(Auth_1.Auth),
+    __param(0, type_graphql_1.Ctx()),
+    __param(1, type_graphql_1.Arg("args")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, postActionTypes_1.GetCommentInput]),
+    __metadata("design:returntype", Promise)
+], CommentResolver.prototype, "getOneComment", null);
 __decorate([
     type_graphql_1.Query(() => postActionTypes_1.GetCommentsResponse),
     type_graphql_1.UseMiddleware(Auth_1.Auth),

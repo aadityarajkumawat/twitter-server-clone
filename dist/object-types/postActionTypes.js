@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LikeCommentResponse = exports.LikeCommentInput = exports.GetCommentsInput = exports.GetCommentsResponse = exports.CommentRespose = exports.CommentInput = exports.CommentPostedReponse = void 0;
+exports.LikeCommentResponse = exports.LikeCommentInput = exports.GetCommentsInput = exports.GetCommentsResponse = exports.GetCommentInput = exports.GetCommentResponse = exports.CommentRespose = exports.CommentInput = exports.CommentPostedReponse = void 0;
 const type_graphql_1 = require("type-graphql");
 let CommentPostedReponse = class CommentPostedReponse {
 };
@@ -89,6 +89,34 @@ CommentRespose = __decorate([
     type_graphql_1.ObjectType()
 ], CommentRespose);
 exports.CommentRespose = CommentRespose;
+let GetCommentResponse = class GetCommentResponse {
+};
+__decorate([
+    type_graphql_1.Field(() => CommentRespose, { nullable: true }),
+    __metadata("design:type", Object)
+], GetCommentResponse.prototype, "comment", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    __metadata("design:type", Object)
+], GetCommentResponse.prototype, "error", void 0);
+GetCommentResponse = __decorate([
+    type_graphql_1.ObjectType()
+], GetCommentResponse);
+exports.GetCommentResponse = GetCommentResponse;
+let GetCommentInput = class GetCommentInput {
+};
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], GetCommentInput.prototype, "fetchFrom", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Number)
+], GetCommentInput.prototype, "comment_id", void 0);
+GetCommentInput = __decorate([
+    type_graphql_1.InputType()
+], GetCommentInput);
+exports.GetCommentInput = GetCommentInput;
 let GetCommentsResponse = class GetCommentsResponse {
 };
 __decorate([

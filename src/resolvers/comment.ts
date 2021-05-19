@@ -6,14 +6,18 @@ import {
     Resolver,
     UseMiddleware,
 } from "type-graphql";
-import { Comment, Images, Tweet } from "../entities";
+import { Comment, Images, Like, Tweet } from "../entities";
 import { Auth } from "../middlewares/Auth";
 import {
     CommentInput,
     CommentPostedReponse,
     CommentRespose,
+    GetCommentInput,
+    GetCommentResponse,
     GetCommentsInput,
     GetCommentsResponse,
+    LikeCommentInput,
+    LikeCommentResponse,
 } from "../object-types/postActionTypes";
 import { MyContext } from "../types";
 import { UserResolver } from "./user";
@@ -84,25 +88,81 @@ export class CommentResolver {
         }
     }
 
-    // @Mutation(() => LikeCommentResponse)
-    // @UseMiddleware(Auth)
-    // async likeComment(
-    //     @Arg("args") args: LikeCommentInput,
-    //     @Ctx() ctx: MyContext
-    // ): Promise<LikeCommentResponse> {
-    //     const { comment_id } = args;
-    //     const { conn } = ctx;
-    //     const commentRepo = conn.getRepository(Comment);
+    @Mutation(() => LikeCommentResponse)
+    @UseMiddleware(Auth)
+    async likeComment(
+        @Arg("args") args: LikeCommentInput,
+        @Ctx() ctx: MyContext
+    ): Promise<LikeCommentResponse> {
+        const { comment_id } = args;
+        const { conn, req } = ctx;
 
-    //     try {
-    //         const comment = await commentRepo.findOne({
-    //             where: { comment_id },
-    //         });
-    //         if (!comment) return { liked: false, error: "Comment not found" };
+        const commentRepo = conn.getRepository(Comment);
+        const likeRepo = conn.getRepository(Like);
 
-    //         comment.likes += 1;
-    //     } catch (error) {}
-    // }
+        try {
+            const comment = await commentRepo.findOne({
+                where: { comment_id },
+            });
+            if (!comment) return { liked: false, error: "Comment not found" };
+
+            const like = await likeRepo.findOne({
+                where: {
+                    like_on: "comment",
+                    like_on_id: comment_id,
+                    user_id: req.session.userId,
+                    tweet: null,
+                },
+            });
+
+            if (!like) {
+                const newLike = likeRepo.create({
+                    like_on: "comment",
+                    like_on_id: comment_id,
+                    user_id: req.session.userId,
+                    tweet: undefined,
+                });
+
+                comment.likes += 1;
+
+                await likeRepo.manager.save(newLike);
+                await commentRepo.manager.save(comment);
+            } else {
+                comment.likes -= 1;
+                await like.remove();
+                await commentRepo.manager.save(comment);
+            }
+
+            return { error: null, liked: true };
+        } catch (error) {
+            console.log(error.message);
+            return { error: error.message, liked: false };
+        }
+    }
+
+    @Query(() => GetCommentResponse)
+    @UseMiddleware(Auth)
+    async getOneComment(
+        @Ctx() { conn }: MyContext,
+        @Arg("args") args: GetCommentInput
+    ): Promise<GetCommentResponse> {
+        const { comment_id, fetchFrom } = args;
+
+        const commentRepo = conn.getRepository(Comment);
+
+        try {
+            const comment = await commentRepo.findOne({
+                where: { comment_id, comment_on: fetchFrom },
+            });
+
+            if (!comment) return { comment: null, error: "Comment not found" };
+
+            return { error: null, comment: { ...comment, liked: false } };
+        } catch (error) {
+            console.log(error.message);
+            return { error: error.message, comment: null };
+        }
+    }
 
     @Query(() => GetCommentsResponse)
     @UseMiddleware(Auth)
@@ -132,6 +192,8 @@ export class CommentResolver {
                         profileImg: comment.profileImg,
                         username: comment.username,
                     };
+
+                    console.log(commentWithLikedStatus);
 
                     // @TODO: Add liked status
                     // -> here
