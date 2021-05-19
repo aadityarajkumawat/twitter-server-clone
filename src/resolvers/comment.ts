@@ -11,7 +11,6 @@ import { Auth } from "../middlewares/Auth";
 import {
     CommentInput,
     CommentPostedReponse,
-    CommentRespose,
     GetCommentInput,
     GetCommentResponse,
     GetCommentsInput,
@@ -99,12 +98,14 @@ export class CommentResolver {
 
         const commentRepo = conn.getRepository(Comment);
         const likeRepo = conn.getRepository(Like);
+        let liked = "unliked";
 
         try {
             const comment = await commentRepo.findOne({
                 where: { comment_id },
             });
-            if (!comment) return { liked: false, error: "Comment not found" };
+
+            if (!comment) return { liked, error: "Comment not found" };
 
             const like = await likeRepo.findOne({
                 where: {
@@ -124,31 +125,34 @@ export class CommentResolver {
                 });
 
                 comment.likes += 1;
+                liked = "liked";
 
                 await likeRepo.manager.save(newLike);
                 await commentRepo.manager.save(comment);
             } else {
                 comment.likes -= 1;
+                liked = "unliked";
                 await like.remove();
                 await commentRepo.manager.save(comment);
             }
 
-            return { error: null, liked: true };
+            return { error: null, liked };
         } catch (error) {
             console.log(error.message);
-            return { error: error.message, liked: false };
+            return { error: error.message, liked };
         }
     }
 
     @Query(() => GetCommentResponse)
     @UseMiddleware(Auth)
     async getOneComment(
-        @Ctx() { conn }: MyContext,
+        @Ctx() { conn, req }: MyContext,
         @Arg("args") args: GetCommentInput
     ): Promise<GetCommentResponse> {
         const { comment_id, fetchFrom } = args;
 
         const commentRepo = conn.getRepository(Comment);
+        const likeRepo = conn.getRepository(Like);
 
         try {
             const comment = await commentRepo.findOne({
@@ -157,7 +161,18 @@ export class CommentResolver {
 
             if (!comment) return { comment: null, error: "Comment not found" };
 
-            return { error: null, comment: { ...comment, liked: false } };
+            const like = await likeRepo.count({
+                where: {
+                    like_on_id: comment.comment_id,
+                    like_on: "comment",
+                    user_id: req.session.userId,
+                },
+            });
+
+            return {
+                error: null,
+                comment: { ...comment, liked: like > 0 },
+            };
         } catch (error) {
             console.log(error.message);
             return { error: error.message, comment: null };
@@ -178,30 +193,8 @@ export class CommentResolver {
                 const comments = await commentRepo.find({
                     where: { comment_on_id: postId },
                 });
-                const commentsWithLikedStatus: Array<CommentRespose> = [];
 
-                for (let comment of comments) {
-                    const commentWithLikedStatus: CommentRespose = {
-                        commentMsg: comment.commentMsg,
-                        comment_id: comment.comment_id,
-                        comments: comment.comments,
-                        img: comment.img,
-                        liked: false,
-                        likes: comment.likes,
-                        name: comment.name,
-                        profileImg: comment.profileImg,
-                        username: comment.username,
-                    };
-
-                    console.log(commentWithLikedStatus);
-
-                    // @TODO: Add liked status
-                    // -> here
-
-                    commentsWithLikedStatus.push(commentWithLikedStatus);
-                }
-
-                return { comments: commentsWithLikedStatus, error: null };
+                return { comments, error: null };
             } else if (fetchFrom == "comment") {
                 return { comments: [], error: null };
             } else {

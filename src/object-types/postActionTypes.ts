@@ -38,8 +38,24 @@ export class CommentRespose {
     likes!: number;
     @Field()
     img!: string;
-    @Field()
+    @Field({ defaultValue: false })
     liked!: boolean;
+}
+
+@ObjectType()
+export class CommentResposeI {
+    @Field()
+    comment_id!: number;
+    @Field()
+    profileImg!: string;
+    @Field()
+    name!: string;
+    @Field()
+    username!: string;
+    @Field()
+    commentMsg!: string;
+    @Field()
+    img!: string;
 }
 
 @ObjectType()
@@ -60,8 +76,8 @@ export class GetCommentInput {
 
 @ObjectType()
 export class GetCommentsResponse {
-    @Field(() => [CommentRespose])
-    comments!: CommentRespose[];
+    @Field(() => [CommentResposeI])
+    comments!: CommentResposeI[];
     @Field(() => String, { nullable: true })
     error: string | null;
 }
@@ -82,8 +98,8 @@ export class LikeCommentInput {
 
 @ObjectType()
 export class LikeCommentResponse {
-    @Field(() => Boolean)
-    liked!: boolean;
     @Field(() => String)
+    liked!: string;
+    @Field(() => String, { nullable: true })
     error: string | null;
 }

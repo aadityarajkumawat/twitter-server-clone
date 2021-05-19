@@ -83,12 +83,13 @@ let CommentResolver = class CommentResolver {
             const { conn, req } = ctx;
             const commentRepo = conn.getRepository(entities_1.Comment);
             const likeRepo = conn.getRepository(entities_1.Like);
+            let liked = "unliked";
             try {
                 const comment = yield commentRepo.findOne({
                     where: { comment_id },
                 });
                 if (!comment)
-                    return { liked: false, error: "Comment not found" };
+                    return { liked, error: "Comment not found" };
                 const like = yield likeRepo.findOne({
                     where: {
                         like_on: "comment",
@@ -105,33 +106,46 @@ let CommentResolver = class CommentResolver {
                         tweet: undefined,
                     });
                     comment.likes += 1;
+                    liked = "liked";
                     yield likeRepo.manager.save(newLike);
                     yield commentRepo.manager.save(comment);
                 }
                 else {
                     comment.likes -= 1;
+                    liked = "unliked";
                     yield like.remove();
                     yield commentRepo.manager.save(comment);
                 }
-                return { error: null, liked: true };
+                return { error: null, liked };
             }
             catch (error) {
                 console.log(error.message);
-                return { error: error.message, liked: false };
+                return { error: error.message, liked };
             }
         });
     }
-    getOneComment({ conn }, args) {
+    getOneComment({ conn, req }, args) {
         return __awaiter(this, void 0, void 0, function* () {
             const { comment_id, fetchFrom } = args;
             const commentRepo = conn.getRepository(entities_1.Comment);
+            const likeRepo = conn.getRepository(entities_1.Like);
             try {
                 const comment = yield commentRepo.findOne({
                     where: { comment_id, comment_on: fetchFrom },
                 });
                 if (!comment)
                     return { comment: null, error: "Comment not found" };
-                return { error: null, comment: Object.assign(Object.assign({}, comment), { liked: false }) };
+                const like = yield likeRepo.count({
+                    where: {
+                        like_on_id: comment.comment_id,
+                        like_on: "comment",
+                        user_id: req.session.userId,
+                    },
+                });
+                return {
+                    error: null,
+                    comment: Object.assign(Object.assign({}, comment), { liked: like > 0 }),
+                };
             }
             catch (error) {
                 console.log(error.message);
@@ -148,23 +162,7 @@ let CommentResolver = class CommentResolver {
                     const comments = yield commentRepo.find({
                         where: { comment_on_id: postId },
                     });
-                    const commentsWithLikedStatus = [];
-                    for (let comment of comments) {
-                        const commentWithLikedStatus = {
-                            commentMsg: comment.commentMsg,
-                            comment_id: comment.comment_id,
-                            comments: comment.comments,
-                            img: comment.img,
-                            liked: false,
-                            likes: comment.likes,
-                            name: comment.name,
-                            profileImg: comment.profileImg,
-                            username: comment.username,
-                        };
-                        console.log(commentWithLikedStatus);
-                        commentsWithLikedStatus.push(commentWithLikedStatus);
-                    }
-                    return { comments: commentsWithLikedStatus, error: null };
+                    return { comments, error: null };
                 }
                 else if (fetchFrom == "comment") {
                     return { comments: [], error: null };

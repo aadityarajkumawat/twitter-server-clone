@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LikeCommentResponse = exports.LikeCommentInput = exports.GetCommentsInput = exports.GetCommentsResponse = exports.GetCommentInput = exports.GetCommentResponse = exports.CommentRespose = exports.CommentInput = exports.CommentPostedReponse = void 0;
+exports.LikeCommentResponse = exports.LikeCommentInput = exports.GetCommentsInput = exports.GetCommentsResponse = exports.GetCommentInput = exports.GetCommentResponse = exports.CommentResposeI = exports.CommentRespose = exports.CommentInput = exports.CommentPostedReponse = void 0;
 const type_graphql_1 = require("type-graphql");
 let CommentPostedReponse = class CommentPostedReponse {
 };
@@ -82,13 +82,43 @@ __decorate([
     __metadata("design:type", String)
 ], CommentRespose.prototype, "img", void 0);
 __decorate([
-    type_graphql_1.Field(),
+    type_graphql_1.Field({ defaultValue: false }),
     __metadata("design:type", Boolean)
 ], CommentRespose.prototype, "liked", void 0);
 CommentRespose = __decorate([
     type_graphql_1.ObjectType()
 ], CommentRespose);
 exports.CommentRespose = CommentRespose;
+let CommentResposeI = class CommentResposeI {
+};
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Number)
+], CommentResposeI.prototype, "comment_id", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], CommentResposeI.prototype, "profileImg", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], CommentResposeI.prototype, "name", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], CommentResposeI.prototype, "username", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], CommentResposeI.prototype, "commentMsg", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], CommentResposeI.prototype, "img", void 0);
+CommentResposeI = __decorate([
+    type_graphql_1.ObjectType()
+], CommentResposeI);
+exports.CommentResposeI = CommentResposeI;
 let GetCommentResponse = class GetCommentResponse {
 };
 __decorate([
@@ -120,7 +150,7 @@ exports.GetCommentInput = GetCommentInput;
 let GetCommentsResponse = class GetCommentsResponse {
 };
 __decorate([
-    type_graphql_1.Field(() => [CommentRespose]),
+    type_graphql_1.Field(() => [CommentResposeI]),
     __metadata("design:type", Array)
 ], GetCommentsResponse.prototype, "comments", void 0);
 __decorate([
@@ -158,11 +188,11 @@ exports.LikeCommentInput = LikeCommentInput;
 let LikeCommentResponse = class LikeCommentResponse {
 };
 __decorate([
-    type_graphql_1.Field(() => Boolean),
-    __metadata("design:type", Boolean)
+    type_graphql_1.Field(() => String),
+    __metadata("design:type", String)
 ], LikeCommentResponse.prototype, "liked", void 0);
 __decorate([
-    type_graphql_1.Field(() => String),
+    type_graphql_1.Field(() => String, { nullable: true }),
     __metadata("design:type", Object)
 ], LikeCommentResponse.prototype, "error", void 0);
 LikeCommentResponse = __decorate([
