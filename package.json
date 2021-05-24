@@ -1,6 +1,6 @@
 {
     "name": "twitter-graphql-server",
-    "version": "4.0.4",
+    "version": "5.0.0",
     "description": "GraphQL server for twitter",
     "main": "server.js",
     "scripts": {

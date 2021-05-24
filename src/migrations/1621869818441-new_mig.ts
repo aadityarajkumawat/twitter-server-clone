@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Initial1621262768174 implements MigrationInterface {
-    name = "Initial1621262768174";
+export class newMig1621869818441 implements MigrationInterface {
+    name = "newMig1621869818441";
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
@@ -14,7 +14,7 @@ export class Initial1621262768174 implements MigrationInterface {
             `CREATE TABLE "tweet" ("tweet_id" SERIAL NOT NULL, "tweet_content" character varying(100) NOT NULL, "created_At" TIMESTAMP NOT NULL DEFAULT now(), "_type" character varying NOT NULL, "username" character varying NOT NULL, "name" character varying NOT NULL, "likes" integer NOT NULL, "comments" integer NOT NULL, "img" character varying NOT NULL, "userId" integer, CONSTRAINT "PK_75fe7a2fec59c70e2add643e3e0" PRIMARY KEY ("tweet_id"))`
         );
         await queryRunner.query(
-            `CREATE TABLE "like" ("like_id" SERIAL NOT NULL, "created_At" TIMESTAMP NOT NULL DEFAULT now(), "user_id" integer NOT NULL, "tweet_id" integer NOT NULL, "tweetTweetId" integer, CONSTRAINT "PK_90999e6c2872ea84c11682a1762" PRIMARY KEY ("like_id"))`
+            `CREATE TABLE "like" ("like_id" SERIAL NOT NULL, "created_At" TIMESTAMP NOT NULL DEFAULT now(), "user_id" integer NOT NULL, "like_on_id" integer NOT NULL, "like_on" character varying NOT NULL, "tweetTweetId" integer, CONSTRAINT "PK_90999e6c2872ea84c11682a1762" PRIMARY KEY ("like_id"))`
         );
         await queryRunner.query(
             `CREATE TABLE "user" ("id" SERIAL NOT NULL, "email" character varying NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "password" character varying NOT NULL, "username" character varying NOT NULL, "name" character varying NOT NULL, "phone" character varying(10) NOT NULL, CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "UQ_78a916df40e02a9deb1c4b75edb" UNIQUE ("username"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))`
